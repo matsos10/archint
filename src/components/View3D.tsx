@@ -82,12 +82,8 @@ function ElecWire3D({ wire }: { wire: ElectricalWire }) {
     ]);
   }, [wire]);
 
-  return (
-    <line geometry={points}>
-      {/* @ts-expect-error r3f line material */}
-      <lineBasicMaterial color={ELEC_COLOR} linewidth={2} />
-    </line>
-  );
+  // @ts-expect-error r3f line element
+  return (<line geometry={points}><lineBasicMaterial color={ELEC_COLOR} linewidth={2} /></line>);
 }
 
 const PIPE_COLORS = { supply: '#2196F3', hot: '#F44336', drain: '#795548' };

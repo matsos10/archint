@@ -134,10 +134,15 @@ export interface Surface {
   id: string;
   category: SurfaceCategory;
   material: string; // material key from surface-catalog
+  // Rect mode (floor/ceiling): position + size
   x: number;
   y: number;
   width: number;
   height: number;
+  // Line mode (wall-covering): drawn like a wall segment
+  start?: Point;
+  end?: Point;
+  wallHeight?: number; // meters, default 2.5
 }
 
 export type Tool = 'select' | 'wall' | 'furniture' | 'eraser' | 'measure' | 'electrical-point' | 'electrical-wire' | 'plumbing-point' | 'plumbing-pipe' | 'door-window' | 'surface';

@@ -265,7 +265,6 @@ export function drawPlumbingPipe(ctx: CanvasRenderingContext2D, pipe: PlumbingPi
 export function drawDoorWindow(ctx: CanvasRenderingContext2D, dw: DoorWindow, wall: Wall, offset: Point, scale: number, highlight: boolean) {
   const wx = wall.end.x - wall.start.x;
   const wy = wall.end.y - wall.start.y;
-  const wallLen = Math.sqrt(wx * wx + wy * wy);
   const angle = Math.atan2(wy, wx);
 
   const px = wall.start.x + wx * dw.position;
@@ -486,4 +485,76 @@ export function hitTestSurfaceHandle(surface: Surface, point: Point, radius: num
   const hx = surface.x + surface.width;
   const hy = surface.y + surface.height;
   return Math.abs(point.x - hx) < radius && Math.abs(point.y - hy) < radius;
+}
+
+export function drawLineSurface(ctx: CanvasRenderingContext2D, surface: Surface, offset: Point, scale: number, highlight: boolean) {
+  if (!surface.start || !surface.end) return;
+  const mat = getSurfaceMaterial(surface.material);
+  const color = mat?.color || '#bbbbbb';
+  const sx = surface.start.x * scale + offset.x;
+  const sy = surface.start.y * scale + offset.y;
+  const ex = surface.end.x * scale + offset.x;
+  const ey = surface.end.y * scale + offset.y;
+
+  ctx.save();
+  ctx.strokeStyle = highlight ? '#1a237e' : color;
+  ctx.lineWidth = (highlight ? 8 : 6) * scale;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+
+  // Border outline
+  ctx.strokeStyle = highlight ? '#3949ab' : '#8d6e63';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4 * scale, 3 * scale]);
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const dx = surface.end.x - surface.start.x;
+  const dy = surface.end.y - surface.start.y;
+  const lenM = Math.sqrt(dx * dx + dy * dy) / PIXELS_PER_METER;
+  const wallH = surface.wallHeight || 2.5;
+  if (lenM > 0.1) {
+    const mx = (sx + ex) / 2;
+    const my = (sy + ey) / 2;
+    ctx.fillStyle = '#3e2723';
+    ctx.font = `bold ${11 * scale}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(mat?.label || 'Surface', mx, my - 10 * scale);
+    ctx.font = `${10 * scale}px sans-serif`;
+    ctx.fillStyle = '#5d4037';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`${lenM.toFixed(2)}m × ${wallH}m = ${(lenM * wallH).toFixed(2)} m²`, mx, my + 2 * scale);
+  }
+
+  if (highlight) {
+    for (const pt of [{ x: sx, y: sy }, { x: ex, y: ey }]) {
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 6 * scale, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+      ctx.strokeStyle = '#1a237e';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+export function hitTestLineSurface(surface: Surface, point: Point, threshold: number): boolean {
+  if (!surface.start || !surface.end) return false;
+  return hitTestWall({ start: surface.start, end: surface.end } as Wall, point, threshold);
+}
+
+export function hitTestLineSurfaceEndpoint(surface: Surface, point: Point, radius: number): 'start' | 'end' | null {
+  if (!surface.start || !surface.end) return null;
+  if (Math.sqrt((point.x - surface.start.x) ** 2 + (point.y - surface.start.y) ** 2) < radius) return 'start';
+  if (Math.sqrt((point.x - surface.end.x) ** 2 + (point.y - surface.end.y) ** 2) < radius) return 'end';
+  return null;
 }

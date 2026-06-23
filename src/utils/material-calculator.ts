@@ -50,9 +50,18 @@ export function calculateMaterials(
   for (const surface of surfaces) {
     const mat = getSurfaceMaterial(surface.material);
     if (!mat) continue;
-    const widthM = surface.width / PIXELS_PER_METER;
-    const heightM = surface.height / PIXELS_PER_METER;
-    const areaM2 = widthM * heightM;
+    let widthM: number, heightM: number, areaM2: number;
+    if (surface.start && surface.end) {
+      const dx = surface.end.x - surface.start.x;
+      const dy = surface.end.y - surface.start.y;
+      widthM = Math.sqrt(dx * dx + dy * dy) / PIXELS_PER_METER;
+      heightM = surface.wallHeight || 2.5;
+      areaM2 = widthM * heightM;
+    } else {
+      widthM = surface.width / PIXELS_PER_METER;
+      heightM = surface.height / PIXELS_PER_METER;
+      areaM2 = widthM * heightM;
+    }
     if (areaM2 <= 0) continue;
     const catLabel = categoryLabel[mat.category];
     for (const comp of mat.components) {
