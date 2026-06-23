@@ -287,7 +287,7 @@ export function Canvas({
         onAddPlumbingPoint({ id: generateId(), type: selectedPlumbingType, x: snapped.x, y: snapped.y, label: catalog.label, network: catalog.network });
       }
     } else if (activeTool === 'door-window' && selectedDoorWindowType) {
-      const hit = findWallAtPoint(walls, world, 15 / scale);
+      const hit = findWallAtPoint(walls, world, 30 / scale);
       if (hit) {
         const catalog = doorWindowCatalog.find((d) => d.type === selectedDoorWindowType);
         if (catalog) {
@@ -400,7 +400,7 @@ export function Canvas({
     const map: Partial<Record<Tool, string>> = {
       wall: 'crosshair', 'electrical-wire': 'crosshair', 'plumbing-pipe': 'crosshair',
       'electrical-point': 'crosshair', 'plumbing-point': 'crosshair',
-      eraser: 'pointer', furniture: 'crosshair',
+      eraser: 'pointer', furniture: 'crosshair', 'door-window': 'crosshair',
     };
     return map[activeTool] || 'default';
   };
