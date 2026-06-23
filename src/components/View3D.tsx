@@ -2,7 +2,7 @@ import { Canvas as R3FCanvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import type { Wall, FurnitureItem, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe } from '../types';
+import type { Wall, FurnitureItem, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, DoorWindow } from '../types';
 
 const PX_PER_M = 40;
 const WALL_HEIGHT = 2.5;
@@ -131,6 +131,29 @@ function PlumbPipe3D({ pipe }: { pipe: PlumbingPipe }) {
   );
 }
 
+function DoorWindow3D({ dw, wall }: { dw: DoorWindow; wall: Wall }) {
+  const dx = wall.end.x - wall.start.x;
+  const dy = wall.end.y - wall.start.y;
+  const wallAngle = Math.atan2(dy, dx);
+  const px = wall.start.x + dx * dw.position;
+  const py = wall.start.y + dy * dw.position;
+  const isDoor = dw.type.startsWith('door');
+  const dwWidth = toM(dw.width * 40 / 100);
+  const dwHeight = toM(dw.height * 40 / 100);
+  const yPos = isDoor ? dwHeight / 2 : 1.0 + dwHeight / 2;
+
+  return (
+    <mesh position={[toM(px), yPos, toM(py)]} rotation={[0, -wallAngle, 0]}>
+      <boxGeometry args={[dwWidth, dwHeight, 0.08]} />
+      <meshStandardMaterial
+        color={isDoor ? '#8B5E3C' : '#87CEEB'}
+        transparent
+        opacity={isDoor ? 0.9 : 0.4}
+      />
+    </mesh>
+  );
+}
+
 function Floor({ walls }: { walls: Wall[] }) {
   const size = useMemo(() => {
     if (walls.length === 0) return { cx: 5, cz: 5, sx: 12, sz: 12 };
@@ -161,6 +184,7 @@ function Floor({ walls }: { walls: Wall[] }) {
 interface View3DProps {
   walls: Wall[];
   furniture: FurnitureItem[];
+  doorsWindows: DoorWindow[];
   electricalPoints: ElectricalPoint[];
   electricalWires: ElectricalWire[];
   plumbingPoints: PlumbingPoint[];
@@ -170,7 +194,7 @@ interface View3DProps {
 }
 
 export function View3D({
-  walls, furniture, electricalPoints, electricalWires,
+  walls, furniture, doorsWindows, electricalPoints, electricalWires,
   plumbingPoints, plumbingPipes, showElectrical, showPlumbing,
 }: View3DProps) {
   const center = useMemo(() => {
@@ -197,6 +221,10 @@ export function View3D({
         <Floor walls={walls} />
 
         {walls.map((w) => <Wall3D key={w.id} wall={w} />)}
+        {doorsWindows.map((dw) => {
+          const wall = walls.find((w) => w.id === dw.wallId);
+          return wall ? <DoorWindow3D key={dw.id} dw={dw} wall={wall} /> : null;
+        })}
         {furniture.map((f) => <Furniture3D key={f.id} item={f} />)}
 
         {showElectrical && (

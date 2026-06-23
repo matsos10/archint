@@ -245,6 +245,7 @@ function App() {
             <View3D
               walls={walls}
               furniture={furniture}
+              doorsWindows={doorsWindows}
               electricalPoints={electricalPoints}
               electricalWires={electricalWires}
               plumbingPoints={plumbingPoints}
