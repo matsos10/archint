@@ -48,6 +48,47 @@ export function calculateMaterials(
     items.push({ name: 'Bande à joint (rouleau 23m)', quantity: Math.ceil(totalWallLength * 2 / 23 * 1.1), unit: 'pcs', category: 'construction' });
 
     items.push({ name: 'Enduit à joint (sac 25kg)', quantity: Math.ceil(totalWallArea * 2 * 0.3 / 25), unit: 'pcs', category: 'construction' });
+
+    // --- Faux plafond (plaques de plâtre + LSF) ---
+    const allPoints = walls.flatMap((w) => [w.start, w.end]);
+    const minX = Math.min(...allPoints.map((p) => p.x)) / PIXELS_PER_METER;
+    const maxX = Math.max(...allPoints.map((p) => p.x)) / PIXELS_PER_METER;
+    const minY = Math.min(...allPoints.map((p) => p.y)) / PIXELS_PER_METER;
+    const maxY = Math.max(...allPoints.map((p) => p.y)) / PIXELS_PER_METER;
+    const ceilingArea = (maxX - minX) * (maxY - minY);
+
+    if (ceilingArea > 0.5) {
+      const ceilingBoardArea = 1.2 * 2.5;
+      const ceilingBoards = Math.ceil(ceilingArea / ceilingBoardArea * 1.1);
+      items.push({ name: '[Plafond] Plaque de plâtre BA13 (1200×2500)', quantity: ceilingBoards, unit: 'pcs', category: 'construction' });
+
+      const primarySpacing = 1.2;
+      const secondarySpacing = 0.5;
+      const ceilingW = maxX - minX;
+      const ceilingL = maxY - minY;
+
+      const primaryCount = Math.ceil(ceilingL / primarySpacing) + 1;
+      const primaryRails = Math.ceil(primaryCount * ceilingW / 3 * 1.1);
+      items.push({ name: '[Plafond] Fourrure F530 primaire (3m)', quantity: primaryRails, unit: 'pcs', category: 'construction' });
+
+      const secondaryCount = Math.ceil(ceilingW / secondarySpacing) + 1;
+      const secondaryRails = Math.ceil(secondaryCount * ceilingL / 3 * 1.1);
+      items.push({ name: '[Plafond] Fourrure F530 secondaire (3m)', quantity: secondaryRails, unit: 'pcs', category: 'construction' });
+
+      const suspenteSpacing = 1.2;
+      const suspenteCount = Math.ceil(ceilingArea / (suspenteSpacing * suspenteSpacing) * 1.1);
+      items.push({ name: '[Plafond] Suspente (tige + clip)', quantity: suspenteCount, unit: 'pcs', category: 'construction' });
+
+      const eclisseCount = primaryRails + secondaryRails;
+      items.push({ name: '[Plafond] Éclisse de raccord', quantity: Math.ceil(eclisseCount * 0.3), unit: 'pcs', category: 'construction' });
+
+      items.push({ name: '[Plafond] Vis TTPC 25mm', quantity: ceilingBoards * 28, unit: 'pcs', category: 'construction' });
+
+      const ceilingPerimeter = (ceilingW + ceilingL) * 2;
+      items.push({ name: '[Plafond] Cornière périphérique (3m)', quantity: Math.ceil(ceilingPerimeter / 3 * 1.1), unit: 'pcs', category: 'construction' });
+
+      items.push({ name: '[Plafond] Panneau isolant laine minérale (1200×600)', quantity: Math.ceil(ceilingArea / (1.2 * 0.6) * 1.1), unit: 'pcs', category: 'construction' });
+    }
   }
 
   const outletCount = electricalPoints.filter((p) => p.type === 'outlet').length;
