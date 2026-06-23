@@ -3,6 +3,24 @@ import { getSurfaceMaterial, categoryLabel } from './surface-catalog';
 
 const PIXELS_PER_METER = 40;
 
+// Simulate laying boards in rows with offcut reuse: the leftover piece
+// from the end of one row starts the next row, reducing waste.
+function countBA13Boards(surfaceW: number, surfaceH: number, boardW: number, boardH: number): number {
+  if (surfaceW <= 0 || surfaceH <= 0) return 0;
+  const rowCount = Math.ceil(surfaceH / boardH);
+  let boards = 0;
+  let offcut = 0;
+  for (let r = 0; r < rowCount; r++) {
+    let covered = offcut > 0.05 ? offcut : 0;
+    while (covered < surfaceW - 0.001) {
+      boards++;
+      covered += boardW;
+    }
+    offcut = covered - surfaceW;
+  }
+  return boards;
+}
+
 function segmentLength(seg: { start: { x: number; y: number }; end: { x: number; y: number } }): number {
   const dx = seg.end.x - seg.start.x;
   const dy = seg.end.y - seg.start.y;
@@ -20,20 +38,46 @@ export function calculateMaterials(
 
   // --- Surfaces dessinées (sols, murs, plafond) ---
   // Groupe par catégorie + nom de composant, somme les quantités brutes.
+  // Board components that benefit from offcut-reuse optimization
+  const BOARD_SIZES: Record<string, [number, number]> = {
+    'Plaque de plâtre BA13 (1200×2500)': [1.2, 2.5],
+    'Complexe doublage BA13+PSE (1200×2600)': [1.2, 2.6],
+  };
   const surfaceAgg: Record<string, { name: string; raw: number; unit: string; packSize: number; category: string }> = {};
+  // Track BA13 board counts separately per category (optimized with offcut reuse)
+  const ba13ByCategory: Record<string, number> = {};
+
   for (const surface of surfaces) {
     const mat = getSurfaceMaterial(surface.material);
     if (!mat) continue;
-    const areaM2 = (surface.width / PIXELS_PER_METER) * (surface.height / PIXELS_PER_METER);
+    const widthM = surface.width / PIXELS_PER_METER;
+    const heightM = surface.height / PIXELS_PER_METER;
+    const areaM2 = widthM * heightM;
     if (areaM2 <= 0) continue;
     const catLabel = categoryLabel[mat.category];
     for (const comp of mat.components) {
+      const boardDims = BOARD_SIZES[comp.name];
+      if (boardDims) {
+        // Use optimized board-laying calculation with offcut reuse
+        const [bw, bh] = boardDims;
+        // Orient boards optimally: try both orientations, pick fewer boards
+        const countA = countBA13Boards(widthM, heightM, bw, bh);
+        const countB = countBA13Boards(widthM, heightM, bh, bw);
+        const key = `${catLabel}||${comp.name}`;
+        ba13ByCategory[key] = (ba13ByCategory[key] || 0) + Math.min(countA, countB);
+        continue;
+      }
       const key = `${catLabel}||${comp.name}`;
       if (!surfaceAgg[key]) {
         surfaceAgg[key] = { name: comp.name, raw: 0, unit: comp.unit, packSize: comp.packSize || 1, category: catLabel };
       }
       surfaceAgg[key].raw += areaM2 * comp.perM2;
     }
+  }
+
+  for (const [key, count] of Object.entries(ba13ByCategory)) {
+    const [cat, name] = key.split('||');
+    items.push({ name, quantity: count, unit: 'pcs', category: cat });
   }
   for (const agg of Object.values(surfaceAgg)) {
     items.push({
