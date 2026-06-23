@@ -11,6 +11,8 @@ type DragMode =
   | { type: 'furniture'; id: string; offsetX: number; offsetY: number }
   | { type: 'wall-endpoint'; id: string; endpoint: 'start' | 'end' }
   | { type: 'wall-move'; id: string; offsetStart: Point; offsetEnd: Point }
+  | { type: 'electrical-point'; id: string }
+  | { type: 'plumbing-point'; id: string }
   | null;
 
 interface CanvasProps {
@@ -43,6 +45,8 @@ interface CanvasProps {
   onSelectFurniture: (id: string | null) => void;
   onSelectDoorWindow: (id: string | null) => void;
   onMoveFurniture: (id: string, x: number, y: number) => void;
+  onMoveElectricalPoint: (id: string, x: number, y: number) => void;
+  onMovePlumbingPoint: (id: string, x: number, y: number) => void;
   onUpdateWall: (wall: Wall) => void;
   onDeleteWall: (id: string) => void;
   onDeleteFurniture: (id: string) => void;
@@ -62,7 +66,7 @@ export function Canvas({
   onAddWall, onAddFurniture, onAddDoorWindow, onAddElectricalPoint, onAddElectricalWire,
   onAddPlumbingPoint, onAddPlumbingPipe,
   onSelectWall, onSelectFurniture, onSelectDoorWindow,
-  onMoveFurniture, onUpdateWall, onDeleteWall, onDeleteFurniture, onDeleteDoorWindow,
+  onMoveFurniture, onMoveElectricalPoint, onMovePlumbingPoint, onUpdateWall, onDeleteWall, onDeleteFurniture, onDeleteDoorWindow,
   onDeleteElectricalPoint, onDeleteElectricalWire,
   onDeletePlumbingPoint, onDeletePlumbingPipe,
   canvasRef,
@@ -216,6 +220,22 @@ export function Canvas({
         }
       }
 
+      // Check electrical points
+      for (const pt of [...electricalPoints].reverse()) {
+        if (hitTestPoint(pt, world, 15 / scale)) {
+          setDragMode({ type: 'electrical-point', id: pt.id });
+          return;
+        }
+      }
+
+      // Check plumbing points
+      for (const pt of [...plumbingPoints].reverse()) {
+        if (hitTestPoint(pt, world, 15 / scale)) {
+          setDragMode({ type: 'plumbing-point', id: pt.id });
+          return;
+        }
+      }
+
       // Check furniture
       for (const item of [...furniture].reverse()) {
         if (hitTestFurniture(item, world)) {
@@ -329,6 +349,10 @@ export function Canvas({
           const newEnd = snapToGrid({ x: world.x - dragMode.offsetEnd.x, y: world.y - dragMode.offsetEnd.y });
           onUpdateWall({ ...wall, start: newStart, end: newEnd });
         }
+      } else if (dragMode.type === 'electrical-point') {
+        onMoveElectricalPoint(dragMode.id, snapped.x, snapped.y);
+      } else if (dragMode.type === 'plumbing-point') {
+        onMovePlumbingPoint(dragMode.id, snapped.x, snapped.y);
       }
     }
   };

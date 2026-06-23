@@ -219,6 +219,8 @@ function App() {
               onSelectFurniture={setSelectedFurnitureId}
               onSelectDoorWindow={setSelectedDoorWindowId}
               onMoveFurniture={(id, x, y) => setFurniture((prev) => prev.map((f) => (f.id === id ? { ...f, x, y } : f)))}
+              onMoveElectricalPoint={(id, x, y) => setElectricalPoints((prev) => prev.map((p) => (p.id === id ? { ...p, x, y } : p)))}
+              onMovePlumbingPoint={(id, x, y) => setPlumbingPoints((prev) => prev.map((p) => (p.id === id ? { ...p, x, y } : p)))}
               onUpdateWall={handleUpdateWall}
               onDeleteWall={(id) => { setDoorsWindows((prev) => prev.filter((d) => d.wallId !== id)); setWalls((prev) => prev.filter((w) => w.id !== id)); }}
               onDeleteFurniture={(id) => setFurniture((prev) => prev.filter((f) => f.id !== id))}
