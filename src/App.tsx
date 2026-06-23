@@ -190,6 +190,7 @@ function App() {
               onSelectWall={setSelectedWallId}
               onSelectFurniture={setSelectedFurnitureId}
               onMoveFurniture={(id, x, y) => setFurniture((prev) => prev.map((f) => (f.id === id ? { ...f, x, y } : f)))}
+              onUpdateWall={handleUpdateWall}
               onDeleteWall={(id) => setWalls((prev) => prev.filter((w) => w.id !== id))}
               onDeleteFurniture={(id) => setFurniture((prev) => prev.filter((f) => f.id !== id))}
               onDeleteElectricalPoint={(id) => setElectricalPoints((prev) => prev.filter((p) => p.id !== id))}

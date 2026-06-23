@@ -1,6 +1,7 @@
 import type { Point, Wall, FurnitureItem, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe } from '../types';
 import { electricalCatalog } from './electrical-catalog';
 import { plumbingCatalog } from './plumbing-catalog';
+import { furnitureIcons } from './furniture-icons';
 
 const GRID_SIZE = 20;
 const PIXELS_PER_METER = 40;
@@ -58,6 +59,30 @@ export function drawWall(ctx: CanvasRenderingContext2D, wall: Wall, offset: Poin
     ctx.textAlign = 'center';
     ctx.fillText(`${len.toFixed(2)}m`, mx, my - 10 * scale);
   }
+
+  if (highlight) {
+    for (const pt of [{ x: sx, y: sy }, { x: ex, y: ey }]) {
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 6 * scale, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+      ctx.strokeStyle = '#2196F3';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+}
+
+const iconCache = new Map<string, HTMLImageElement>();
+
+function getIcon(type: string): HTMLImageElement | null {
+  const svgStr = furnitureIcons[type];
+  if (!svgStr) return null;
+  if (iconCache.has(type)) return iconCache.get(type)!;
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+  iconCache.set(type, img);
+  return img;
 }
 
 export function drawFurniture(ctx: CanvasRenderingContext2D, item: FurnitureItem, offset: Point, scale: number, highlight: boolean) {
@@ -71,27 +96,16 @@ export function drawFurniture(ctx: CanvasRenderingContext2D, item: FurnitureItem
   ctx.rotate((item.rotation * Math.PI) / 180);
 
   const colors: Record<string, string> = {
-    'sofa': '#8B4513',
-    'bed-single': '#6495ED',
-    'bed-double': '#4169E1',
-    'table': '#DEB887',
-    'chair': '#D2691E',
-    'desk': '#CD853F',
-    'wardrobe': '#A0522D',
-    'bathtub': '#87CEEB',
-    'shower': '#ADD8E6',
-    'toilet': '#F5F5DC',
-    'sink': '#B0C4DE',
-    'kitchen-counter': '#808080',
-    'stove': '#696969',
-    'fridge': '#C0C0C0',
-    'door': '#228B22',
-    'window': '#00CED1',
+    'sofa': '#8B4513', 'bed-single': '#6495ED', 'bed-double': '#4169E1',
+    'table': '#DEB887', 'chair': '#D2691E', 'desk': '#CD853F',
+    'wardrobe': '#A0522D', 'bathtub': '#87CEEB', 'shower': '#ADD8E6',
+    'toilet': '#F5F5DC', 'sink': '#B0C4DE', 'kitchen-counter': '#808080',
+    'stove': '#696969', 'fridge': '#C0C0C0', 'door': '#228B22', 'window': '#00CED1',
   };
 
-  ctx.fillStyle = highlight ? '#90CAF9' : (colors[item.type] || '#999');
-  ctx.strokeStyle = highlight ? '#2196F3' : '#333';
-  ctx.lineWidth = 1.5;
+  ctx.fillStyle = highlight ? 'rgba(144,202,249,0.5)' : (colors[item.type] ? colors[item.type] + '40' : '#99999940');
+  ctx.strokeStyle = highlight ? '#2196F3' : '#555';
+  ctx.lineWidth = highlight ? 2 : 1;
 
   if (item.type === 'door') {
     ctx.beginPath();
@@ -102,7 +116,8 @@ export function drawFurniture(ctx: CanvasRenderingContext2D, item: FurnitureItem
   } else if (item.type === 'window') {
     ctx.fillRect(-w / 2, -h / 2, w, h);
     ctx.strokeRect(-w / 2, -h / 2, w, h);
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = '#00CED1';
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, -h / 2);
     ctx.lineTo(0, h / 2);
@@ -112,10 +127,20 @@ export function drawFurniture(ctx: CanvasRenderingContext2D, item: FurnitureItem
     ctx.strokeRect(-w / 2, -h / 2, w, h);
   }
 
+  const icon = getIcon(item.type);
+  if (icon && icon.complete && icon.naturalWidth > 0) {
+    const pad = 4 * scale;
+    const iw = w - pad * 2;
+    const ih = h - pad * 2;
+    const sz = Math.min(iw, ih);
+    ctx.drawImage(icon, -sz / 2, -sz / 2, sz, sz);
+  }
+
   ctx.fillStyle = '#333';
-  ctx.font = `${9 * scale}px sans-serif`;
+  ctx.font = `bold ${8 * scale}px sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText(item.label, 0, 3);
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(item.label, 0, h / 2 - 1);
 
   ctx.restore();
 }
@@ -126,7 +151,6 @@ export function drawElectricalPoint(ctx: CanvasRenderingContext2D, pt: Electrica
   const r = 12 * scale;
 
   ctx.save();
-
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = highlight ? '#FFF176' : '#FFE082';
@@ -146,7 +170,6 @@ export function drawElectricalPoint(ctx: CanvasRenderingContext2D, pt: Electrica
   ctx.fillStyle = '#666';
   ctx.textBaseline = 'top';
   ctx.fillText(pt.label, x, y + r + 2);
-
   ctx.restore();
 }
 
@@ -187,7 +210,6 @@ export function drawPlumbingPoint(ctx: CanvasRenderingContext2D, pt: PlumbingPoi
   const color = PIPE_COLORS[pt.network];
 
   ctx.save();
-
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = highlight ? '#E3F2FD' : '#fff';
@@ -207,7 +229,6 @@ export function drawPlumbingPoint(ctx: CanvasRenderingContext2D, pt: PlumbingPoi
   ctx.fillStyle = '#666';
   ctx.textBaseline = 'top';
   ctx.fillText(pt.label, x, y + r + 2);
-
   ctx.restore();
 }
 
@@ -250,6 +271,12 @@ export function hitTestWall(wall: Wall, point: Point, threshold: number): boolea
   const py = start.y + t * dy;
   const dist = Math.sqrt((point.x - px) ** 2 + (point.y - py) ** 2);
   return dist < threshold;
+}
+
+export function hitTestWallEndpoint(wall: Wall, point: Point, radius: number): 'start' | 'end' | null {
+  if (Math.sqrt((point.x - wall.start.x) ** 2 + (point.y - wall.start.y) ** 2) < radius) return 'start';
+  if (Math.sqrt((point.x - wall.end.x) ** 2 + (point.y - wall.end.y) ** 2) < radius) return 'end';
+  return null;
 }
 
 export function hitTestFurniture(item: FurnitureItem, point: Point): boolean {

@@ -1,4 +1,5 @@
 import { furnitureCatalog } from '../utils/furniture-catalog';
+import { furnitureIcons } from '../utils/furniture-icons';
 import type { FurnitureType } from '../types';
 
 interface FurniturePanelProps {
@@ -27,11 +28,18 @@ export function FurniturePanel({ visible, onSelect, selectedFurnitureType }: Fur
                   className={`furniture-item ${selectedFurnitureType === f.type ? 'active' : ''}`}
                   onClick={() => onSelect(f.type)}
                 >
-                  <div className="furniture-preview" style={{
-                    width: Math.min(f.width, 50),
-                    height: Math.min(f.height, 50),
-                    backgroundColor: selectedFurnitureType === f.type ? '#90CAF9' : '#ddd',
-                  }} />
+                  {furnitureIcons[f.type] ? (
+                    <div
+                      className="furniture-icon"
+                      dangerouslySetInnerHTML={{ __html: furnitureIcons[f.type] }}
+                    />
+                  ) : (
+                    <div className="furniture-preview" style={{
+                      width: Math.min(f.width, 40),
+                      height: Math.min(f.height, 40),
+                      backgroundColor: selectedFurnitureType === f.type ? '#90CAF9' : '#ddd',
+                    }} />
+                  )}
                   <span>{f.label}</span>
                 </button>
               ))}

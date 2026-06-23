@@ -1,10 +1,16 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import type { Wall, FurnitureItem, Tool, Point, FurnitureType, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, ElectricalType, PlumbingType } from '../types';
-import { drawGrid, drawWall, drawFurniture, drawElectricalPoint, drawElectricalWire, drawPlumbingPoint, drawPlumbingPipe, snapToGrid, hitTestWall, hitTestFurniture, hitTestPoint, hitTestLine } from '../utils/canvas';
+import { drawGrid, drawWall, drawFurniture, drawElectricalPoint, drawElectricalWire, drawPlumbingPoint, drawPlumbingPipe, snapToGrid, hitTestWall, hitTestWallEndpoint, hitTestFurniture, hitTestPoint, hitTestLine } from '../utils/canvas';
 import { furnitureCatalog } from '../utils/furniture-catalog';
 import { electricalCatalog } from '../utils/electrical-catalog';
 import { plumbingCatalog } from '../utils/plumbing-catalog';
 import { generateId } from '../utils/id';
+
+type DragMode =
+  | { type: 'furniture'; id: string; offsetX: number; offsetY: number }
+  | { type: 'wall-endpoint'; id: string; endpoint: 'start' | 'end' }
+  | { type: 'wall-move'; id: string; offsetStart: Point; offsetEnd: Point }
+  | null;
 
 interface CanvasProps {
   walls: Wall[];
@@ -31,6 +37,7 @@ interface CanvasProps {
   onSelectWall: (id: string | null) => void;
   onSelectFurniture: (id: string | null) => void;
   onMoveFurniture: (id: string, x: number, y: number) => void;
+  onUpdateWall: (wall: Wall) => void;
   onDeleteWall: (id: string) => void;
   onDeleteFurniture: (id: string) => void;
   onDeleteElectricalPoint: (id: string) => void;
@@ -48,7 +55,7 @@ export function Canvas({
   onAddWall, onAddFurniture, onAddElectricalPoint, onAddElectricalWire,
   onAddPlumbingPoint, onAddPlumbingPipe,
   onSelectWall, onSelectFurniture,
-  onMoveFurniture, onDeleteWall, onDeleteFurniture,
+  onMoveFurniture, onUpdateWall, onDeleteWall, onDeleteFurniture,
   onDeleteElectricalPoint, onDeleteElectricalWire,
   onDeletePlumbingPoint, onDeletePlumbingPipe,
   canvasRef,
@@ -59,8 +66,7 @@ export function Canvas({
   const [drawing, setDrawing] = useState(false);
   const [lineStart, setLineStart] = useState<Point | null>(null);
   const [mousePos, setMousePos] = useState<Point | null>(null);
-  const [dragging, setDragging] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 });
+  const [dragMode, setDragMode] = useState<DragMode>(null);
   const [panning, setPanning] = useState(false);
   const [panStart, setPanStart] = useState<Point>({ x: 0, y: 0 });
 
@@ -74,7 +80,6 @@ export function Canvas({
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
-
     const resize = () => {
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
@@ -118,9 +123,7 @@ export function Canvas({
     if (drawing && lineStart && mousePos) {
       const snapped = snapToGrid(mousePos);
       const colors: Record<string, string> = {
-        wall: '#2196F3',
-        'electrical-wire': '#FFA000',
-        'plumbing-pipe': '#2196F3',
+        wall: '#2196F3', 'electrical-wire': '#FFA000', 'plumbing-pipe': '#2196F3',
       };
       ctx.strokeStyle = colors[activeTool] || '#2196F3';
       ctx.lineWidth = (activeTool === 'wall' ? 8 : 3) * scale;
@@ -151,19 +154,38 @@ export function Canvas({
       setLineStart(snapped);
       setDrawing(true);
     } else if (activeTool === 'select') {
+      // Check wall endpoints first (for selected wall)
+      if (selectedWallId) {
+        const selWall = walls.find((w) => w.id === selectedWallId);
+        if (selWall) {
+          const ep = hitTestWallEndpoint(selWall, world, 12 / scale);
+          if (ep) {
+            setDragMode({ type: 'wall-endpoint', id: selectedWallId, endpoint: ep });
+            return;
+          }
+        }
+      }
+
+      // Check furniture
       for (const item of [...furniture].reverse()) {
         if (hitTestFurniture(item, world)) {
           onSelectFurniture(item.id);
           onSelectWall(null);
-          setDragging(item.id);
-          setDragOffset({ x: world.x - item.x, y: world.y - item.y });
+          setDragMode({ type: 'furniture', id: item.id, offsetX: world.x - item.x, offsetY: world.y - item.y });
           return;
         }
       }
+
+      // Check walls (body drag)
       for (const wall of walls) {
         if (hitTestWall(wall, world, 10 / scale)) {
           onSelectWall(wall.id);
           onSelectFurniture(null);
+          setDragMode({
+            type: 'wall-move', id: wall.id,
+            offsetStart: { x: world.x - wall.start.x, y: world.y - wall.start.y },
+            offsetEnd: { x: world.x - wall.end.x, y: world.y - wall.end.y },
+          });
           return;
         }
       }
@@ -174,61 +196,30 @@ export function Canvas({
       if (catalog) {
         const snapped = snapToGrid(world);
         onAddFurniture({
-          id: generateId(),
-          type: selectedFurnitureType,
-          x: snapped.x - catalog.width / 2,
-          y: snapped.y - catalog.height / 2,
-          width: catalog.width,
-          height: catalog.height,
-          rotation: 0,
-          label: catalog.label,
+          id: generateId(), type: selectedFurnitureType,
+          x: snapped.x - catalog.width / 2, y: snapped.y - catalog.height / 2,
+          width: catalog.width, height: catalog.height, rotation: 0, label: catalog.label,
         });
       }
     } else if (activeTool === 'electrical-point' && selectedElectricalType) {
       const catalog = electricalCatalog.find((e) => e.type === selectedElectricalType);
       if (catalog) {
         const snapped = snapToGrid(world);
-        onAddElectricalPoint({
-          id: generateId(),
-          type: selectedElectricalType,
-          x: snapped.x,
-          y: snapped.y,
-          label: catalog.label,
-          circuit: 'C1',
-        });
+        onAddElectricalPoint({ id: generateId(), type: selectedElectricalType, x: snapped.x, y: snapped.y, label: catalog.label, circuit: 'C1' });
       }
     } else if (activeTool === 'plumbing-point' && selectedPlumbingType) {
       const catalog = plumbingCatalog.find((p) => p.type === selectedPlumbingType);
       if (catalog) {
         const snapped = snapToGrid(world);
-        onAddPlumbingPoint({
-          id: generateId(),
-          type: selectedPlumbingType,
-          x: snapped.x,
-          y: snapped.y,
-          label: catalog.label,
-          network: catalog.network,
-        });
+        onAddPlumbingPoint({ id: generateId(), type: selectedPlumbingType, x: snapped.x, y: snapped.y, label: catalog.label, network: catalog.network });
       }
     } else if (activeTool === 'eraser') {
-      for (const pt of [...electricalPoints].reverse()) {
-        if (hitTestPoint(pt, world, 15 / scale)) { onDeleteElectricalPoint(pt.id); return; }
-      }
-      for (const pt of [...plumbingPoints].reverse()) {
-        if (hitTestPoint(pt, world, 15 / scale)) { onDeletePlumbingPoint(pt.id); return; }
-      }
-      for (const wire of electricalWires) {
-        if (hitTestLine(wire, world, 10 / scale)) { onDeleteElectricalWire(wire.id); return; }
-      }
-      for (const pipe of plumbingPipes) {
-        if (hitTestLine(pipe, world, 10 / scale)) { onDeletePlumbingPipe(pipe.id); return; }
-      }
-      for (const item of [...furniture].reverse()) {
-        if (hitTestFurniture(item, world)) { onDeleteFurniture(item.id); return; }
-      }
-      for (const wall of walls) {
-        if (hitTestWall(wall, world, 10 / scale)) { onDeleteWall(wall.id); return; }
-      }
+      for (const pt of [...electricalPoints].reverse()) { if (hitTestPoint(pt, world, 15 / scale)) { onDeleteElectricalPoint(pt.id); return; } }
+      for (const pt of [...plumbingPoints].reverse()) { if (hitTestPoint(pt, world, 15 / scale)) { onDeletePlumbingPoint(pt.id); return; } }
+      for (const wire of electricalWires) { if (hitTestLine(wire, world, 10 / scale)) { onDeleteElectricalWire(wire.id); return; } }
+      for (const pipe of plumbingPipes) { if (hitTestLine(pipe, world, 10 / scale)) { onDeletePlumbingPipe(pipe.id); return; } }
+      for (const item of [...furniture].reverse()) { if (hitTestFurniture(item, world)) { onDeleteFurniture(item.id); return; } }
+      for (const wall of walls) { if (hitTestWall(wall, world, 10 / scale)) { onDeleteWall(wall.id); return; } }
     }
   };
 
@@ -244,10 +235,30 @@ export function Canvas({
     }
     if (drawing) {
       setMousePos(world);
+      return;
     }
-    if (dragging) {
-      const snapped = snapToGrid({ x: world.x - dragOffset.x, y: world.y - dragOffset.y });
-      onMoveFurniture(dragging, snapped.x, snapped.y);
+
+    if (dragMode) {
+      const snapped = snapToGrid(world);
+      if (dragMode.type === 'furniture') {
+        const s = snapToGrid({ x: world.x - dragMode.offsetX, y: world.y - dragMode.offsetY });
+        onMoveFurniture(dragMode.id, s.x, s.y);
+      } else if (dragMode.type === 'wall-endpoint') {
+        const wall = walls.find((w) => w.id === dragMode.id);
+        if (wall) {
+          onUpdateWall({
+            ...wall,
+            [dragMode.endpoint]: snapped,
+          });
+        }
+      } else if (dragMode.type === 'wall-move') {
+        const wall = walls.find((w) => w.id === dragMode.id);
+        if (wall) {
+          const newStart = snapToGrid({ x: world.x - dragMode.offsetStart.x, y: world.y - dragMode.offsetStart.y });
+          const newEnd = snapToGrid({ x: world.x - dragMode.offsetEnd.x, y: world.y - dragMode.offsetEnd.y });
+          onUpdateWall({ ...wall, start: newStart, end: newEnd });
+        }
+      }
     }
   };
 
@@ -271,7 +282,7 @@ export function Canvas({
     setDrawing(false);
     setLineStart(null);
     setMousePos(null);
-    setDragging(null);
+    setDragMode(null);
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -288,10 +299,15 @@ export function Canvas({
     setScale(newScale);
   };
 
-  const cursorMap: Partial<Record<Tool, string>> = {
-    wall: 'crosshair', 'electrical-wire': 'crosshair', 'plumbing-pipe': 'crosshair',
-    'electrical-point': 'crosshair', 'plumbing-point': 'crosshair',
-    eraser: 'pointer', furniture: 'crosshair',
+  const getCursor = () => {
+    if (dragMode?.type === 'wall-endpoint') return 'grab';
+    if (dragMode?.type === 'wall-move') return 'move';
+    const map: Partial<Record<Tool, string>> = {
+      wall: 'crosshair', 'electrical-wire': 'crosshair', 'plumbing-pipe': 'crosshair',
+      'electrical-point': 'crosshair', 'plumbing-point': 'crosshair',
+      eraser: 'pointer', furniture: 'crosshair',
+    };
+    return map[activeTool] || 'default';
   };
 
   return (
@@ -303,7 +319,7 @@ export function Canvas({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
-        style={{ cursor: cursorMap[activeTool] || 'default' }}
+        style={{ cursor: getCursor() }}
       />
       <div className="zoom-info">Zoom: {Math.round(scale * 100)}%</div>
     </div>
