@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useMemo } from 'react';
 import type { Wall, FurnitureItem, Tool, FurnitureType, FloorPlan, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, ElectricalType, PlumbingType } from './types';
 import { Toolbar } from './components/Toolbar';
 import { Canvas } from './components/Canvas';
+import { View3D } from './components/View3D';
 import { FurniturePanel } from './components/FurniturePanel';
 import { ElectricalPanel } from './components/ElectricalPanel';
 import { PlumbingPanel } from './components/PlumbingPanel';
@@ -29,6 +30,9 @@ function App() {
   const [selectedWallId, setSelectedWallId] = useState<string | null>(null);
   const [selectedFurnitureId, setSelectedFurnitureId] = useState<string | null>(null);
   const [showMaterials, setShowMaterials] = useState(false);
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
+  const [showElectrical3D, setShowElectrical3D] = useState(true);
+  const [showPlumbing3D, setShowPlumbing3D] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const selectedWall = walls.find((w) => w.id === selectedWallId) || null;
@@ -119,6 +123,10 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>ArchInt — Plans d'Architecture Intérieure</h1>
+        <div className="view-toggle">
+          <button className={`view-btn ${viewMode === '2d' ? 'active' : ''}`} onClick={() => setViewMode('2d')}>2D</button>
+          <button className={`view-btn ${viewMode === '3d' ? 'active' : ''}`} onClick={() => setViewMode('3d')}>3D</button>
+        </div>
       </header>
       <Toolbar
         activeTool={activeTool}
@@ -130,71 +138,108 @@ function App() {
         onShowMaterials={() => setShowMaterials(true)}
       />
       <div className="main-content">
-        <FurniturePanel
-          visible={activeTool === 'furniture'}
-          onSelect={setSelectedFurnitureType}
-          selectedFurnitureType={selectedFurnitureType}
-        />
-        <ElectricalPanel
-          visible={showElecPanel}
-          activeTool={activeTool}
-          selectedType={selectedElectricalType}
-          selectedGauge={selectedWireGauge}
-          onSelectType={setSelectedElectricalType}
-          onSelectGauge={setSelectedWireGauge}
-          onSetTool={setActiveTool}
-        />
-        <PlumbingPanel
-          visible={showPlumbPanel}
-          activeTool={activeTool}
-          selectedType={selectedPlumbingType}
-          selectedDiameter={selectedPipeDiameter}
-          selectedNetwork={selectedPipeNetwork}
-          onSelectType={setSelectedPlumbingType}
-          onSelectDiameter={setSelectedPipeDiameter}
-          onSelectNetwork={setSelectedPipeNetwork}
-          onSetTool={setActiveTool}
-        />
-        <Canvas
-          walls={walls}
-          furniture={furniture}
-          electricalPoints={electricalPoints}
-          electricalWires={electricalWires}
-          plumbingPoints={plumbingPoints}
-          plumbingPipes={plumbingPipes}
-          activeTool={activeTool}
-          selectedFurnitureType={selectedFurnitureType}
-          selectedElectricalType={selectedElectricalType}
-          selectedPlumbingType={selectedPlumbingType}
-          selectedWireGauge={selectedWireGauge}
-          selectedPipeDiameter={selectedPipeDiameter}
-          selectedPipeNetwork={selectedPipeNetwork}
-          selectedWallId={selectedWallId}
-          selectedFurnitureId={selectedFurnitureId}
-          onAddWall={(w) => setWalls((prev) => [...prev, w])}
-          onAddFurniture={(f) => setFurniture((prev) => [...prev, f])}
-          onAddElectricalPoint={(pt) => setElectricalPoints((prev) => [...prev, pt])}
-          onAddElectricalWire={(w) => setElectricalWires((prev) => [...prev, w])}
-          onAddPlumbingPoint={(pt) => setPlumbingPoints((prev) => [...prev, pt])}
-          onAddPlumbingPipe={(p) => setPlumbingPipes((prev) => [...prev, p])}
-          onSelectWall={setSelectedWallId}
-          onSelectFurniture={setSelectedFurnitureId}
-          onMoveFurniture={(id, x, y) => setFurniture((prev) => prev.map((f) => (f.id === id ? { ...f, x, y } : f)))}
-          onDeleteWall={(id) => setWalls((prev) => prev.filter((w) => w.id !== id))}
-          onDeleteFurniture={(id) => setFurniture((prev) => prev.filter((f) => f.id !== id))}
-          onDeleteElectricalPoint={(id) => setElectricalPoints((prev) => prev.filter((p) => p.id !== id))}
-          onDeleteElectricalWire={(id) => setElectricalWires((prev) => prev.filter((w) => w.id !== id))}
-          onDeletePlumbingPoint={(id) => setPlumbingPoints((prev) => prev.filter((p) => p.id !== id))}
-          onDeletePlumbingPipe={(id) => setPlumbingPipes((prev) => prev.filter((p) => p.id !== id))}
-          canvasRef={canvasRef}
-        />
-        <PropertiesPanel
-          selectedWall={selectedWall}
-          selectedFurniture={selectedFurnitureItem}
-          onUpdateWall={handleUpdateWall}
-          onUpdateFurniture={handleUpdateFurniture}
-          onDelete={handleDelete}
-        />
+        {viewMode === '2d' && (
+          <>
+            <FurniturePanel
+              visible={activeTool === 'furniture'}
+              onSelect={setSelectedFurnitureType}
+              selectedFurnitureType={selectedFurnitureType}
+            />
+            <ElectricalPanel
+              visible={showElecPanel}
+              activeTool={activeTool}
+              selectedType={selectedElectricalType}
+              selectedGauge={selectedWireGauge}
+              onSelectType={setSelectedElectricalType}
+              onSelectGauge={setSelectedWireGauge}
+              onSetTool={setActiveTool}
+            />
+            <PlumbingPanel
+              visible={showPlumbPanel}
+              activeTool={activeTool}
+              selectedType={selectedPlumbingType}
+              selectedDiameter={selectedPipeDiameter}
+              selectedNetwork={selectedPipeNetwork}
+              onSelectType={setSelectedPlumbingType}
+              onSelectDiameter={setSelectedPipeDiameter}
+              onSelectNetwork={setSelectedPipeNetwork}
+              onSetTool={setActiveTool}
+            />
+            <Canvas
+              walls={walls}
+              furniture={furniture}
+              electricalPoints={electricalPoints}
+              electricalWires={electricalWires}
+              plumbingPoints={plumbingPoints}
+              plumbingPipes={plumbingPipes}
+              activeTool={activeTool}
+              selectedFurnitureType={selectedFurnitureType}
+              selectedElectricalType={selectedElectricalType}
+              selectedPlumbingType={selectedPlumbingType}
+              selectedWireGauge={selectedWireGauge}
+              selectedPipeDiameter={selectedPipeDiameter}
+              selectedPipeNetwork={selectedPipeNetwork}
+              selectedWallId={selectedWallId}
+              selectedFurnitureId={selectedFurnitureId}
+              onAddWall={(w) => setWalls((prev) => [...prev, w])}
+              onAddFurniture={(f) => setFurniture((prev) => [...prev, f])}
+              onAddElectricalPoint={(pt) => setElectricalPoints((prev) => [...prev, pt])}
+              onAddElectricalWire={(w) => setElectricalWires((prev) => [...prev, w])}
+              onAddPlumbingPoint={(pt) => setPlumbingPoints((prev) => [...prev, pt])}
+              onAddPlumbingPipe={(p) => setPlumbingPipes((prev) => [...prev, p])}
+              onSelectWall={setSelectedWallId}
+              onSelectFurniture={setSelectedFurnitureId}
+              onMoveFurniture={(id, x, y) => setFurniture((prev) => prev.map((f) => (f.id === id ? { ...f, x, y } : f)))}
+              onDeleteWall={(id) => setWalls((prev) => prev.filter((w) => w.id !== id))}
+              onDeleteFurniture={(id) => setFurniture((prev) => prev.filter((f) => f.id !== id))}
+              onDeleteElectricalPoint={(id) => setElectricalPoints((prev) => prev.filter((p) => p.id !== id))}
+              onDeleteElectricalWire={(id) => setElectricalWires((prev) => prev.filter((w) => w.id !== id))}
+              onDeletePlumbingPoint={(id) => setPlumbingPoints((prev) => prev.filter((p) => p.id !== id))}
+              onDeletePlumbingPipe={(id) => setPlumbingPipes((prev) => prev.filter((p) => p.id !== id))}
+              canvasRef={canvasRef}
+            />
+            <PropertiesPanel
+              selectedWall={selectedWall}
+              selectedFurniture={selectedFurnitureItem}
+              onUpdateWall={handleUpdateWall}
+              onUpdateFurniture={handleUpdateFurniture}
+              onDelete={handleDelete}
+            />
+          </>
+        )}
+        {viewMode === '3d' && (
+          <>
+            <View3D
+              walls={walls}
+              furniture={furniture}
+              electricalPoints={electricalPoints}
+              electricalWires={electricalWires}
+              plumbingPoints={plumbingPoints}
+              plumbingPipes={plumbingPipes}
+              showElectrical={showElectrical3D}
+              showPlumbing={showPlumbing3D}
+            />
+            <div className="visibility-panel">
+              <h3>Visibilité</h3>
+              <label className="toggle-row">
+                <input type="checkbox" checked={showElectrical3D} onChange={(e) => setShowElectrical3D(e.target.checked)} />
+                <span className="toggle-icon elec">⚡</span> Électricité
+              </label>
+              <label className="toggle-row">
+                <input type="checkbox" checked={showPlumbing3D} onChange={(e) => setShowPlumbing3D(e.target.checked)} />
+                <span className="toggle-icon plumb">💧</span> Plomberie
+              </label>
+              <div className="legend">
+                <h4>Légende</h4>
+                <div className="legend-item"><span className="legend-color" style={{ background: '#FFA000' }}></span> Câbles élec.</div>
+                <div className="legend-item"><span className="legend-color" style={{ background: '#2196F3' }}></span> Eau froide</div>
+                <div className="legend-item"><span className="legend-color" style={{ background: '#F44336' }}></span> Eau chaude</div>
+                <div className="legend-item"><span className="legend-color" style={{ background: '#795548' }}></span> Évacuation</div>
+              </div>
+              <p className="hint">Clic gauche + glisser : rotation<br/>Molette : zoom<br/>Clic droit + glisser : pan</p>
+            </div>
+          </>
+        )}
       </div>
       <MaterialsPanel
         materials={materials}
