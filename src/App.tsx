@@ -44,8 +44,8 @@ function App() {
   const selectedDoorWindow = doorsWindows.find((d) => d.id === selectedDoorWindowId) || null;
 
   const materials = useMemo(
-    () => calculateMaterials(electricalPoints, electricalWires, plumbingPoints, plumbingPipes),
-    [electricalPoints, electricalWires, plumbingPoints, plumbingPipes],
+    () => calculateMaterials(walls, electricalPoints, electricalWires, plumbingPoints, plumbingPipes),
+    [walls, electricalPoints, electricalWires, plumbingPoints, plumbingPipes],
   );
 
   const handleToolChange = (tool: Tool) => {

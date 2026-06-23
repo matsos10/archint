@@ -1,20 +1,54 @@
-import type { ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, MaterialItem } from '../types';
+import type { Wall, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, MaterialItem } from '../types';
 
 const PIXELS_PER_METER = 40;
+const WALL_HEIGHT_M = 2.5;
+const PLASTERBOARD_W = 1.2;
+const PLASTERBOARD_H = 2.5;
+const PLASTERBOARD_AREA = PLASTERBOARD_W * PLASTERBOARD_H;
 
-function pipeLength(pipe: { start: { x: number; y: number }; end: { x: number; y: number } }): number {
-  const dx = pipe.end.x - pipe.start.x;
-  const dy = pipe.end.y - pipe.start.y;
+function segmentLength(seg: { start: { x: number; y: number }; end: { x: number; y: number } }): number {
+  const dx = seg.end.x - seg.start.x;
+  const dy = seg.end.y - seg.start.y;
   return Math.sqrt(dx * dx + dy * dy) / PIXELS_PER_METER;
 }
 
 export function calculateMaterials(
+  walls: Wall[],
   electricalPoints: ElectricalPoint[],
   electricalWires: ElectricalWire[],
   plumbingPoints: PlumbingPoint[],
   plumbingPipes: PlumbingPipe[],
 ): MaterialItem[] {
   const items: MaterialItem[] = [];
+
+  // --- Construction (plaques de plâtre, LSF, isolation) ---
+  if (walls.length > 0) {
+    const totalWallLength = walls.reduce((sum, w) => sum + segmentLength(w), 0);
+    const totalWallArea = totalWallLength * WALL_HEIGHT_M;
+
+    const plasterboardCount = Math.ceil((totalWallArea * 2) / PLASTERBOARD_AREA * 1.1);
+    items.push({ name: 'Plaque de plâtre BA13 (1200×2500)', quantity: plasterboardCount, unit: 'pcs', category: 'construction' });
+
+    const railLength = totalWallLength * 2;
+    items.push({ name: 'Rail R48 (3m)', quantity: Math.ceil(railLength / 3 * 1.1), unit: 'pcs', category: 'construction' });
+
+    const montantSpacing = 0.6;
+    const montantCount = walls.reduce((sum, w) => {
+      const len = segmentLength(w);
+      return sum + Math.ceil(len / montantSpacing) + 1;
+    }, 0);
+    items.push({ name: 'Montant M48 (2.5m)', quantity: Math.ceil(montantCount * 1.1), unit: 'pcs', category: 'construction' });
+
+    const insulationPanels = Math.ceil(totalWallArea / (1.2 * 0.6) * 1.1);
+    items.push({ name: 'Panneau isolant laine minérale 45mm (1200×600)', quantity: insulationPanels, unit: 'pcs', category: 'construction' });
+
+    const screwsPerBoard = 28;
+    items.push({ name: 'Vis plaque TTPC 25mm', quantity: plasterboardCount * screwsPerBoard, unit: 'pcs', category: 'construction' });
+
+    items.push({ name: 'Bande à joint (rouleau 23m)', quantity: Math.ceil(totalWallLength * 2 / 23 * 1.1), unit: 'pcs', category: 'construction' });
+
+    items.push({ name: 'Enduit à joint (sac 25kg)', quantity: Math.ceil(totalWallArea * 2 * 0.3 / 25), unit: 'pcs', category: 'construction' });
+  }
 
   const outletCount = electricalPoints.filter((p) => p.type === 'outlet').length;
   if (outletCount > 0) items.push({ name: 'Prise 2P+T', quantity: outletCount, unit: 'pcs', category: 'electrical' });
@@ -39,7 +73,7 @@ export function calculateMaterials(
 
   const wireByGauge: Record<string, number> = {};
   for (const wire of electricalWires) {
-    const len = pipeLength(wire);
+    const len = segmentLength(wire);
     wireByGauge[wire.gauge] = (wireByGauge[wire.gauge] || 0) + len;
   }
   for (const [gauge, length] of Object.entries(wireByGauge)) {
@@ -47,7 +81,7 @@ export function calculateMaterials(
   }
 
   if (electricalWires.length > 0) {
-    const gaines = electricalWires.reduce((sum, w) => sum + pipeLength(w), 0);
+    const gaines = electricalWires.reduce((sum, w) => sum + segmentLength(w), 0);
     items.push({ name: 'Gaine ICTA Ø20', quantity: Math.ceil(gaines * 1.1), unit: 'm', category: 'electrical' });
   }
 
@@ -83,7 +117,7 @@ export function calculateMaterials(
   const pipeByDiameter: Record<string, number> = {};
   for (const pipe of plumbingPipes) {
     const key = `${pipe.diameter}mm-${pipe.network}`;
-    pipeByDiameter[key] = (pipeByDiameter[key] || 0) + pipeLength(pipe);
+    pipeByDiameter[key] = (pipeByDiameter[key] || 0) + segmentLength(pipe);
   }
 
   const networkLabels = { supply: 'eau froide', hot: 'eau chaude', drain: 'évacuation' };
@@ -101,7 +135,7 @@ export function calculateMaterials(
   const connections = plumbingPipes.length * 2;
   if (connections > 0) {
     items.push({ name: 'Raccords / coudes / tés', quantity: Math.ceil(connections * 0.5), unit: 'pcs', category: 'plumbing' });
-    items.push({ name: 'Colliers de fixation', quantity: Math.ceil(plumbingPipes.reduce((s, p) => s + pipeLength(p), 0) / 0.5), unit: 'pcs', category: 'plumbing' });
+    items.push({ name: 'Colliers de fixation', quantity: Math.ceil(plumbingPipes.reduce((s, p) => s + segmentLength(p), 0) / 0.5), unit: 'pcs', category: 'plumbing' });
   }
 
   return items;

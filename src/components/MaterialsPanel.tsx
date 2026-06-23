@@ -9,13 +9,16 @@ interface MaterialsPanelProps {
 export function MaterialsPanel({ materials, visible, onClose }: MaterialsPanelProps) {
   if (!visible) return null;
 
+  const construction = materials.filter((m) => m.category === 'construction');
   const elec = materials.filter((m) => m.category === 'electrical');
   const plumb = materials.filter((m) => m.category === 'plumbing');
+
+  const categoryLabels: Record<string, string> = { construction: 'Construction', electrical: 'Électricité', plumbing: 'Plomberie' };
 
   const exportCSV = () => {
     const lines = ['Catégorie;Article;Quantité;Unité'];
     for (const m of materials) {
-      lines.push(`${m.category === 'electrical' ? 'Électricité' : 'Plomberie'};${m.name};${m.quantity};${m.unit}`);
+      lines.push(`${categoryLabels[m.category]};${m.name};${m.quantity};${m.unit}`);
     }
     const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -38,7 +41,23 @@ export function MaterialsPanel({ materials, visible, onClose }: MaterialsPanelPr
         </div>
 
         {materials.length === 0 && (
-          <p className="hint">Aucun élément électrique ou plomberie placé sur le plan.</p>
+          <p className="hint">Aucun élément placé sur le plan.</p>
+        )}
+
+        {construction.length > 0 && (
+          <div className="materials-section">
+            <h3>🧱 Construction (Plâtrerie / LSF / Isolation)</h3>
+            <table className="materials-table">
+              <thead>
+                <tr><th>Article</th><th>Quantité</th><th>Unité</th></tr>
+              </thead>
+              <tbody>
+                {construction.map((m, i) => (
+                  <tr key={i}><td>{m.name}</td><td>{m.quantity}</td><td>{m.unit}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {elec.length > 0 && (
