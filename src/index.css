@@ -662,3 +662,85 @@ body {
   border-radius: 3px;
   display: inline-block;
 }
+
+/* Element List Panel (right side) */
+.element-list-panel {
+  width: 230px;
+  background: #fff;
+  border-left: 1px solid #ddd;
+  padding: 12px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.element-list-panel h3 {
+  font-size: 14px;
+  color: #1a237e;
+  margin-bottom: 10px;
+}
+
+.el-section h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: '#888';
+  margin: 10px 0 4px;
+  color: #888;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #eee;
+}
+
+.el-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: background 0.1s;
+}
+
+.el-row:hover {
+  background: #f5f5f5;
+}
+
+.el-row.active {
+  background: #e8eaf6;
+  font-weight: 600;
+}
+
+.el-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.el-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.el-info {
+  color: #888;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.el-del {
+  background: none;
+  border: none;
+  color: #c62828;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.el-row:hover .el-del {
+  opacity: 1;
+}

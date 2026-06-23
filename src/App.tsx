@@ -10,6 +10,7 @@ import { PlumbingPanel } from './components/PlumbingPanel';
 import { SurfacePanel } from './components/SurfacePanel';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { MaterialsPanel } from './components/MaterialsPanel';
+import { ElementListPanel } from './components/ElementListPanel';
 import { calculateMaterials } from './utils/material-calculator';
 import { generateId } from './utils/id';
 
@@ -332,6 +333,29 @@ function App() {
               onUpdateWire={handleUpdateWire}
               onUpdatePipe={handleUpdatePipe}
               onDelete={handleDelete}
+            />
+            <ElementListPanel
+              surfaces={surfaces}
+              electricalPoints={electricalPoints}
+              electricalWires={electricalWires}
+              plumbingPoints={plumbingPoints}
+              plumbingPipes={plumbingPipes}
+              walls={walls}
+              furniture={furniture}
+              doorsWindows={doorsWindows}
+              selectedSurfaceId={selectedSurfaceId}
+              selectedWireId={selectedWireId}
+              selectedPipeId={selectedPipeId}
+              selectedWallId={selectedWallId}
+              selectedFurnitureId={selectedFurnitureId}
+              onSelectSurface={(id) => { setSelectedSurfaceId(id); setActiveTool('select'); }}
+              onSelectWire={(id) => { setSelectedWireId(id); setActiveTool('select'); }}
+              onSelectPipe={(id) => { setSelectedPipeId(id); setActiveTool('select'); }}
+              onSelectWall={(id) => { setSelectedWallId(id); setActiveTool('select'); }}
+              onSelectFurniture={(id) => { setSelectedFurnitureId(id); setActiveTool('select'); }}
+              onDeleteSurface={handleDeleteSurface}
+              onDeleteWire={(id) => setElectricalWires((prev) => prev.filter((w) => w.id !== id))}
+              onDeletePipe={(id) => setPlumbingPipes((prev) => prev.filter((p) => p.id !== id))}
             />
           </>
         )}
