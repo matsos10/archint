@@ -46,6 +46,36 @@ export type FurnitureType =
   | 'door'
   | 'window';
 
+export type DoorWindowType =
+  | 'door-interior'
+  | 'door-exterior'
+  | 'door-sliding'
+  | 'door-french'
+  | 'door-garage'
+  | 'door-service'
+  | 'window-standard'
+  | 'window-french'
+  | 'window-bay'
+  | 'window-skylight'
+  | 'window-fixed'
+  | 'window-sliding';
+
+export type OpeningDirection = 'left' | 'right';
+
+export interface DoorWindow {
+  id: string;
+  type: DoorWindowType;
+  wallId: string;
+  position: number; // 0-1 along wall
+  width: number; // cm
+  height: number; // cm
+  label: string;
+  openingDirection: OpeningDirection;
+  openingAngle: number; // degrees
+  material: string;
+  color: string;
+}
+
 export type ElectricalType =
   | 'outlet'
   | 'switch'
@@ -98,13 +128,14 @@ export interface PlumbingPipe {
   diameter: number;
 }
 
-export type Tool = 'select' | 'wall' | 'furniture' | 'eraser' | 'measure' | 'electrical-point' | 'electrical-wire' | 'plumbing-point' | 'plumbing-pipe';
+export type Tool = 'select' | 'wall' | 'furniture' | 'eraser' | 'measure' | 'electrical-point' | 'electrical-wire' | 'plumbing-point' | 'plumbing-pipe' | 'door-window';
 
 export interface FloorPlan {
   id: string;
   name: string;
   walls: Wall[];
   furniture: FurnitureItem[];
+  doorsWindows: DoorWindow[];
   electricalPoints: ElectricalPoint[];
   electricalWires: ElectricalWire[];
   plumbingPoints: PlumbingPoint[];

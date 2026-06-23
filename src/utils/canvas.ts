@@ -1,4 +1,4 @@
-import type { Point, Wall, FurnitureItem, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe } from '../types';
+import type { Point, Wall, FurnitureItem, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, DoorWindow } from '../types';
 import { electricalCatalog } from './electrical-catalog';
 import { plumbingCatalog } from './plumbing-catalog';
 import { furnitureIcons } from './furniture-icons';
@@ -258,6 +258,151 @@ export function drawPlumbingPipe(ctx: CanvasRenderingContext2D, pipe: PlumbingPi
     ctx.fillText(`${len.toFixed(1)}m Ø${pipe.diameter}`, (sx + ex) / 2, (sy + ey) / 2 - 8 * scale);
   }
   ctx.restore();
+}
+
+export function drawDoorWindow(ctx: CanvasRenderingContext2D, dw: DoorWindow, wall: Wall, offset: Point, scale: number, highlight: boolean) {
+  const wx = wall.end.x - wall.start.x;
+  const wy = wall.end.y - wall.start.y;
+  const wallLen = Math.sqrt(wx * wx + wy * wy);
+  const angle = Math.atan2(wy, wx);
+
+  const px = wall.start.x + wx * dw.position;
+  const py = wall.start.y + wy * dw.position;
+  const screenX = px * scale + offset.x;
+  const screenY = py * scale + offset.y;
+
+  const dwWidthPx = (dw.width / 100) * PIXELS_PER_METER * scale;
+  const isDoor = dw.type.startsWith('door');
+
+  ctx.save();
+  ctx.translate(screenX, screenY);
+  ctx.rotate(angle);
+
+  // Gap in wall
+  ctx.clearRect(-dwWidthPx / 2, -wall.thickness * scale / 2 - 1, dwWidthPx, wall.thickness * scale + 2);
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(-dwWidthPx / 2, -wall.thickness * scale / 2 - 1, dwWidthPx, wall.thickness * scale + 2);
+
+  if (isDoor) {
+    const dir = dw.openingDirection === 'left' ? -1 : 1;
+    const arcRadius = dwWidthPx;
+    const startAngle = dw.openingDirection === 'left' ? -Math.PI / 2 : -Math.PI / 2;
+    const openRad = (dw.openingAngle * Math.PI) / 180;
+
+    // Door leaf
+    ctx.strokeStyle = highlight ? '#1565C0' : (dw.color === '#FFFFFF' ? '#8B4513' : dw.color);
+    ctx.lineWidth = 2.5 * scale;
+    ctx.beginPath();
+    ctx.moveTo(dir * -dwWidthPx / 2, 0);
+    ctx.lineTo(dir * -dwWidthPx / 2, -arcRadius * Math.sin(openRad / 2));
+    ctx.stroke();
+
+    // Arc
+    ctx.strokeStyle = highlight ? '#64B5F6' : '#aaa';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3 * scale, 3 * scale]);
+    ctx.beginPath();
+    if (dw.openingDirection === 'left') {
+      ctx.arc(-dwWidthPx / 2, 0, arcRadius, startAngle, startAngle + openRad);
+    } else {
+      ctx.arc(dwWidthPx / 2, 0, arcRadius, -Math.PI / 2 - openRad, -Math.PI / 2);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (dw.type === 'door-sliding') {
+      ctx.strokeStyle = highlight ? '#1565C0' : '#666';
+      ctx.lineWidth = 3 * scale;
+      ctx.setLineDash([4 * scale, 2 * scale]);
+      ctx.beginPath();
+      ctx.moveTo(-dwWidthPx / 2, -2 * scale);
+      ctx.lineTo(dwWidthPx / 2, -2 * scale);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(-dwWidthPx / 4, -2 * scale);
+      ctx.lineTo(dwWidthPx / 4, -2 * scale);
+      ctx.lineWidth = 4 * scale;
+      ctx.strokeStyle = dw.color === '#FFFFFF' ? '#8B4513' : dw.color;
+      ctx.stroke();
+    }
+
+    // Frame marks
+    ctx.fillStyle = highlight ? '#1565C0' : '#333';
+    ctx.fillRect(-dwWidthPx / 2 - 2, -wall.thickness * scale / 2, 4, wall.thickness * scale);
+    ctx.fillRect(dwWidthPx / 2 - 2, -wall.thickness * scale / 2, 4, wall.thickness * scale);
+  } else {
+    // Window
+    ctx.fillStyle = dw.color === '#FFFFFF' ? '#E0F7FA80' : dw.color + '60';
+    ctx.fillRect(-dwWidthPx / 2, -wall.thickness * scale / 2, dwWidthPx, wall.thickness * scale);
+
+    ctx.strokeStyle = highlight ? '#00838F' : '#00ACC1';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-dwWidthPx / 2, -wall.thickness * scale / 2, dwWidthPx, wall.thickness * scale);
+
+    // Center cross
+    if (dw.type !== 'window-fixed') {
+      ctx.beginPath();
+      ctx.moveTo(0, -wall.thickness * scale / 2);
+      ctx.lineTo(0, wall.thickness * scale / 2);
+      ctx.stroke();
+    }
+
+    // Double lines for glass
+    const inset = 2 * scale;
+    ctx.strokeStyle = '#80DEEA';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-dwWidthPx / 2 + inset, -wall.thickness * scale / 2 + inset, dwWidthPx - inset * 2, wall.thickness * scale - inset * 2);
+
+    if (dw.type === 'window-bay' || dw.type === 'window-sliding') {
+      ctx.beginPath();
+      ctx.moveTo(-dwWidthPx / 6, -wall.thickness * scale / 2);
+      ctx.lineTo(-dwWidthPx / 6, wall.thickness * scale / 2);
+      ctx.moveTo(dwWidthPx / 6, -wall.thickness * scale / 2);
+      ctx.lineTo(dwWidthPx / 6, wall.thickness * scale / 2);
+      ctx.strokeStyle = '#00ACC1';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  // Label
+  ctx.fillStyle = '#555';
+  ctx.font = `${8 * scale}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText(`${dw.label} ${dw.width}cm`, 0, wall.thickness * scale / 2 + 4 * scale);
+
+  ctx.restore();
+}
+
+export function getDoorWindowPosition(wall: Wall, position: number): Point {
+  return {
+    x: wall.start.x + (wall.end.x - wall.start.x) * position,
+    y: wall.start.y + (wall.end.y - wall.start.y) * position,
+  };
+}
+
+export function hitTestDoorWindow(dw: DoorWindow, wall: Wall, click: Point, scale: number): boolean {
+  const pos = getDoorWindowPosition(wall, dw.position);
+  const dwWidthWorld = (dw.width / 100) * PIXELS_PER_METER;
+  return Math.sqrt((click.x - pos.x) ** 2 + (click.y - pos.y) ** 2) < dwWidthWorld / 2 + 10 / scale;
+}
+
+export function findWallAtPoint(walls: Wall[], point: Point, threshold: number): { wall: Wall; t: number } | null {
+  for (const wall of walls) {
+    const dx = wall.end.x - wall.start.x;
+    const dy = wall.end.y - wall.start.y;
+    const len2 = dx * dx + dy * dy;
+    if (len2 === 0) continue;
+    const t = Math.max(0, Math.min(1, ((point.x - wall.start.x) * dx + (point.y - wall.start.y) * dy) / len2));
+    const px = wall.start.x + t * dx;
+    const py = wall.start.y + t * dy;
+    if (Math.sqrt((point.x - px) ** 2 + (point.y - py) ** 2) < threshold) {
+      return { wall, t };
+    }
+  }
+  return null;
 }
 
 export function hitTestWall(wall: Wall, point: Point, threshold: number): boolean {

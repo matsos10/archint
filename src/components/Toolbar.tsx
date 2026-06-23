@@ -13,6 +13,7 @@ interface ToolbarProps {
 const generalTools: { id: Tool; label: string; icon: string }[] = [
   { id: 'select', label: 'Sélection', icon: '↖' },
   { id: 'wall', label: 'Mur', icon: '▬' },
+  { id: 'door-window', label: 'Portes/Fen.', icon: '🚪' },
   { id: 'furniture', label: 'Mobilier', icon: '🪑' },
   { id: 'eraser', label: 'Gomme', icon: '✕' },
   { id: 'measure', label: 'Mesure', icon: '📏' },
