@@ -1,4 +1,6 @@
-import type { Point, Wall, FurnitureItem } from '../types';
+import type { Point, Wall, FurnitureItem, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe } from '../types';
+import { electricalCatalog } from './electrical-catalog';
+import { plumbingCatalog } from './plumbing-catalog';
 
 const GRID_SIZE = 20;
 const PIXELS_PER_METER = 40;
@@ -118,6 +120,125 @@ export function drawFurniture(ctx: CanvasRenderingContext2D, item: FurnitureItem
   ctx.restore();
 }
 
+export function drawElectricalPoint(ctx: CanvasRenderingContext2D, pt: ElectricalPoint, offset: Point, scale: number, highlight: boolean) {
+  const x = pt.x * scale + offset.x;
+  const y = pt.y * scale + offset.y;
+  const r = 12 * scale;
+
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = highlight ? '#FFF176' : '#FFE082';
+  ctx.fill();
+  ctx.strokeStyle = highlight ? '#F57F17' : '#FF8F00';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  const entry = electricalCatalog.find((e) => e.type === pt.type);
+  ctx.fillStyle = '#333';
+  ctx.font = `${14 * scale}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(entry?.symbol || '?', x, y);
+
+  ctx.font = `${8 * scale}px sans-serif`;
+  ctx.fillStyle = '#666';
+  ctx.textBaseline = 'top';
+  ctx.fillText(pt.label, x, y + r + 2);
+
+  ctx.restore();
+}
+
+export function drawElectricalWire(ctx: CanvasRenderingContext2D, wire: ElectricalWire, offset: Point, scale: number, highlight: boolean) {
+  const sx = wire.start.x * scale + offset.x;
+  const sy = wire.start.y * scale + offset.y;
+  const ex = wire.end.x * scale + offset.x;
+  const ey = wire.end.y * scale + offset.y;
+
+  ctx.save();
+  ctx.strokeStyle = highlight ? '#F57F17' : '#FFA000';
+  ctx.lineWidth = 2 * scale;
+  ctx.setLineDash([6 * scale, 4 * scale]);
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const dx = wire.end.x - wire.start.x;
+  const dy = wire.end.y - wire.start.y;
+  const len = Math.sqrt(dx * dx + dy * dy) / PIXELS_PER_METER;
+  if (len > 0.1) {
+    ctx.fillStyle = '#F57F17';
+    ctx.font = `${9 * scale}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`${len.toFixed(1)}m ${wire.gauge}`, (sx + ex) / 2, (sy + ey) / 2 - 8 * scale);
+  }
+  ctx.restore();
+}
+
+const PIPE_COLORS = { supply: '#2196F3', hot: '#F44336', drain: '#795548' };
+
+export function drawPlumbingPoint(ctx: CanvasRenderingContext2D, pt: PlumbingPoint, offset: Point, scale: number, highlight: boolean) {
+  const x = pt.x * scale + offset.x;
+  const y = pt.y * scale + offset.y;
+  const r = 12 * scale;
+  const color = PIPE_COLORS[pt.network];
+
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = highlight ? '#E3F2FD' : '#fff';
+  ctx.fill();
+  ctx.strokeStyle = highlight ? '#0D47A1' : color;
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  const entry = plumbingCatalog.find((e) => e.type === pt.type);
+  ctx.fillStyle = '#333';
+  ctx.font = `${13 * scale}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(entry?.symbol || '?', x, y);
+
+  ctx.font = `${8 * scale}px sans-serif`;
+  ctx.fillStyle = '#666';
+  ctx.textBaseline = 'top';
+  ctx.fillText(pt.label, x, y + r + 2);
+
+  ctx.restore();
+}
+
+export function drawPlumbingPipe(ctx: CanvasRenderingContext2D, pipe: PlumbingPipe, offset: Point, scale: number, highlight: boolean) {
+  const sx = pipe.start.x * scale + offset.x;
+  const sy = pipe.start.y * scale + offset.y;
+  const ex = pipe.end.x * scale + offset.x;
+  const ey = pipe.end.y * scale + offset.y;
+  const color = PIPE_COLORS[pipe.network];
+
+  ctx.save();
+  ctx.strokeStyle = highlight ? '#0D47A1' : color;
+  ctx.lineWidth = 3 * scale;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+
+  const dx = pipe.end.x - pipe.start.x;
+  const dy = pipe.end.y - pipe.start.y;
+  const len = Math.sqrt(dx * dx + dy * dy) / PIXELS_PER_METER;
+  if (len > 0.1) {
+    ctx.fillStyle = color;
+    ctx.font = `${9 * scale}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`${len.toFixed(1)}m Ø${pipe.diameter}`, (sx + ex) / 2, (sy + ey) / 2 - 8 * scale);
+  }
+  ctx.restore();
+}
+
 export function hitTestWall(wall: Wall, point: Point, threshold: number): boolean {
   const { start, end } = wall;
   const dx = end.x - start.x;
@@ -134,4 +255,12 @@ export function hitTestWall(wall: Wall, point: Point, threshold: number): boolea
 export function hitTestFurniture(item: FurnitureItem, point: Point): boolean {
   return point.x >= item.x && point.x <= item.x + item.width &&
          point.y >= item.y && point.y <= item.y + item.height;
+}
+
+export function hitTestPoint(pt: { x: number; y: number }, click: Point, radius: number): boolean {
+  return Math.sqrt((click.x - pt.x) ** 2 + (click.y - pt.y) ** 2) < radius;
+}
+
+export function hitTestLine(line: { start: Point; end: Point }, point: Point, threshold: number): boolean {
+  return hitTestWall(line as Wall, point, threshold);
 }

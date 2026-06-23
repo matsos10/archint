@@ -1,42 +1,70 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import type { Wall, FurnitureItem, Tool, Point, FurnitureType } from '../types';
-import { drawGrid, drawWall, drawFurniture, snapToGrid, hitTestWall, hitTestFurniture } from '../utils/canvas';
+import type { Wall, FurnitureItem, Tool, Point, FurnitureType, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, ElectricalType, PlumbingType } from '../types';
+import { drawGrid, drawWall, drawFurniture, drawElectricalPoint, drawElectricalWire, drawPlumbingPoint, drawPlumbingPipe, snapToGrid, hitTestWall, hitTestFurniture, hitTestPoint, hitTestLine } from '../utils/canvas';
 import { furnitureCatalog } from '../utils/furniture-catalog';
+import { electricalCatalog } from '../utils/electrical-catalog';
+import { plumbingCatalog } from '../utils/plumbing-catalog';
 import { generateId } from '../utils/id';
 
 interface CanvasProps {
   walls: Wall[];
   furniture: FurnitureItem[];
+  electricalPoints: ElectricalPoint[];
+  electricalWires: ElectricalWire[];
+  plumbingPoints: PlumbingPoint[];
+  plumbingPipes: PlumbingPipe[];
   activeTool: Tool;
   selectedFurnitureType: FurnitureType | null;
+  selectedElectricalType: ElectricalType | null;
+  selectedPlumbingType: PlumbingType | null;
+  selectedWireGauge: string;
+  selectedPipeDiameter: number;
+  selectedPipeNetwork: 'supply' | 'hot' | 'drain';
   selectedWallId: string | null;
   selectedFurnitureId: string | null;
   onAddWall: (wall: Wall) => void;
   onAddFurniture: (item: FurnitureItem) => void;
+  onAddElectricalPoint: (pt: ElectricalPoint) => void;
+  onAddElectricalWire: (wire: ElectricalWire) => void;
+  onAddPlumbingPoint: (pt: PlumbingPoint) => void;
+  onAddPlumbingPipe: (pipe: PlumbingPipe) => void;
   onSelectWall: (id: string | null) => void;
   onSelectFurniture: (id: string | null) => void;
   onMoveFurniture: (id: string, x: number, y: number) => void;
   onDeleteWall: (id: string) => void;
   onDeleteFurniture: (id: string) => void;
+  onDeleteElectricalPoint: (id: string) => void;
+  onDeleteElectricalWire: (id: string) => void;
+  onDeletePlumbingPoint: (id: string) => void;
+  onDeletePlumbingPipe: (id: string) => void;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
 }
 
 export function Canvas({
-  walls, furniture, activeTool, selectedFurnitureType,
+  walls, furniture, electricalPoints, electricalWires, plumbingPoints, plumbingPipes,
+  activeTool, selectedFurnitureType, selectedElectricalType, selectedPlumbingType,
+  selectedWireGauge, selectedPipeDiameter, selectedPipeNetwork,
   selectedWallId, selectedFurnitureId,
-  onAddWall, onAddFurniture, onSelectWall, onSelectFurniture,
-  onMoveFurniture, onDeleteWall, onDeleteFurniture, canvasRef,
+  onAddWall, onAddFurniture, onAddElectricalPoint, onAddElectricalWire,
+  onAddPlumbingPoint, onAddPlumbingPipe,
+  onSelectWall, onSelectFurniture,
+  onMoveFurniture, onDeleteWall, onDeleteFurniture,
+  onDeleteElectricalPoint, onDeleteElectricalWire,
+  onDeletePlumbingPoint, onDeletePlumbingPipe,
+  canvasRef,
 }: CanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [drawing, setDrawing] = useState(false);
-  const [wallStart, setWallStart] = useState<Point | null>(null);
+  const [lineStart, setLineStart] = useState<Point | null>(null);
   const [mousePos, setMousePos] = useState<Point | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 });
   const [panning, setPanning] = useState(false);
   const [panStart, setPanStart] = useState<Point>({ x: 0, y: 0 });
+
+  const isLineTool = activeTool === 'wall' || activeTool === 'electrical-wire' || activeTool === 'plumbing-pipe';
 
   const screenToWorld = useCallback((sx: number, sy: number): Point => {
     return { x: (sx - offset.x) / scale, y: (sy - offset.y) / scale };
@@ -71,23 +99,40 @@ export function Canvas({
     for (const wall of walls) {
       drawWall(ctx, wall, offset, scale, wall.id === selectedWallId);
     }
+    for (const pipe of plumbingPipes) {
+      drawPlumbingPipe(ctx, pipe, offset, scale, false);
+    }
+    for (const wire of electricalWires) {
+      drawElectricalWire(ctx, wire, offset, scale, false);
+    }
     for (const item of furniture) {
       drawFurniture(ctx, item, offset, scale, item.id === selectedFurnitureId);
     }
+    for (const pt of plumbingPoints) {
+      drawPlumbingPoint(ctx, pt, offset, scale, false);
+    }
+    for (const pt of electricalPoints) {
+      drawElectricalPoint(ctx, pt, offset, scale, false);
+    }
 
-    if (drawing && wallStart && mousePos) {
+    if (drawing && lineStart && mousePos) {
       const snapped = snapToGrid(mousePos);
-      ctx.strokeStyle = '#2196F3';
-      ctx.lineWidth = 8 * scale;
+      const colors: Record<string, string> = {
+        wall: '#2196F3',
+        'electrical-wire': '#FFA000',
+        'plumbing-pipe': '#2196F3',
+      };
+      ctx.strokeStyle = colors[activeTool] || '#2196F3';
+      ctx.lineWidth = (activeTool === 'wall' ? 8 : 3) * scale;
       ctx.lineCap = 'round';
       ctx.setLineDash([5, 5]);
       ctx.beginPath();
-      ctx.moveTo(wallStart.x * scale + offset.x, wallStart.y * scale + offset.y);
+      ctx.moveTo(lineStart.x * scale + offset.x, lineStart.y * scale + offset.y);
       ctx.lineTo(snapped.x * scale + offset.x, snapped.y * scale + offset.y);
       ctx.stroke();
       ctx.setLineDash([]);
     }
-  }, [walls, furniture, offset, scale, drawing, wallStart, mousePos, selectedWallId, selectedFurnitureId, canvasRef]);
+  }, [walls, furniture, electricalPoints, electricalWires, plumbingPoints, plumbingPipes, offset, scale, drawing, lineStart, mousePos, selectedWallId, selectedFurnitureId, activeTool, canvasRef]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
@@ -101,9 +146,9 @@ export function Canvas({
       return;
     }
 
-    if (activeTool === 'wall') {
+    if (isLineTool) {
       const snapped = snapToGrid(world);
-      setWallStart(snapped);
+      setLineStart(snapped);
       setDrawing(true);
     } else if (activeTool === 'select') {
       for (const item of [...furniture].reverse()) {
@@ -139,18 +184,50 @@ export function Canvas({
           label: catalog.label,
         });
       }
+    } else if (activeTool === 'electrical-point' && selectedElectricalType) {
+      const catalog = electricalCatalog.find((e) => e.type === selectedElectricalType);
+      if (catalog) {
+        const snapped = snapToGrid(world);
+        onAddElectricalPoint({
+          id: generateId(),
+          type: selectedElectricalType,
+          x: snapped.x,
+          y: snapped.y,
+          label: catalog.label,
+          circuit: 'C1',
+        });
+      }
+    } else if (activeTool === 'plumbing-point' && selectedPlumbingType) {
+      const catalog = plumbingCatalog.find((p) => p.type === selectedPlumbingType);
+      if (catalog) {
+        const snapped = snapToGrid(world);
+        onAddPlumbingPoint({
+          id: generateId(),
+          type: selectedPlumbingType,
+          x: snapped.x,
+          y: snapped.y,
+          label: catalog.label,
+          network: catalog.network,
+        });
+      }
     } else if (activeTool === 'eraser') {
+      for (const pt of [...electricalPoints].reverse()) {
+        if (hitTestPoint(pt, world, 15 / scale)) { onDeleteElectricalPoint(pt.id); return; }
+      }
+      for (const pt of [...plumbingPoints].reverse()) {
+        if (hitTestPoint(pt, world, 15 / scale)) { onDeletePlumbingPoint(pt.id); return; }
+      }
+      for (const wire of electricalWires) {
+        if (hitTestLine(wire, world, 10 / scale)) { onDeleteElectricalWire(wire.id); return; }
+      }
+      for (const pipe of plumbingPipes) {
+        if (hitTestLine(pipe, world, 10 / scale)) { onDeletePlumbingPipe(pipe.id); return; }
+      }
       for (const item of [...furniture].reverse()) {
-        if (hitTestFurniture(item, world)) {
-          onDeleteFurniture(item.id);
-          return;
-        }
+        if (hitTestFurniture(item, world)) { onDeleteFurniture(item.id); return; }
       }
       for (const wall of walls) {
-        if (hitTestWall(wall, world, 10 / scale)) {
-          onDeleteWall(wall.id);
-          return;
-        }
+        if (hitTestWall(wall, world, 10 / scale)) { onDeleteWall(wall.id); return; }
       }
     }
   };
@@ -165,11 +242,9 @@ export function Canvas({
       setOffset({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
       return;
     }
-
     if (drawing) {
       setMousePos(world);
     }
-
     if (dragging) {
       const snapped = snapToGrid({ x: world.x - dragOffset.x, y: world.y - dragOffset.y });
       onMoveFurniture(dragging, snapped.x, snapped.y);
@@ -177,26 +252,24 @@ export function Canvas({
   };
 
   const handleMouseUp = () => {
-    if (panning) {
-      setPanning(false);
-      return;
-    }
+    if (panning) { setPanning(false); return; }
 
-    if (drawing && wallStart && mousePos) {
+    if (drawing && lineStart && mousePos) {
       const snapped = snapToGrid(mousePos);
-      const dx = snapped.x - wallStart.x;
-      const dy = snapped.y - wallStart.y;
+      const dx = snapped.x - lineStart.x;
+      const dy = snapped.y - lineStart.y;
       if (Math.sqrt(dx * dx + dy * dy) > 10) {
-        onAddWall({
-          id: generateId(),
-          start: wallStart,
-          end: snapped,
-          thickness: 8,
-        });
+        if (activeTool === 'wall') {
+          onAddWall({ id: generateId(), start: lineStart, end: snapped, thickness: 8 });
+        } else if (activeTool === 'electrical-wire') {
+          onAddElectricalWire({ id: generateId(), start: lineStart, end: snapped, circuit: 'C1', gauge: selectedWireGauge });
+        } else if (activeTool === 'plumbing-pipe') {
+          onAddPlumbingPipe({ id: generateId(), start: lineStart, end: snapped, network: selectedPipeNetwork, diameter: selectedPipeDiameter });
+        }
       }
     }
     setDrawing(false);
-    setWallStart(null);
+    setLineStart(null);
     setMousePos(null);
     setDragging(null);
   };
@@ -208,12 +281,17 @@ export function Canvas({
     const my = e.clientY - rect.top;
     const zoom = e.deltaY < 0 ? 1.1 : 0.9;
     const newScale = Math.max(0.2, Math.min(5, scale * zoom));
-
     setOffset({
       x: mx - (mx - offset.x) * (newScale / scale),
       y: my - (my - offset.y) * (newScale / scale),
     });
     setScale(newScale);
+  };
+
+  const cursorMap: Partial<Record<Tool, string>> = {
+    wall: 'crosshair', 'electrical-wire': 'crosshair', 'plumbing-pipe': 'crosshair',
+    'electrical-point': 'crosshair', 'plumbing-point': 'crosshair',
+    eraser: 'pointer', furniture: 'crosshair',
   };
 
   return (
@@ -225,7 +303,7 @@ export function Canvas({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
-        style={{ cursor: activeTool === 'wall' ? 'crosshair' : activeTool === 'eraser' ? 'pointer' : 'default' }}
+        style={{ cursor: cursorMap[activeTool] || 'default' }}
       />
       <div className="zoom-info">Zoom: {Math.round(scale * 100)}%</div>
     </div>

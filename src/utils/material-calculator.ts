@@ -1,0 +1,108 @@
+import type { ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, MaterialItem } from '../types';
+
+const PIXELS_PER_METER = 40;
+
+function pipeLength(pipe: { start: { x: number; y: number }; end: { x: number; y: number } }): number {
+  const dx = pipe.end.x - pipe.start.x;
+  const dy = pipe.end.y - pipe.start.y;
+  return Math.sqrt(dx * dx + dy * dy) / PIXELS_PER_METER;
+}
+
+export function calculateMaterials(
+  electricalPoints: ElectricalPoint[],
+  electricalWires: ElectricalWire[],
+  plumbingPoints: PlumbingPoint[],
+  plumbingPipes: PlumbingPipe[],
+): MaterialItem[] {
+  const items: MaterialItem[] = [];
+
+  const outletCount = electricalPoints.filter((p) => p.type === 'outlet').length;
+  if (outletCount > 0) items.push({ name: 'Prise 2P+T', quantity: outletCount, unit: 'pcs', category: 'electrical' });
+
+  const switchCount = electricalPoints.filter((p) => p.type === 'switch').length;
+  if (switchCount > 0) items.push({ name: 'Interrupteur', quantity: switchCount, unit: 'pcs', category: 'electrical' });
+
+  const ceilingCount = electricalPoints.filter((p) => p.type === 'light-ceiling').length;
+  if (ceilingCount > 0) items.push({ name: 'Douille DCL plafonnier', quantity: ceilingCount, unit: 'pcs', category: 'electrical' });
+
+  const wallLightCount = electricalPoints.filter((p) => p.type === 'light-wall').length;
+  if (wallLightCount > 0) items.push({ name: 'Applique murale (point)', quantity: wallLightCount, unit: 'pcs', category: 'electrical' });
+
+  const panelCount = electricalPoints.filter((p) => p.type === 'panel').length;
+  if (panelCount > 0) items.push({ name: 'Tableau électrique', quantity: panelCount, unit: 'pcs', category: 'electrical' });
+
+  const thermoCount = electricalPoints.filter((p) => p.type === 'thermostat').length;
+  if (thermoCount > 0) items.push({ name: 'Thermostat', quantity: thermoCount, unit: 'pcs', category: 'electrical' });
+
+  const smokeCount = electricalPoints.filter((p) => p.type === 'smoke-detector').length;
+  if (smokeCount > 0) items.push({ name: 'Détecteur de fumée', quantity: smokeCount, unit: 'pcs', category: 'electrical' });
+
+  const wireByGauge: Record<string, number> = {};
+  for (const wire of electricalWires) {
+    const len = pipeLength(wire);
+    wireByGauge[wire.gauge] = (wireByGauge[wire.gauge] || 0) + len;
+  }
+  for (const [gauge, length] of Object.entries(wireByGauge)) {
+    items.push({ name: `Câble ${gauge}`, quantity: Math.ceil(length * 1.1), unit: 'm', category: 'electrical' });
+  }
+
+  if (electricalWires.length > 0) {
+    const gaines = electricalWires.reduce((sum, w) => sum + pipeLength(w), 0);
+    items.push({ name: 'Gaine ICTA Ø20', quantity: Math.ceil(gaines * 1.1), unit: 'm', category: 'electrical' });
+  }
+
+  const totalElecPoints = electricalPoints.length;
+  if (totalElecPoints > 0) {
+    items.push({ name: 'Boîte encastrement Ø67', quantity: totalElecPoints, unit: 'pcs', category: 'electrical' });
+  }
+
+  const circuits = new Set(electricalWires.map((w) => w.circuit).filter(Boolean));
+  if (circuits.size > 0) {
+    items.push({ name: 'Disjoncteur divisionnaire', quantity: circuits.size, unit: 'pcs', category: 'electrical' });
+    items.push({ name: 'Disjoncteur différentiel 30mA', quantity: Math.ceil(circuits.size / 8), unit: 'pcs', category: 'electrical' });
+  }
+
+  const supplyPts = plumbingPoints.filter((p) => p.network === 'supply').length;
+  if (supplyPts > 0) items.push({ name: 'Arrivée eau froide (raccord)', quantity: supplyPts, unit: 'pcs', category: 'plumbing' });
+
+  const hotPts = plumbingPoints.filter((p) => p.network === 'hot').length;
+  if (hotPts > 0) items.push({ name: 'Arrivée eau chaude (raccord)', quantity: hotPts, unit: 'pcs', category: 'plumbing' });
+
+  const drainPts = plumbingPoints.filter((p) => p.network === 'drain').length;
+  if (drainPts > 0) items.push({ name: 'Évacuation (raccord)', quantity: drainPts, unit: 'pcs', category: 'plumbing' });
+
+  const heaterCount = plumbingPoints.filter((p) => p.type === 'water-heater').length;
+  if (heaterCount > 0) items.push({ name: 'Chauffe-eau (ballon)', quantity: heaterCount, unit: 'pcs', category: 'plumbing' });
+
+  const meterCount = plumbingPoints.filter((p) => p.type === 'water-meter').length;
+  if (meterCount > 0) items.push({ name: 'Compteur d\'eau', quantity: meterCount, unit: 'pcs', category: 'plumbing' });
+
+  const valveCount = plumbingPoints.filter((p) => p.type === 'supply-valve' || p.type === 'drain-valve').length;
+  if (valveCount > 0) items.push({ name: 'Vanne / Siphon', quantity: valveCount, unit: 'pcs', category: 'plumbing' });
+
+  const pipeByDiameter: Record<string, number> = {};
+  for (const pipe of plumbingPipes) {
+    const key = `${pipe.diameter}mm-${pipe.network}`;
+    pipeByDiameter[key] = (pipeByDiameter[key] || 0) + pipeLength(pipe);
+  }
+
+  const networkLabels = { supply: 'eau froide', hot: 'eau chaude', drain: 'évacuation' };
+  for (const [key, length] of Object.entries(pipeByDiameter)) {
+    const [diam, network] = key.split('-');
+    const material = network === 'drain' ? 'PVC' : 'PER';
+    items.push({
+      name: `Tube ${material} Ø${diam} (${networkLabels[network as keyof typeof networkLabels]})`,
+      quantity: Math.ceil(length * 1.1),
+      unit: 'm',
+      category: 'plumbing',
+    });
+  }
+
+  const connections = plumbingPipes.length * 2;
+  if (connections > 0) {
+    items.push({ name: 'Raccords / coudes / tés', quantity: Math.ceil(connections * 0.5), unit: 'pcs', category: 'plumbing' });
+    items.push({ name: 'Colliers de fixation', quantity: Math.ceil(plumbingPipes.reduce((s, p) => s + pipeLength(p), 0) / 0.5), unit: 'pcs', category: 'plumbing' });
+  }
+
+  return items;
+}

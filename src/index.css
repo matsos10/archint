@@ -257,3 +257,181 @@ body {
 .delete-btn:hover {
   background: #ffcdd2;
 }
+
+/* Side panels (electrical, plumbing) */
+.side-panel {
+  width: 200px;
+  background: #fff;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.side-panel h3 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #1a237e;
+}
+
+.panel-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover {
+  background: #e8eaf6;
+}
+
+.tab-btn.active {
+  background: #1a237e;
+  color: white;
+  border-color: #1a237e;
+}
+
+.catalog-category h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #888;
+  margin: 10px 0 6px;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.catalog-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 9px;
+  transition: all 0.15s;
+}
+
+.catalog-item:hover {
+  border-color: #1a237e;
+}
+
+.catalog-item.active {
+  border-color: #1a237e;
+  background: #e8eaf6;
+}
+
+.catalog-item.full-width {
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+
+.catalog-symbol {
+  font-size: 18px;
+}
+
+.action-btn.highlight {
+  background: #e8eaf6;
+  border-color: #1a237e;
+  color: #1a237e;
+  font-weight: 600;
+}
+
+.action-btn.highlight:hover {
+  background: #c5cae9;
+}
+
+/* Materials modal */
+.materials-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.materials-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 700px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.materials-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.materials-header h2 {
+  font-size: 20px;
+  color: #1a237e;
+  margin: 0;
+}
+
+.materials-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.materials-section {
+  margin-bottom: 20px;
+}
+
+.materials-section h3 {
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.materials-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.materials-table th {
+  text-align: left;
+  padding: 6px 10px;
+  background: #f5f5f5;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 1px solid #ddd;
+}
+
+.materials-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.materials-table tr:hover td {
+  background: #f9f9f9;
+}

@@ -46,12 +46,75 @@ export type FurnitureType =
   | 'door'
   | 'window';
 
-export type Tool = 'select' | 'wall' | 'furniture' | 'eraser' | 'measure';
+export type ElectricalType =
+  | 'outlet'
+  | 'switch'
+  | 'light-ceiling'
+  | 'light-wall'
+  | 'panel'
+  | 'thermostat'
+  | 'smoke-detector';
+
+export type PlumbingType =
+  | 'water-supply'
+  | 'hot-water'
+  | 'drain'
+  | 'water-heater'
+  | 'supply-valve'
+  | 'drain-valve'
+  | 'water-meter';
+
+export interface ElectricalPoint {
+  id: string;
+  type: ElectricalType;
+  x: number;
+  y: number;
+  label: string;
+  circuit: string;
+}
+
+export interface ElectricalWire {
+  id: string;
+  start: Point;
+  end: Point;
+  circuit: string;
+  gauge: string;
+}
+
+export interface PlumbingPoint {
+  id: string;
+  type: PlumbingType;
+  x: number;
+  y: number;
+  label: string;
+  network: 'supply' | 'hot' | 'drain';
+}
+
+export interface PlumbingPipe {
+  id: string;
+  start: Point;
+  end: Point;
+  network: 'supply' | 'hot' | 'drain';
+  diameter: number;
+}
+
+export type Tool = 'select' | 'wall' | 'furniture' | 'eraser' | 'measure' | 'electrical-point' | 'electrical-wire' | 'plumbing-point' | 'plumbing-pipe';
 
 export interface FloorPlan {
   id: string;
   name: string;
   walls: Wall[];
   furniture: FurnitureItem[];
+  electricalPoints: ElectricalPoint[];
+  electricalWires: ElectricalWire[];
+  plumbingPoints: PlumbingPoint[];
+  plumbingPipes: PlumbingPipe[];
   gridSize: number;
+}
+
+export interface MaterialItem {
+  name: string;
+  quantity: number;
+  unit: string;
+  category: 'electrical' | 'plumbing';
 }
