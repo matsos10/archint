@@ -10,10 +10,11 @@ export function MaterialsPanel({ materials, visible, onClose }: MaterialsPanelPr
   if (!visible) return null;
 
   const construction = materials.filter((m) => m.category === 'construction');
+  const finishing = materials.filter((m) => m.category === 'finishing');
   const elec = materials.filter((m) => m.category === 'electrical');
   const plumb = materials.filter((m) => m.category === 'plumbing');
 
-  const categoryLabels: Record<string, string> = { construction: 'Construction', electrical: 'Électricité', plumbing: 'Plomberie' };
+  const categoryLabels: Record<string, string> = { construction: 'Construction', finishing: 'Finitions', electrical: 'Électricité', plumbing: 'Plomberie' };
 
   const exportCSV = () => {
     const lines = ['Catégorie;Article;Quantité;Unité'];
@@ -53,6 +54,22 @@ export function MaterialsPanel({ materials, visible, onClose }: MaterialsPanelPr
               </thead>
               <tbody>
                 {construction.map((m, i) => (
+                  <tr key={i}><td>{m.name}</td><td>{m.quantity}</td><td>{m.unit}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {finishing.length > 0 && (
+          <div className="materials-section">
+            <h3>🎨 Finitions (Sols / Carrelage / Peinture)</h3>
+            <table className="materials-table">
+              <thead>
+                <tr><th>Article</th><th>Quantité</th><th>Unité</th></tr>
+              </thead>
+              <tbody>
+                {finishing.map((m, i) => (
                   <tr key={i}><td>{m.name}</td><td>{m.quantity}</td><td>{m.unit}</td></tr>
                 ))}
               </tbody>

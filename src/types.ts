@@ -147,5 +147,5 @@ export interface MaterialItem {
   name: string;
   quantity: number;
   unit: string;
-  category: 'electrical' | 'plumbing' | 'construction';
+  category: 'electrical' | 'plumbing' | 'construction' | 'finishing';
 }

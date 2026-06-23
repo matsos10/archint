@@ -89,6 +89,56 @@ export function calculateMaterials(
 
       items.push({ name: '[Plafond] Panneau isolant laine minérale (1200×600)', quantity: Math.ceil(ceilingArea / (1.2 * 0.6) * 1.1), unit: 'pcs', category: 'construction' });
     }
+
+    // --- Finitions : sols, carrelage mural, peinture ---
+    const floorArea = ceilingArea > 0.5 ? ceilingArea : 0;
+
+    if (floorArea > 0) {
+      // Sol — carrelage (60×60cm = 0.36m²)
+      const tileArea = 0.6 * 0.6;
+      const floorTiles = Math.ceil(floorArea / tileArea * 1.1);
+      items.push({ name: '[Sol] Carrelage 60×60 cm', quantity: floorTiles, unit: 'pcs', category: 'finishing' });
+      items.push({ name: '[Sol] Colle carrelage (sac 25kg, ~5kg/m²)', quantity: Math.ceil(floorArea * 5 / 25 * 1.1), unit: 'sacs', category: 'finishing' });
+      items.push({ name: '[Sol] Joint carrelage (sac 5kg, ~0.5kg/m²)', quantity: Math.ceil(floorArea * 0.5 / 5 * 1.1), unit: 'sacs', category: 'finishing' });
+      items.push({ name: '[Sol] Croisillons (sachet 200pcs)', quantity: Math.ceil(floorTiles / 200), unit: 'sachets', category: 'finishing' });
+
+      // Sol alternatif — stratifié (lame 1380×193mm ≈ 0.266m²)
+      const lameArea = 1.38 * 0.193;
+      const lameCount = Math.ceil(floorArea / lameArea * 1.1);
+      items.push({ name: '[Sol alt.] Stratifié lame (1380×193mm)', quantity: lameCount, unit: 'pcs', category: 'finishing' });
+      items.push({ name: '[Sol alt.] Sous-couche mousse 3mm (rouleau 15m²)', quantity: Math.ceil(floorArea / 15 * 1.1), unit: 'rouleaux', category: 'finishing' });
+      items.push({ name: '[Sol alt.] Barre de seuil (0.9m)', quantity: Math.max(1, Math.ceil(walls.length * 0.3)), unit: 'pcs', category: 'finishing' });
+    }
+
+    // Carrelage mural (faïence 30×60cm, surface = longueur murs × hauteur crédence 1.2m)
+    const wallTileHeight = 1.2;
+    const wallTileArea = totalWallLength * wallTileHeight;
+    if (wallTileArea > 0) {
+      const murTile = 0.3 * 0.6;
+      const murTileCount = Math.ceil(wallTileArea / murTile * 1.1);
+      items.push({ name: '[Mur] Faïence carrelage 30×60 cm', quantity: murTileCount, unit: 'pcs', category: 'finishing' });
+      items.push({ name: '[Mur] Colle carrelage mural (sac 25kg, ~4kg/m²)', quantity: Math.ceil(wallTileArea * 4 / 25 * 1.1), unit: 'sacs', category: 'finishing' });
+      items.push({ name: '[Mur] Joint carrelage (sac 5kg)', quantity: Math.ceil(wallTileArea * 0.4 / 5 * 1.1), unit: 'sacs', category: 'finishing' });
+    }
+
+    // Peinture murs (2 couches, rendement ~10m²/L)
+    const paintWallArea = totalWallArea;
+    if (paintWallArea > 0) {
+      const paintLiters = paintWallArea * 2 / 10;
+      items.push({ name: '[Peinture] Peinture murale (pot 10L, 2 couches)', quantity: Math.ceil(paintLiters / 10 * 1.1), unit: 'pots', category: 'finishing' });
+      items.push({ name: '[Peinture] Sous-couche mur (pot 10L)', quantity: Math.ceil(paintWallArea / 10 / 10 * 1.1), unit: 'pots', category: 'finishing' });
+    }
+
+    // Peinture plafond (2 couches)
+    if (floorArea > 0) {
+      const ceilingPaint = floorArea * 2 / 10;
+      items.push({ name: '[Peinture] Peinture plafond (pot 10L, 2 couches)', quantity: Math.ceil(ceilingPaint / 10 * 1.1), unit: 'pots', category: 'finishing' });
+    }
+
+    // Plinthes
+    if (totalWallLength > 0) {
+      items.push({ name: '[Finition] Plinthe (barre 2.4m)', quantity: Math.ceil(totalWallLength / 2.4 * 1.1), unit: 'pcs', category: 'finishing' });
+    }
   }
 
   const outletCount = electricalPoints.filter((p) => p.type === 'outlet').length;
