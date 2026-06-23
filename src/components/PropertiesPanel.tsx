@@ -19,17 +19,40 @@ export function PropertiesPanel({ selectedWall, selectedFurniture, onUpdateWall,
   }
 
   if (selectedWall) {
-    const length = Math.sqrt(
-      (selectedWall.end.x - selectedWall.start.x) ** 2 +
-      (selectedWall.end.y - selectedWall.start.y) ** 2
-    ) / 40;
+    const dx = selectedWall.end.x - selectedWall.start.x;
+    const dy = selectedWall.end.y - selectedWall.start.y;
+    const lengthPx = Math.sqrt(dx * dx + dy * dy);
+    const lengthM = lengthPx / 40;
+
+    const handleLengthChange = (newM: number) => {
+      if (newM <= 0) return;
+      const ratio = (newM * 40) / lengthPx;
+      onUpdateWall({
+        ...selectedWall,
+        end: {
+          x: selectedWall.start.x + dx * ratio,
+          y: selectedWall.start.y + dy * ratio,
+        },
+      });
+    };
 
     return (
       <div className="properties-panel">
         <h3>Mur</h3>
         <div className="prop-row">
           <label>Longueur</label>
-          <span>{length.toFixed(2)} m</span>
+          <input
+            type="number"
+            step="0.05"
+            min="0.1"
+            value={parseFloat(lengthM.toFixed(2))}
+            onChange={(e) => handleLengthChange(Number(e.target.value))}
+          />
+          <span>m</span>
+        </div>
+        <div className="prop-row">
+          <label></label>
+          <span style={{ fontSize: 11, color: '#888' }}>{(lengthM * 100).toFixed(0)} cm</span>
         </div>
         <div className="prop-row">
           <label>Épaisseur</label>

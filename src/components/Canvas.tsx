@@ -182,7 +182,7 @@ export function Canvas({
     const sy = e.clientY - rect.top;
     const world = screenToWorld(sx, sy);
 
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    if (e.button === 1 || e.button === 2 || (e.button === 0 && e.altKey)) {
       setPanning(true);
       setPanStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
       return;
@@ -390,6 +390,7 @@ export function Canvas({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
+        onContextMenu={(e) => e.preventDefault()}
         style={{ cursor: getCursor() }}
       />
       <div className="zoom-info">Zoom: {Math.round(scale * 100)}%</div>
