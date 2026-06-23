@@ -3,6 +3,8 @@ import type { Tool } from '../types';
 interface ToolbarProps {
   activeTool: Tool;
   onToolChange: (tool: Tool) => void;
+  snapSize: number;
+  onSnapChange: (size: number) => void;
   onSave: () => void;
   onLoad: () => void;
   onExport: () => void;
@@ -15,8 +17,17 @@ const generalTools: { id: Tool; label: string; icon: string }[] = [
   { id: 'wall', label: 'Mur', icon: '▬' },
   { id: 'door-window', label: 'Portes/Fen.', icon: '🚪' },
   { id: 'furniture', label: 'Mobilier', icon: '🪑' },
+  { id: 'surface', label: 'Surfaces', icon: '🧱' },
   { id: 'eraser', label: 'Gomme', icon: '✕' },
   { id: 'measure', label: 'Mesure', icon: '📏' },
+];
+
+const snapOptions: { value: number; label: string }[] = [
+  { value: 0, label: 'Libre' },
+  { value: 5, label: 'Fin · 12.5 cm' },
+  { value: 10, label: 'Moyen · 25 cm' },
+  { value: 20, label: 'Normal · 50 cm' },
+  { value: 40, label: 'Large · 1 m' },
 ];
 
 const elecTools: { id: Tool; label: string; icon: string }[] = [
@@ -48,12 +59,20 @@ function ToolGroup({ title, tools, activeTool, onToolChange }: { title: string; 
   );
 }
 
-export function Toolbar({ activeTool, onToolChange, onSave, onLoad, onExport, onClear, onShowMaterials }: ToolbarProps) {
+export function Toolbar({ activeTool, onToolChange, snapSize, onSnapChange, onSave, onLoad, onExport, onClear, onShowMaterials }: ToolbarProps) {
   return (
     <div className="toolbar">
       <ToolGroup title="Outils" tools={generalTools} activeTool={activeTool} onToolChange={onToolChange} />
       <ToolGroup title="Électricité" tools={elecTools} activeTool={activeTool} onToolChange={onToolChange} />
       <ToolGroup title="Plomberie" tools={plumbTools} activeTool={activeTool} onToolChange={onToolChange} />
+      <div className="toolbar-section">
+        <span className="toolbar-title">Précision</span>
+        <select className="snap-select" value={snapSize} onChange={(e) => onSnapChange(Number(e.target.value))} title="Finesse de placement">
+          {snapOptions.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
       <div className="toolbar-section">
         <span className="toolbar-title">Projet</span>
         <button className="action-btn highlight" onClick={onShowMaterials}>📋 Matériaux</button>

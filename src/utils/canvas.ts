@@ -1,15 +1,17 @@
-import type { Point, Wall, FurnitureItem, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, DoorWindow } from '../types';
+import type { Point, Wall, FurnitureItem, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, DoorWindow, Surface } from '../types';
 import { electricalCatalog } from './electrical-catalog';
 import { plumbingCatalog } from './plumbing-catalog';
 import { furnitureIcons } from './furniture-icons';
+import { getSurfaceMaterial } from './surface-catalog';
 
 const GRID_SIZE = 20;
 const PIXELS_PER_METER = 40;
 
-export function snapToGrid(point: Point): Point {
+export function snapToGrid(point: Point, gridSize: number = GRID_SIZE): Point {
+  if (!gridSize || gridSize <= 0) return { x: point.x, y: point.y };
   return {
-    x: Math.round(point.x / GRID_SIZE) * GRID_SIZE,
-    y: Math.round(point.y / GRID_SIZE) * GRID_SIZE,
+    x: Math.round(point.x / gridSize) * gridSize,
+    y: Math.round(point.y / gridSize) * gridSize,
   };
 }
 
@@ -435,4 +437,53 @@ export function hitTestPoint(pt: { x: number; y: number }, click: Point, radius:
 
 export function hitTestLine(line: { start: Point; end: Point }, point: Point, threshold: number): boolean {
   return hitTestWall(line as Wall, point, threshold);
+}
+
+export function drawSurface(ctx: CanvasRenderingContext2D, surface: Surface, offset: Point, scale: number, highlight: boolean) {
+  const mat = getSurfaceMaterial(surface.material);
+  const color = mat?.color || '#bbbbbb';
+  const x = surface.x * scale + offset.x;
+  const y = surface.y * scale + offset.y;
+  const w = surface.width * scale;
+  const h = surface.height * scale;
+
+  ctx.save();
+  ctx.fillStyle = color + (highlight ? 'aa' : '66');
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = highlight ? '#1a237e' : '#8d6e63';
+  ctx.lineWidth = highlight ? 2 : 1;
+  ctx.setLineDash([6 * scale, 4 * scale]);
+  ctx.strokeRect(x, y, w, h);
+  ctx.setLineDash([]);
+
+  const areaM2 = (surface.width / PIXELS_PER_METER) * (surface.height / PIXELS_PER_METER);
+  ctx.fillStyle = '#3e2723';
+  ctx.font = `bold ${11 * scale}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(mat?.label || 'Surface', x + w / 2, y + h / 2 - 7 * scale);
+  ctx.font = `${10 * scale}px sans-serif`;
+  ctx.fillStyle = '#5d4037';
+  ctx.fillText(`${areaM2.toFixed(2)} m²`, x + w / 2, y + h / 2 + 7 * scale);
+
+  if (highlight) {
+    const hs = 7 * scale;
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#1a237e';
+    ctx.lineWidth = 2;
+    ctx.fillRect(x + w - hs, y + h - hs, hs * 2, hs * 2);
+    ctx.strokeRect(x + w - hs, y + h - hs, hs * 2, hs * 2);
+  }
+  ctx.restore();
+}
+
+export function hitTestSurface(surface: Surface, point: Point): boolean {
+  return point.x >= surface.x && point.x <= surface.x + surface.width &&
+         point.y >= surface.y && point.y <= surface.y + surface.height;
+}
+
+export function hitTestSurfaceHandle(surface: Surface, point: Point, radius: number): boolean {
+  const hx = surface.x + surface.width;
+  const hy = surface.y + surface.height;
+  return Math.abs(point.x - hx) < radius && Math.abs(point.y - hy) < radius;
 }

@@ -128,7 +128,19 @@ export interface PlumbingPipe {
   diameter: number;
 }
 
-export type Tool = 'select' | 'wall' | 'furniture' | 'eraser' | 'measure' | 'electrical-point' | 'electrical-wire' | 'plumbing-point' | 'plumbing-pipe' | 'door-window';
+export type SurfaceCategory = 'floor' | 'wall-covering' | 'ceiling';
+
+export interface Surface {
+  id: string;
+  category: SurfaceCategory;
+  material: string; // material key from surface-catalog
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type Tool = 'select' | 'wall' | 'furniture' | 'eraser' | 'measure' | 'electrical-point' | 'electrical-wire' | 'plumbing-point' | 'plumbing-pipe' | 'door-window' | 'surface';
 
 export interface FloorPlan {
   id: string;
@@ -136,6 +148,7 @@ export interface FloorPlan {
   walls: Wall[];
   furniture: FurnitureItem[];
   doorsWindows: DoorWindow[];
+  surfaces: Surface[];
   electricalPoints: ElectricalPoint[];
   electricalWires: ElectricalWire[];
   plumbingPoints: PlumbingPoint[];
@@ -147,5 +160,5 @@ export interface MaterialItem {
   name: string;
   quantity: number;
   unit: string;
-  category: 'electrical' | 'plumbing' | 'construction' | 'finishing';
+  category: string; // 'electrical' | 'plumbing' | 'Sols' | 'Murs' | 'Plafond'
 }

@@ -1,10 +1,7 @@
-import type { Wall, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, MaterialItem } from '../types';
+import type { Surface, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, MaterialItem } from '../types';
+import { getSurfaceMaterial, categoryLabel } from './surface-catalog';
 
 const PIXELS_PER_METER = 40;
-const WALL_HEIGHT_M = 2.5;
-const PLASTERBOARD_W = 1.2;
-const PLASTERBOARD_H = 2.5;
-const PLASTERBOARD_AREA = PLASTERBOARD_W * PLASTERBOARD_H;
 
 function segmentLength(seg: { start: { x: number; y: number }; end: { x: number; y: number } }): number {
   const dx = seg.end.x - seg.start.x;
@@ -13,7 +10,7 @@ function segmentLength(seg: { start: { x: number; y: number }; end: { x: number;
 }
 
 export function calculateMaterials(
-  walls: Wall[],
+  surfaces: Surface[],
   electricalPoints: ElectricalPoint[],
   electricalWires: ElectricalWire[],
   plumbingPoints: PlumbingPoint[],
@@ -21,126 +18,33 @@ export function calculateMaterials(
 ): MaterialItem[] {
   const items: MaterialItem[] = [];
 
-  // --- Construction (plaques de plâtre, LSF, isolation) ---
-  if (walls.length > 0) {
-    const totalWallLength = walls.reduce((sum, w) => sum + segmentLength(w), 0);
-    const totalWallArea = totalWallLength * WALL_HEIGHT_M;
-
-    const plasterboardCount = Math.ceil((totalWallArea * 2) / PLASTERBOARD_AREA * 1.1);
-    items.push({ name: 'Plaque de plâtre BA13 (1200×2500)', quantity: plasterboardCount, unit: 'pcs', category: 'construction' });
-
-    const railLength = totalWallLength * 2;
-    items.push({ name: 'Rail R48 (3m)', quantity: Math.ceil(railLength / 3 * 1.1), unit: 'pcs', category: 'construction' });
-
-    const montantSpacing = 0.6;
-    const montantCount = walls.reduce((sum, w) => {
-      const len = segmentLength(w);
-      return sum + Math.ceil(len / montantSpacing) + 1;
-    }, 0);
-    items.push({ name: 'Montant M48 (2.5m)', quantity: Math.ceil(montantCount * 1.1), unit: 'pcs', category: 'construction' });
-
-    const insulationPanels = Math.ceil(totalWallArea / (1.2 * 0.6) * 1.1);
-    items.push({ name: 'Panneau isolant laine minérale 45mm (1200×600)', quantity: insulationPanels, unit: 'pcs', category: 'construction' });
-
-    const screwsPerBoard = 28;
-    items.push({ name: 'Vis plaque TTPC 25mm', quantity: plasterboardCount * screwsPerBoard, unit: 'pcs', category: 'construction' });
-
-    items.push({ name: 'Bande à joint (rouleau 23m)', quantity: Math.ceil(totalWallLength * 2 / 23 * 1.1), unit: 'pcs', category: 'construction' });
-
-    items.push({ name: 'Enduit à joint (sac 25kg)', quantity: Math.ceil(totalWallArea * 2 * 0.3 / 25), unit: 'pcs', category: 'construction' });
-
-    // --- Faux plafond (plaques de plâtre + LSF) ---
-    const allPoints = walls.flatMap((w) => [w.start, w.end]);
-    const minX = Math.min(...allPoints.map((p) => p.x)) / PIXELS_PER_METER;
-    const maxX = Math.max(...allPoints.map((p) => p.x)) / PIXELS_PER_METER;
-    const minY = Math.min(...allPoints.map((p) => p.y)) / PIXELS_PER_METER;
-    const maxY = Math.max(...allPoints.map((p) => p.y)) / PIXELS_PER_METER;
-    const ceilingArea = (maxX - minX) * (maxY - minY);
-
-    if (ceilingArea > 0.5) {
-      const ceilingBoardArea = 1.2 * 2.5;
-      const ceilingBoards = Math.ceil(ceilingArea / ceilingBoardArea * 1.1);
-      items.push({ name: '[Plafond] Plaque de plâtre BA13 (1200×2500)', quantity: ceilingBoards, unit: 'pcs', category: 'construction' });
-
-      const primarySpacing = 1.2;
-      const secondarySpacing = 0.5;
-      const ceilingW = maxX - minX;
-      const ceilingL = maxY - minY;
-
-      const primaryCount = Math.ceil(ceilingL / primarySpacing) + 1;
-      const primaryRails = Math.ceil(primaryCount * ceilingW / 3 * 1.1);
-      items.push({ name: '[Plafond] Fourrure F530 primaire (3m)', quantity: primaryRails, unit: 'pcs', category: 'construction' });
-
-      const secondaryCount = Math.ceil(ceilingW / secondarySpacing) + 1;
-      const secondaryRails = Math.ceil(secondaryCount * ceilingL / 3 * 1.1);
-      items.push({ name: '[Plafond] Fourrure F530 secondaire (3m)', quantity: secondaryRails, unit: 'pcs', category: 'construction' });
-
-      const suspenteSpacing = 1.2;
-      const suspenteCount = Math.ceil(ceilingArea / (suspenteSpacing * suspenteSpacing) * 1.1);
-      items.push({ name: '[Plafond] Suspente (tige + clip)', quantity: suspenteCount, unit: 'pcs', category: 'construction' });
-
-      const eclisseCount = primaryRails + secondaryRails;
-      items.push({ name: '[Plafond] Éclisse de raccord', quantity: Math.ceil(eclisseCount * 0.3), unit: 'pcs', category: 'construction' });
-
-      items.push({ name: '[Plafond] Vis TTPC 25mm', quantity: ceilingBoards * 28, unit: 'pcs', category: 'construction' });
-
-      const ceilingPerimeter = (ceilingW + ceilingL) * 2;
-      items.push({ name: '[Plafond] Cornière périphérique (3m)', quantity: Math.ceil(ceilingPerimeter / 3 * 1.1), unit: 'pcs', category: 'construction' });
-
-      items.push({ name: '[Plafond] Panneau isolant laine minérale (1200×600)', quantity: Math.ceil(ceilingArea / (1.2 * 0.6) * 1.1), unit: 'pcs', category: 'construction' });
-    }
-
-    // --- Finitions : sols, carrelage mural, peinture ---
-    const floorArea = ceilingArea > 0.5 ? ceilingArea : 0;
-
-    if (floorArea > 0) {
-      // Sol — carrelage (60×60cm = 0.36m²)
-      const tileArea = 0.6 * 0.6;
-      const floorTiles = Math.ceil(floorArea / tileArea * 1.1);
-      items.push({ name: '[Sol] Carrelage 60×60 cm', quantity: floorTiles, unit: 'pcs', category: 'finishing' });
-      items.push({ name: '[Sol] Colle carrelage (sac 25kg, ~5kg/m²)', quantity: Math.ceil(floorArea * 5 / 25 * 1.1), unit: 'sacs', category: 'finishing' });
-      items.push({ name: '[Sol] Joint carrelage (sac 5kg, ~0.5kg/m²)', quantity: Math.ceil(floorArea * 0.5 / 5 * 1.1), unit: 'sacs', category: 'finishing' });
-      items.push({ name: '[Sol] Croisillons (sachet 200pcs)', quantity: Math.ceil(floorTiles / 200), unit: 'sachets', category: 'finishing' });
-
-      // Sol alternatif — stratifié (lame 1380×193mm ≈ 0.266m²)
-      const lameArea = 1.38 * 0.193;
-      const lameCount = Math.ceil(floorArea / lameArea * 1.1);
-      items.push({ name: '[Sol alt.] Stratifié lame (1380×193mm)', quantity: lameCount, unit: 'pcs', category: 'finishing' });
-      items.push({ name: '[Sol alt.] Sous-couche mousse 3mm (rouleau 15m²)', quantity: Math.ceil(floorArea / 15 * 1.1), unit: 'rouleaux', category: 'finishing' });
-      items.push({ name: '[Sol alt.] Barre de seuil (0.9m)', quantity: Math.max(1, Math.ceil(walls.length * 0.3)), unit: 'pcs', category: 'finishing' });
-    }
-
-    // Carrelage mural (faïence 30×60cm, surface = longueur murs × hauteur crédence 1.2m)
-    const wallTileHeight = 1.2;
-    const wallTileArea = totalWallLength * wallTileHeight;
-    if (wallTileArea > 0) {
-      const murTile = 0.3 * 0.6;
-      const murTileCount = Math.ceil(wallTileArea / murTile * 1.1);
-      items.push({ name: '[Mur] Faïence carrelage 30×60 cm', quantity: murTileCount, unit: 'pcs', category: 'finishing' });
-      items.push({ name: '[Mur] Colle carrelage mural (sac 25kg, ~4kg/m²)', quantity: Math.ceil(wallTileArea * 4 / 25 * 1.1), unit: 'sacs', category: 'finishing' });
-      items.push({ name: '[Mur] Joint carrelage (sac 5kg)', quantity: Math.ceil(wallTileArea * 0.4 / 5 * 1.1), unit: 'sacs', category: 'finishing' });
-    }
-
-    // Peinture murs (2 couches, rendement ~10m²/L)
-    const paintWallArea = totalWallArea;
-    if (paintWallArea > 0) {
-      const paintLiters = paintWallArea * 2 / 10;
-      items.push({ name: '[Peinture] Peinture murale (pot 10L, 2 couches)', quantity: Math.ceil(paintLiters / 10 * 1.1), unit: 'pots', category: 'finishing' });
-      items.push({ name: '[Peinture] Sous-couche mur (pot 10L)', quantity: Math.ceil(paintWallArea / 10 / 10 * 1.1), unit: 'pots', category: 'finishing' });
-    }
-
-    // Peinture plafond (2 couches)
-    if (floorArea > 0) {
-      const ceilingPaint = floorArea * 2 / 10;
-      items.push({ name: '[Peinture] Peinture plafond (pot 10L, 2 couches)', quantity: Math.ceil(ceilingPaint / 10 * 1.1), unit: 'pots', category: 'finishing' });
-    }
-
-    // Plinthes
-    if (totalWallLength > 0) {
-      items.push({ name: '[Finition] Plinthe (barre 2.4m)', quantity: Math.ceil(totalWallLength / 2.4 * 1.1), unit: 'pcs', category: 'finishing' });
+  // --- Surfaces dessinées (sols, murs, plafond) ---
+  // Groupe par catégorie + nom de composant, somme les quantités brutes.
+  const surfaceAgg: Record<string, { name: string; raw: number; unit: string; packSize: number; category: string }> = {};
+  for (const surface of surfaces) {
+    const mat = getSurfaceMaterial(surface.material);
+    if (!mat) continue;
+    const areaM2 = (surface.width / PIXELS_PER_METER) * (surface.height / PIXELS_PER_METER);
+    if (areaM2 <= 0) continue;
+    const catLabel = categoryLabel[mat.category];
+    for (const comp of mat.components) {
+      const key = `${catLabel}||${comp.name}`;
+      if (!surfaceAgg[key]) {
+        surfaceAgg[key] = { name: comp.name, raw: 0, unit: comp.unit, packSize: comp.packSize || 1, category: catLabel };
+      }
+      surfaceAgg[key].raw += areaM2 * comp.perM2;
     }
   }
+  for (const agg of Object.values(surfaceAgg)) {
+    items.push({
+      name: agg.name,
+      quantity: Math.ceil((agg.raw / agg.packSize) * 1.1),
+      unit: agg.unit,
+      category: agg.category,
+    });
+  }
 
+  // --- Électricité ---
   const outletCount = electricalPoints.filter((p) => p.type === 'outlet').length;
   if (outletCount > 0) items.push({ name: 'Prise 2P+T', quantity: outletCount, unit: 'pcs', category: 'electrical' });
 
@@ -187,6 +91,7 @@ export function calculateMaterials(
     items.push({ name: 'Disjoncteur différentiel 30mA', quantity: Math.ceil(circuits.size / 8), unit: 'pcs', category: 'electrical' });
   }
 
+  // --- Plomberie ---
   const supplyPts = plumbingPoints.filter((p) => p.network === 'supply').length;
   if (supplyPts > 0) items.push({ name: 'Arrivée eau froide (raccord)', quantity: supplyPts, unit: 'pcs', category: 'plumbing' });
 

@@ -35,7 +35,40 @@ body {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
+}
+
+.project-name {
   flex: 1;
+  margin: 0 16px;
+  max-width: 320px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 6px;
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.project-name::placeholder { color: rgba(255,255,255,0.6); }
+.project-name:focus { outline: none; background: rgba(255,255,255,0.2); }
+
+.snap-select {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.surface-panel .prop-row select,
+.surface-panel select {
+  flex: 1;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
 }
 
 .view-toggle {

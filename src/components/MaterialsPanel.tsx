@@ -6,20 +6,33 @@ interface MaterialsPanelProps {
   onClose: () => void;
 }
 
+const SECTION_META: Record<string, { title: string; order: number }> = {
+  'Sols': { title: '▦ Sols', order: 1 },
+  'Murs': { title: '▥ Murs', order: 2 },
+  'Plafond': { title: '☁ Plafond', order: 3 },
+  electrical: { title: '⚡ Électricité', order: 4 },
+  plumbing: { title: '💧 Plomberie', order: 5 },
+};
+
 export function MaterialsPanel({ materials, visible, onClose }: MaterialsPanelProps) {
   if (!visible) return null;
 
-  const construction = materials.filter((m) => m.category === 'construction');
-  const finishing = materials.filter((m) => m.category === 'finishing');
-  const elec = materials.filter((m) => m.category === 'electrical');
-  const plumb = materials.filter((m) => m.category === 'plumbing');
+  // Group by category, preserving a sensible section order.
+  const groups = new Map<string, MaterialItem[]>();
+  for (const m of materials) {
+    if (!groups.has(m.category)) groups.set(m.category, []);
+    groups.get(m.category)!.push(m);
+  }
+  const sections = [...groups.entries()].sort(
+    (a, b) => (SECTION_META[a[0]]?.order ?? 99) - (SECTION_META[b[0]]?.order ?? 99),
+  );
 
-  const categoryLabels: Record<string, string> = { construction: 'Construction', finishing: 'Finitions', electrical: 'Électricité', plumbing: 'Plomberie' };
+  const sectionTitle = (cat: string) => SECTION_META[cat]?.title || cat;
 
   const exportCSV = () => {
     const lines = ['Catégorie;Article;Quantité;Unité'];
     for (const m of materials) {
-      lines.push(`${categoryLabels[m.category]};${m.name};${m.quantity};${m.unit}`);
+      lines.push(`${m.category};${m.name};${m.quantity};${m.unit}`);
     }
     const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -42,72 +55,26 @@ export function MaterialsPanel({ materials, visible, onClose }: MaterialsPanelPr
         </div>
 
         {materials.length === 0 && (
-          <p className="hint">Aucun élément placé sur le plan.</p>
+          <p className="hint">
+            Aucun matériau. Dessinez des surfaces (sols/murs/plafond) ou placez des éléments électriques/plomberie.
+          </p>
         )}
 
-        {construction.length > 0 && (
-          <div className="materials-section">
-            <h3>🧱 Construction (Plâtrerie / LSF / Isolation)</h3>
+        {sections.map(([cat, items]) => (
+          <div key={cat} className="materials-section">
+            <h3>{sectionTitle(cat)}</h3>
             <table className="materials-table">
               <thead>
                 <tr><th>Article</th><th>Quantité</th><th>Unité</th></tr>
               </thead>
               <tbody>
-                {construction.map((m, i) => (
+                {items.map((m, i) => (
                   <tr key={i}><td>{m.name}</td><td>{m.quantity}</td><td>{m.unit}</td></tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
-
-        {finishing.length > 0 && (
-          <div className="materials-section">
-            <h3>🎨 Finitions (Sols / Carrelage / Peinture)</h3>
-            <table className="materials-table">
-              <thead>
-                <tr><th>Article</th><th>Quantité</th><th>Unité</th></tr>
-              </thead>
-              <tbody>
-                {finishing.map((m, i) => (
-                  <tr key={i}><td>{m.name}</td><td>{m.quantity}</td><td>{m.unit}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {elec.length > 0 && (
-          <div className="materials-section">
-            <h3>⚡ Électricité</h3>
-            <table className="materials-table">
-              <thead>
-                <tr><th>Article</th><th>Quantité</th><th>Unité</th></tr>
-              </thead>
-              <tbody>
-                {elec.map((m, i) => (
-                  <tr key={i}><td>{m.name}</td><td>{m.quantity}</td><td>{m.unit}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {plumb.length > 0 && (
-          <div className="materials-section">
-            <h3>💧 Plomberie</h3>
-            <table className="materials-table">
-              <thead>
-                <tr><th>Article</th><th>Quantité</th><th>Unité</th></tr>
-              </thead>
-              <tbody>
-                {plumb.map((m, i) => (
-                  <tr key={i}><td>{m.name}</td><td>{m.quantity}</td><td>{m.unit}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        ))}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
-import type { Wall, FurnitureItem, Tool, FurnitureType, FloorPlan, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, ElectricalType, PlumbingType, DoorWindow, DoorWindowType } from './types';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import type { Wall, FurnitureItem, Tool, FurnitureType, FloorPlan, ElectricalPoint, ElectricalWire, PlumbingPoint, PlumbingPipe, ElectricalType, PlumbingType, DoorWindow, DoorWindowType, Surface } from './types';
 import { Toolbar } from './components/Toolbar';
 import { Canvas } from './components/Canvas';
 import { View3D } from './components/View3D';
@@ -7,25 +7,32 @@ import { FurniturePanel } from './components/FurniturePanel';
 import { DoorWindowPanel } from './components/DoorWindowPanel';
 import { ElectricalPanel } from './components/ElectricalPanel';
 import { PlumbingPanel } from './components/PlumbingPanel';
+import { SurfacePanel } from './components/SurfacePanel';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { MaterialsPanel } from './components/MaterialsPanel';
 import { calculateMaterials } from './utils/material-calculator';
 import { generateId } from './utils/id';
 
+const STORAGE_KEY = 'archint-project';
+
 function App() {
   const [walls, setWalls] = useState<Wall[]>([]);
   const [furniture, setFurniture] = useState<FurnitureItem[]>([]);
   const [doorsWindows, setDoorsWindows] = useState<DoorWindow[]>([]);
+  const [surfaces, setSurfaces] = useState<Surface[]>([]);
   const [electricalPoints, setElectricalPoints] = useState<ElectricalPoint[]>([]);
   const [electricalWires, setElectricalWires] = useState<ElectricalWire[]>([]);
   const [plumbingPoints, setPlumbingPoints] = useState<PlumbingPoint[]>([]);
   const [plumbingPipes, setPlumbingPipes] = useState<PlumbingPipe[]>([]);
+  const [projectName, setProjectName] = useState('Mon plan');
 
   const [activeTool, setActiveTool] = useState<Tool>('select');
+  const [snapSize, setSnapSize] = useState(20);
   const [selectedFurnitureType, setSelectedFurnitureType] = useState<FurnitureType | null>(null);
   const [selectedElectricalType, setSelectedElectricalType] = useState<ElectricalType | null>('outlet');
   const [selectedPlumbingType, setSelectedPlumbingType] = useState<PlumbingType | null>('water-supply');
   const [selectedDoorWindowType, setSelectedDoorWindowType] = useState<DoorWindowType | null>('door-interior');
+  const [selectedSurfaceMaterial, setSelectedSurfaceMaterial] = useState('floor-tile-60');
   const [selectedWireGauge, setSelectedWireGauge] = useState('2.5 mm²');
   const [selectedPipeDiameter, setSelectedPipeDiameter] = useState(16);
   const [selectedPipeNetwork, setSelectedPipeNetwork] = useState<'supply' | 'hot' | 'drain'>('supply');
@@ -33,19 +40,53 @@ function App() {
   const [selectedWallId, setSelectedWallId] = useState<string | null>(null);
   const [selectedFurnitureId, setSelectedFurnitureId] = useState<string | null>(null);
   const [selectedDoorWindowId, setSelectedDoorWindowId] = useState<string | null>(null);
+  const [selectedSurfaceId, setSelectedSurfaceId] = useState<string | null>(null);
   const [showMaterials, setShowMaterials] = useState(false);
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
   const [showElectrical3D, setShowElectrical3D] = useState(true);
   const [showPlumbing3D, setShowPlumbing3D] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const selectedWall = walls.find((w) => w.id === selectedWallId) || null;
   const selectedFurnitureItem = furniture.find((f) => f.id === selectedFurnitureId) || null;
   const selectedDoorWindow = doorsWindows.find((d) => d.id === selectedDoorWindowId) || null;
+  const selectedSurface = surfaces.find((s) => s.id === selectedSurfaceId) || null;
+
+  const applyPlan = (plan: Partial<FloorPlan>) => {
+    setProjectName(plan.name || 'Mon plan');
+    setWalls(plan.walls || []);
+    setFurniture(plan.furniture || []);
+    setDoorsWindows(plan.doorsWindows || []);
+    setSurfaces(plan.surfaces || []);
+    setElectricalPoints(plan.electricalPoints || []);
+    setElectricalWires(plan.electricalWires || []);
+    setPlumbingPoints(plan.plumbingPoints || []);
+    setPlumbingPipes(plan.plumbingPipes || []);
+  };
+
+  // Chargement automatique depuis le navigateur au démarrage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) applyPlan(JSON.parse(raw));
+    } catch { /* ignore */ }
+    setLoaded(true);
+  }, []);
+
+  // Sauvegarde automatique dans le navigateur
+  useEffect(() => {
+    if (!loaded) return;
+    const plan: FloorPlan = {
+      id: 'local', name: projectName, walls, furniture, doorsWindows, surfaces,
+      electricalPoints, electricalWires, plumbingPoints, plumbingPipes, gridSize: snapSize,
+    };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(plan)); } catch { /* ignore */ }
+  }, [loaded, projectName, walls, furniture, doorsWindows, surfaces, electricalPoints, electricalWires, plumbingPoints, plumbingPipes, snapSize]);
 
   const materials = useMemo(
-    () => calculateMaterials(walls, electricalPoints, electricalWires, plumbingPoints, plumbingPipes),
-    [walls, electricalPoints, electricalWires, plumbingPoints, plumbingPipes],
+    () => calculateMaterials(surfaces, electricalPoints, electricalWires, plumbingPoints, plumbingPipes),
+    [surfaces, electricalPoints, electricalWires, plumbingPoints, plumbingPipes],
   );
 
   const handleToolChange = (tool: Tool) => {
@@ -56,14 +97,14 @@ function App() {
 
   const handleSave = () => {
     const plan: FloorPlan = {
-      id: generateId(), name: 'Mon plan', walls, furniture, doorsWindows,
-      electricalPoints, electricalWires, plumbingPoints, plumbingPipes, gridSize: 20,
+      id: generateId(), name: projectName, walls, furniture, doorsWindows, surfaces,
+      electricalPoints, electricalWires, plumbingPoints, plumbingPipes, gridSize: snapSize,
     };
     const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'plan-architecture.json';
+    a.download = `${projectName.replace(/\s+/g, '-').toLowerCase() || 'plan'}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -78,13 +119,7 @@ function App() {
       const reader = new FileReader();
       reader.onload = (ev) => {
         const plan: FloorPlan = JSON.parse(ev.target!.result as string);
-        setWalls(plan.walls);
-        setFurniture(plan.furniture);
-        setDoorsWindows(plan.doorsWindows || []);
-        setElectricalPoints(plan.electricalPoints || []);
-        setElectricalWires(plan.electricalWires || []);
-        setPlumbingPoints(plan.plumbingPoints || []);
-        setPlumbingPipes(plan.plumbingPipes || []);
+        applyPlan(plan);
       };
       reader.readAsText(file);
     };
@@ -103,12 +138,21 @@ function App() {
 
   const handleClear = () => {
     if (confirm('Êtes-vous sûr de vouloir tout effacer ?')) {
-      setWalls([]); setFurniture([]); setDoorsWindows([]);
+      setWalls([]); setFurniture([]); setDoorsWindows([]); setSurfaces([]);
       setElectricalPoints([]); setElectricalWires([]);
       setPlumbingPoints([]); setPlumbingPipes([]);
-      setSelectedWallId(null); setSelectedFurnitureId(null); setSelectedDoorWindowId(null);
+      setSelectedWallId(null); setSelectedFurnitureId(null); setSelectedDoorWindowId(null); setSelectedSurfaceId(null);
     }
   };
+
+  const handleUpdateSurface = useCallback((s: Surface) => {
+    setSurfaces((prev) => prev.map((x) => (x.id === s.id ? s : x)));
+  }, []);
+
+  const handleDeleteSurface = useCallback((id: string) => {
+    setSurfaces((prev) => prev.filter((s) => s.id !== id));
+    setSelectedSurfaceId((cur) => (cur === id ? null : cur));
+  }, []);
 
   const handleUpdateWall = useCallback((wall: Wall) => {
     setWalls((prev) => prev.map((w) => (w.id === wall.id ? wall : w)));
@@ -129,6 +173,7 @@ function App() {
       setSelectedWallId(null);
     }
     if (selectedFurnitureId) { setFurniture((prev) => prev.filter((f) => f.id !== selectedFurnitureId)); setSelectedFurnitureId(null); }
+    if (selectedSurfaceId) { setSurfaces((prev) => prev.filter((s) => s.id !== selectedSurfaceId)); setSelectedSurfaceId(null); }
   };
 
   const showElecPanel = activeTool === 'electrical-point' || activeTool === 'electrical-wire';
@@ -137,7 +182,13 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>ArchInt — Plans d'Architecture Intérieure</h1>
+        <h1>ArchInt</h1>
+        <input
+          className="project-name"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          title="Nom du projet"
+        />
         <div className="view-toggle">
           <button className={`view-btn ${viewMode === '2d' ? 'active' : ''}`} onClick={() => setViewMode('2d')}>2D</button>
           <button className={`view-btn ${viewMode === '3d' ? 'active' : ''}`} onClick={() => setViewMode('3d')}>3D</button>
@@ -146,6 +197,8 @@ function App() {
       <Toolbar
         activeTool={activeTool}
         onToolChange={handleToolChange}
+        snapSize={snapSize}
+        onSnapChange={setSnapSize}
         onSave={handleSave}
         onLoad={handleLoad}
         onExport={handleExport}
@@ -189,28 +242,41 @@ function App() {
               onSelectNetwork={setSelectedPipeNetwork}
               onSetTool={setActiveTool}
             />
+            <SurfacePanel
+              visible={activeTool === 'surface' || selectedSurfaceId !== null}
+              selectedMaterial={selectedSurfaceMaterial}
+              selectedSurface={selectedSurface}
+              onSelectMaterial={setSelectedSurfaceMaterial}
+              onUpdateSurface={handleUpdateSurface}
+              onDeleteSurface={handleDeleteSurface}
+            />
             <Canvas
               walls={walls}
               furniture={furniture}
               doorsWindows={doorsWindows}
+              surfaces={surfaces}
               electricalPoints={electricalPoints}
               electricalWires={electricalWires}
               plumbingPoints={plumbingPoints}
               plumbingPipes={plumbingPipes}
               activeTool={activeTool}
+              snapSize={snapSize}
               selectedFurnitureType={selectedFurnitureType}
               selectedElectricalType={selectedElectricalType}
               selectedPlumbingType={selectedPlumbingType}
               selectedDoorWindowType={selectedDoorWindowType}
+              selectedSurfaceMaterial={selectedSurfaceMaterial}
               selectedWireGauge={selectedWireGauge}
               selectedPipeDiameter={selectedPipeDiameter}
               selectedPipeNetwork={selectedPipeNetwork}
               selectedWallId={selectedWallId}
               selectedFurnitureId={selectedFurnitureId}
               selectedDoorWindowId={selectedDoorWindowId}
+              selectedSurfaceId={selectedSurfaceId}
               onAddWall={(w) => setWalls((prev) => [...prev, w])}
               onAddFurniture={(f) => setFurniture((prev) => [...prev, f])}
               onAddDoorWindow={(dw) => setDoorsWindows((prev) => [...prev, dw])}
+              onAddSurface={(s) => setSurfaces((prev) => [...prev, s])}
               onAddElectricalPoint={(pt) => setElectricalPoints((prev) => [...prev, pt])}
               onAddElectricalWire={(w) => setElectricalWires((prev) => [...prev, w])}
               onAddPlumbingPoint={(pt) => setPlumbingPoints((prev) => [...prev, pt])}
@@ -218,9 +284,12 @@ function App() {
               onSelectWall={setSelectedWallId}
               onSelectFurniture={setSelectedFurnitureId}
               onSelectDoorWindow={setSelectedDoorWindowId}
+              onSelectSurface={setSelectedSurfaceId}
               onMoveFurniture={(id, x, y) => setFurniture((prev) => prev.map((f) => (f.id === id ? { ...f, x, y } : f)))}
               onMoveElectricalPoint={(id, x, y) => setElectricalPoints((prev) => prev.map((p) => (p.id === id ? { ...p, x, y } : p)))}
               onMovePlumbingPoint={(id, x, y) => setPlumbingPoints((prev) => prev.map((p) => (p.id === id ? { ...p, x, y } : p)))}
+              onUpdateSurface={handleUpdateSurface}
+              onDeleteSurface={handleDeleteSurface}
               onUpdateWall={handleUpdateWall}
               onDeleteWall={(id) => { setDoorsWindows((prev) => prev.filter((d) => d.wallId !== id)); setWalls((prev) => prev.filter((w) => w.id !== id)); }}
               onDeleteFurniture={(id) => setFurniture((prev) => prev.filter((f) => f.id !== id))}
