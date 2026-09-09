@@ -1,0 +1,12 @@
+{
+  "name": "email-verifier",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "email-verifier": "./cli.mjs"
+  },
+  "scripts": {
+    "verify": "node cli.mjs"
+  }
+}
