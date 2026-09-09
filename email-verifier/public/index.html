@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Email Verifier</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main>
+    <h1>Email Verifier</h1>
+    <p class="subtitle">Vérifie la syntaxe, les enregistrements MX, les domaines jetables et (optionnellement) l'acceptation SMTP réelle d'une liste d'adresses email.</p>
+
+    <form id="verify-form">
+      <label for="emails">Emails (un par ligne)</label>
+      <textarea id="emails" rows="8" placeholder="jean.dupont@exemple.com
+contact@exemple.com"></textarea>
+
+      <div class="options">
+        <label class="checkbox"><input type="checkbox" id="check-smtp" checked /> Vérification SMTP réelle</label>
+        <label class="checkbox"><input type="checkbox" id="check-catchall" checked /> Détection catch-all</label>
+      </div>
+
+      <button type="submit" id="submit-btn">Vérifier</button>
+    </form>
+
+    <p id="status" class="status" hidden></p>
+
+    <div id="results-wrap" hidden>
+      <table id="results">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Statut</th>
+            <th>Raison</th>
+            <th>Score</th>
+            <th>MX</th>
+            <th>Jetable</th>
+            <th>Rôle</th>
+            <th>Catch-all</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

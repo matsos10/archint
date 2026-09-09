@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { verifyEmail } from './lib/verifyEmail.mjs';
+import { runPool } from './lib/pool.mjs';
 
 function parseArgs(argv) {
   const args = { emails: [], file: null, json: false, noSmtp: false, noCatchAll: false, from: 'verify@example.com', timeout: 8000, port: 25, concurrency: 5 };
@@ -38,19 +39,6 @@ Examples:
   node cli.mjs --file emails.txt --json > results.json
   node cli.mjs someone@example.com --no-smtp   # use when outbound port 25 is blocked
 `);
-}
-
-async function runPool(items, limit, worker) {
-  const results = new Array(items.length);
-  let next = 0;
-  async function run() {
-    while (next < items.length) {
-      const i = next++;
-      results[i] = await worker(items[i], i);
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run));
-  return results;
 }
 
 function printTable(results) {
