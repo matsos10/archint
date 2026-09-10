@@ -8,6 +8,11 @@
   },
   "scripts": {
     "verify": "node cli.mjs",
-    "web": "node server.mjs"
+    "web": "node server.mjs",
+    "mcp": "node mcp-server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.76"
   }
 }
