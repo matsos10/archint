@@ -76,6 +76,19 @@ h2{font-size:20px;margin:24px 0 10px;font-weight:900}
 .fb .btn{margin-top:12px}
 .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 3px;font-weight:900}
 .frac span:first-child{border-bottom:3px solid currentColor;padding:0 4px}
+.vert{display:grid;--cw:48px;gap:4px 2px;justify-content:center;font-size:34px;font-weight:900;font-variant-numeric:tabular-nums;margin:12px auto}
+.vert .d{text-align:center;height:48px;line-height:48px}
+.vert .op{color:var(--pri)}
+.vert .bar{grid-column:1/-1;height:4px;background:var(--ink);border-radius:2px;margin:2px 0}
+.vert .carry{text-align:center;font-size:18px;color:var(--bad);height:22px;line-height:22px}
+.vert .cell{height:56px;border:3px dashed #d8ccb8;border-radius:10px;background:#fff;font-size:32px;font-weight:900;padding:0}
+.vert .cell.sel{border:3px solid var(--pri);background:#f4efff}
+.vert .cell.ok{border:3px solid var(--ok);background:var(--okbg);color:var(--ok)}
+.vert .cell.bad{border:3px solid var(--bad);background:var(--badbg);color:var(--bad)}
+.vert .res{color:var(--ok)}
+.fb .vert{--cw:36px;font-size:26px;margin:4px 0 10px;justify-content:start}
+.fb .vert .d{height:36px;line-height:36px}
+.hint{font-size:15px;font-weight:800;color:var(--muted);text-align:center;margin-top:6px}
 .box{display:inline-block;min-width:40px;border:3px dashed var(--pri);border-radius:8px;text-align:center;color:var(--pri)}
 table.cal{border-collapse:collapse;background:#fff;font-weight:800;font-size:16px}
 table.cal caption{font-weight:900;font-size:18px;padding-bottom:6px;text-transform:capitalize}
@@ -121,6 +134,7 @@ table.cal td.hl{background:#ffe8c7}
 const NAME = 'Eva';
 const TEST_DATE = new Date(2026, 9, 26);
 const KEY = 'eva-matematica-3ano-v1';
+const PROB_TRIES = 3;
 
 /* ---------- utilidades ---------- */
 const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -269,6 +283,44 @@ function pictoHTML(title, cats, vals, sym, per, who) {
   return h + `</table><div class="legend">${sym} = ${per} ${who}</div></div>`;
 }
 
+/* ---------- contas em coluna ---------- */
+const COLS = ['Unidades', 'Dezenas', 'Centenas', 'Milhares'];
+function vertQ(a, b, op) {
+  const ans = op === '+' ? a + b : op === '−' ? a - b : a * b;
+  const da = String(a).split('').reverse().map(Number), db = String(b).split('').reverse().map(Number);
+  const L = op === '×' ? da.length : Math.max(da.length, db.length), steps = [], carries = {};
+  let c = 0;
+  for (let p = 0; p < L; p++) {
+    const x = da[p] || 0, y = db[p] || 0, last = p === L - 1, col = `<b>${COLS[p]}:</b> `;
+    if (op === '+') {
+      const r = x + y + c;
+      steps.push(col + `${x} + ${y}${c ? ' + 1' : ''} = ${r}` + (r > 9 && !last ? `, escreve ${r % 10} e vai 1` : ''));
+      c = r > 9 ? 1 : 0; if (c && !last) carries[p + 1] = 1;
+    } else if (op === '−') {
+      const y2 = y + c, pre = c ? `${y} + 1 = ${y2}; ` : '';
+      if (x < y2) { steps.push(col + pre + `${x} − ${y2} não dá, então ${x + 10} − ${y2} = ${x + 10 - y2}, e vai 1`); c = 1; }
+      else { steps.push(col + pre + `${x} − ${y2} = ${x - y2}`); c = 0; }
+    } else {
+      const r = x * b + c;
+      steps.push(col + `${b} × ${x}${c ? ' + ' + c : ''} = ${r}` + (r > 9 && !last ? `, escreve ${r % 10} e vai ${Math.floor(r / 10)}` : ''));
+      c = Math.floor(r / 10); if (c && !last) carries[p + 1] = c;
+    }
+  }
+  const v = { a, b, op, w: op === '−' ? L : L + 1 };
+  return { kind: 'vert', prompt: `Faz a conta em coluna: <b>${a} ${op} ${b}</b>`, answer: ans, vert: v, visual: '', unit: '',
+    explain: vertHTML(v, String(ans), carries) + steps.join('<br>') + `<br>Resultado: <b>${N(ans)}</b>.` + (op === '−' ? ` Prova: ${ans} + ${b} = ${a}.` : '') };
+}
+function vertHTML(v, solved, carries) {
+  const w = v.w, padL = s => Array(w - s.length).fill('').concat(s.split(''));
+  const cell = d => `<div class="d">${d}</div>`;
+  let h = `<div class="vert" style="grid-template-columns:repeat(${w + 1},var(--cw))">`;
+  if (carries) { h += '<div></div>'; for (let i = 0; i < w; i++) h += `<div class="carry">${carries[w - 1 - i] || ''}</div>`; }
+  h += '<div></div>' + padL(String(v.a)).map(cell).join('') + `<div class="d op">${v.op}</div>` + padL(String(v.b)).map(cell).join('') + '<div class="bar"></div><div></div>';
+  if (solved !== undefined) h += padL(solved).map(d => `<div class="d res">${d}</div>`).join('');
+  else for (let i = 0; i < w; i++) h += `<button class="cell" data-c="${i}" aria-label="algarismo"></button>`;
+  return h + '</div>';
+}
+
 /* ---------- temas ---------- */
 const DOMAINS = [
   { name: 'Números e Operações', topics: ['calc','ord','num','frac','prob'] },
@@ -290,10 +342,10 @@ const T = {
 const GEN = {
   calc() {
     const t = rnd(0, 5);
-    if (t === 0) { const a = rnd(100, 799), b = rnd(20, 999 - a); return numQ(`Calcula: <b>${a} + ${b}</b>`, a + b, `Soma as unidades, depois as dezenas e depois as centenas (sem esquecer o "e vai um"): ${a} + ${b} = <b>${a + b}</b>.`); }
-    if (t === 1) { const a = rnd(300, 999), b = rnd(40, a - 50); return numQ(`Calcula: <b>${a} − ${b}</b>`, a - b, `${a} − ${b} = <b>${a - b}</b>. Confirma com a prova: ${a - b} + ${b} = ${a}.`); }
-    if (t === 2) { const a = rnd(2, 10), b = rnd(2, 10); return numQ(`Calcula: <b>${a} × ${b}</b>`, a * b, `${a} × ${b} = <b>${a * b}</b>` + (a <= 6 ? ` (${a} vezes o ${b}: ${Array(a).fill(b).join(' + ')} = ${a * b}).` : ` (tabuada do ${b}).`)); }
-    if (t === 3) { const a = rnd(12, 48), b = rnd(2, 5), d = a - a % 10, u = a % 10; return numQ(`Calcula: <b>${a} × ${b}</b>`, a * b, `Decompõe o ${a}: ${d} × ${b} + ${u} × ${b} = ${d * b} + ${u * b} = <b>${a * b}</b>.`); }
+    if (t === 0) { const a = rnd(100, 799); return vertQ(a, rnd(20, 999 - a), '+'); }
+    if (t === 1) { const a = rnd(300, 999); return vertQ(a, rnd(40, a - 50), '−'); }
+    if (t === 2) return vertQ(rnd(2, 10), rnd(2, 9), '×');
+    if (t === 3) return vertQ(rnd(12, 48), rnd(2, 5), '×');
     if (t === 4) { const a = rnd(20, 400), c = a + rnd(20, 450); return numQ(`Qual é o número que falta? <b>${a} + ${BOX} = ${c}</b>`, c - a, `O número que falta é ${c} − ${a} = <b>${c - a}</b>. Confirma: ${a} + ${c - a} = ${c}.`); }
     const k = pick([['dobro', 2], ['triplo', 3]]), n = k[1] === 2 ? rnd(12, 99) : rnd(11, 40);
     return numQ(`Qual é o <b>${k[0]}</b> de ${n}?`, n * k[1], `O ${k[0]} é ${k[1]} vezes o número: ${k[1]} × ${n} = <b>${n * k[1]}</b>.`);
@@ -602,9 +654,11 @@ function renderQ() {
   const q = ses.qs[ses.i], tp = T[q.topic];
   ses.done = false;
   let ans;
-  if (q.kind === 'mc') ans = `<div class="choices">${q.choices.map((c, i) => `<button class="choice" data-i="${i}">${c}</button>`).join('')}</div>`;
-  else ans = `<div class="inrow"><input id="inp" class="inp" inputmode="numeric" autocomplete="off" maxlength="6" aria-label="Resposta">${q.unit ? `<span class="unit">${q.unit}</span>` : ''}</div>
-    <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n => `<button data-k="${n}">${n}</button>`).join('')}<button data-k="del">⌫</button><button data-k="0">0</button><button data-k="ok" style="background:var(--pri);color:#fff">✓</button></div>`;
+  const PAD = `<div class="pad">${[1,2,3,4,5,6,7,8,9].map(n => `<button data-k="${n}">${n}</button>`).join('')}<button data-k="del">⌫</button><button data-k="0">0</button><button data-k="ok" style="background:var(--pri);color:#fff">✓</button></div>`;
+  ses.tries = 0;
+  if (q.kind === 'vert') ans = `<div class="hint">✏️ Começa pelas unidades (à direita). Toca num quadrado para o escolher.</div>${vertHTML(q.vert)}${PAD}`;
+  else if (q.kind === 'mc') ans = `<div class="choices">${q.choices.map((c, i) => `<button class="choice" data-i="${i}">${c}</button>`).join('')}</div>`;
+  else ans = `<div class="inrow"><input id="inp" class="inp" inputmode="numeric" autocomplete="off" maxlength="6" aria-label="Resposta">${q.unit ? `<span class="unit">${q.unit}</span>` : ''}</div>${q.topic === 'prob' ? `<div class="hint">Tens ${PROB_TRIES} tentativas.</div>` : ''}${PAD}`;
   app.innerHTML = `
     <div class="top"><button class="x" id="quit" aria-label="Sair">✕</button>
       <div class="pbar"><i style="width:${ses.i / ses.qs.length * 100}%"></i></div><span class="cnt">${ses.i + 1}/${ses.qs.length}</span></div>
@@ -617,7 +671,11 @@ function renderQ() {
     </div>`;
   document.getElementById('quit').onclick = () => { if (confirm('Queres sair? O que já respondeste fica guardado.')) home(); };
   if (q.kind === 'mc') app.querySelectorAll('.choice').forEach(b => b.onclick = () => check(Number(b.dataset.i)));
-  else {
+  else if (q.kind === 'vert') {
+    ses.cells = Array(q.vert.w).fill(''); ses.sel = q.vert.w - 1; paintCells();
+    app.querySelectorAll('.vert .cell').forEach(b => b.onclick = () => { if (ses.done) return; ses.sel = Number(b.dataset.c); paintCells(); });
+    app.querySelectorAll('.pad button').forEach(b => b.onclick = () => vertKey(b.dataset.k));
+  } else {
     const inp = document.getElementById('inp');
     inp.addEventListener('input', () => { inp.value = inp.value.replace(/\D/g, ''); });
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); submitNum(); } });
@@ -631,6 +689,23 @@ function renderQ() {
     if (matchMedia('(pointer:fine)').matches) inp.focus();
   }
 }
+function paintCells() {
+  app.querySelectorAll('.vert .cell').forEach((b, i) => { b.textContent = ses.cells[i]; b.classList.toggle('sel', i === ses.sel && !ses.done); });
+}
+function vertKey(k) {
+  if (ses.done) return;
+  if (k === 'ok') return submitVert();
+  if (k === 'del') { if (ses.cells[ses.sel] !== '') ses.cells[ses.sel] = ''; else if (ses.sel < ses.cells.length - 1) ses.cells[++ses.sel] = ''; }
+  else { ses.cells[ses.sel] = k; if (ses.sel > 0) ses.sel--; }
+  paintCells();
+}
+function submitVert() {
+  const c = ses.cells, first = c.findIndex(x => x !== '');
+  if (first < 0) return;
+  if (c.slice(first).some(x => x === '')) { document.getElementById('fb').innerHTML = '<div class="fb bad pop">Falta preencher um quadrado no meio do resultado.</div>'; return; }
+  document.getElementById('fb').innerHTML = '';
+  check(Number(c.join('')));
+}
 function submitNum() {
   const inp = document.getElementById('inp');
   if (ses.done || !inp.value) return;
@@ -638,9 +713,17 @@ function submitNum() {
 }
 function check(given) {
   if (ses.done) return;
+  const q = ses.qs[ses.i], ok = given === q.answer;
+  if (!ok && q.topic === 'prob' && ses.tries < PROB_TRIES - 1) {
+    ses.tries++; beep(false);
+    const left = PROB_TRIES - ses.tries, inp = document.getElementById('inp');
+    document.getElementById('fb').innerHTML = `<div class="fb bad pop"><b class="t">${N(given)} não está certo. Tenta outra vez! 🤔</b>Ainda tens <b>${left}</b> tentativa${left > 1 ? 's' : ''}. Lê o problema outra vez com atenção.</div>`;
+    inp.value = ''; if (matchMedia('(pointer:fine)').matches) inp.focus();
+    return;
+  }
   ses.done = true;
-  const q = ses.qs[ses.i], ok = q.kind === 'mc' ? given === q.answer : given === q.answer;
   if (q.kind === 'mc') app.querySelectorAll('.choice').forEach((b, i) => { b.disabled = true; if (i === q.answer) b.classList.add('ok'); else if (i === given) b.classList.add('bad'); });
+  else if (q.kind === 'vert') { paintCells(); app.querySelectorAll('.vert .cell').forEach(b => { b.disabled = true; if (b.textContent) b.classList.add(ok ? 'ok' : 'bad'); }); }
   else { const inp = document.getElementById('inp'); inp.disabled = true; inp.classList.add(ok ? 'ok' : 'bad'); }
   record(q, ok);
   beep(ok);
@@ -649,7 +732,7 @@ function check(given) {
   const oops = ['Quase! Vamos ver 🤔', 'Não faz mal, aprende-se assim 💡', 'Ups! Olha a explicação 👀'];
   const last = ses.i === ses.qs.length - 1;
   document.getElementById('fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'} pop">
-    <b class="t">${ok ? pick(cheers) : pick(oops)}</b>
+    <b class="t">${ok ? (ses.tries ? `Muito bem! Conseguiste à ${ses.tries + 1}.ª tentativa! 🎉` : pick(cheers)) : pick(oops)}</b>
     ${ok ? '' : `A resposta certa é: <b>${right}</b><br>`}${q.explain}
     <button class="btn ${ok ? 'green' : ''}" id="next">${last ? 'Ver resultado 🏁' : 'Continuar ➜'}</button></div>`;
   const nb = document.getElementById('next'); nb.onclick = next; nb.focus({ preventScroll: true });
@@ -748,6 +831,12 @@ document.addEventListener('keydown', e => {
   if (!ses) return;
   if (ses.done && e.key === 'Enter') { e.preventDefault(); next(); return; }
   const q = ses.qs[ses.i];
+  if (!ses.done && q && q.kind === 'vert') {
+    if (/^[0-9]$/.test(e.key)) vertKey(e.key);
+    else if (e.key === 'Backspace') { e.preventDefault(); vertKey('del'); }
+    else if (e.key === 'Enter') { e.preventDefault(); vertKey('ok'); }
+    return;
+  }
   if (!ses.done && q && q.kind === 'mc' && /^[1-4]$/.test(e.key) && Number(e.key) <= q.choices.length) check(Number(e.key) - 1);
 });
 
