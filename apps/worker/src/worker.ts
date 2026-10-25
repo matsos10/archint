@@ -4,12 +4,15 @@ import os from 'node:os';
 import type { Db } from '@somar/db';
 import { claimNextJob, completeJob, failJob, releaseStaleJobs } from '@somar/core';
 import { handlers as defaultHandlers, type JobHandler } from './handlers';
+import { runSchedules } from './scheduler';
 
 export interface WorkerOptions {
   db: Db;
   handlers?: Record<string, JobHandler>;
   pollIntervalMs?: number;
   heartbeatFile?: string;
+  /** Corre as tarefas periódicas (por omissão sim). */
+  schedules?: boolean;
   log?: (msg: string, extra?: Record<string, unknown>) => void;
 }
 
@@ -19,12 +22,17 @@ export function createWorker(opts: WorkerOptions) {
   const log = opts.log ?? ((m, e) => console.log(JSON.stringify({ t: new Date().toISOString(), worker: id, msg: m, ...e })));
   let running = false;
   let lastMaintenance = 0;
+  let lastSchedule = 0;
 
   /** Processa um trabalho; devolve false se a fila estiver vazia. */
   async function tick(): Promise<boolean> {
     if (Date.now() - lastMaintenance > 60_000) {
       lastMaintenance = Date.now();
       await releaseStaleJobs(opts.db);
+    }
+    if (opts.schedules !== false && Date.now() - lastSchedule > 10 * 60_000) {
+      lastSchedule = Date.now();
+      await runSchedules(opts.db).catch((e) => log('schedule.error', { error: String(e) }));
     }
     const job = await claimNextJob(opts.db, id, Object.keys(handlers));
     if (!job) return false;

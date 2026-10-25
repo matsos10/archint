@@ -124,6 +124,9 @@ importers:
       '@somar/tax-engine':
         specifier: workspace:*
         version: link:../packages/tax-engine
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
 
   packages/ai:
     dependencies:

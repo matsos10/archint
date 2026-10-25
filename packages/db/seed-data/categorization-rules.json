@@ -1,0 +1,159 @@
+[
+  {
+    "pattern": "\\bSEG(URANCA)? SOCIAL\\b|\\bSEGSOCIAL\\b|\\bISS IP\\b",
+    "direction": "out",
+    "category": "seguranca_social",
+    "priority": 10
+  },
+  {
+    "pattern": "\\b(ESTADO|AT|AUTORIDADE TRIBUTARIA|FINANCAS)\\b.*\\bIVA\\b|\\bIVA\\b.*\\b(ESTADO|AT|FINANCAS)\\b|\\bPAG(AMENTO)? IVA\\b",
+    "direction": "out",
+    "category": "pagamento_iva",
+    "priority": 10
+  },
+  {
+    "pattern": "\\b(ESTADO|AT|FINANCAS)\\b.*\\b(IRS|IRC)\\b|\\bPAG(AMENTO)? (IRS|IRC)\\b",
+    "direction": "out",
+    "category": "pagamento_irs_irc",
+    "priority": 10
+  },
+  {
+    "pattern": "\\bREEMBOLSO\\b.*\\b(IRS|IRC|IVA)\\b|\\b(IRS|IRC|IVA)\\b.*\\bREEMBOLSO\\b",
+    "direction": "in",
+    "category": "reembolso_impostos",
+    "priority": 10
+  },
+  {
+    "pattern": "\\bCOMISS(AO|OES)\\b|\\bIMPOSTO (DO )?SELO\\b|\\bMANUTENCAO (DE )?CONTA\\b|\\bDESPESAS? BANCARIAS?\\b",
+    "direction": "out",
+    "category": "comissoes_bancarias",
+    "priority": 20
+  },
+  {
+    "pattern": "\\bCONTA PESSOAL\\b|\\bCONTA PROPRIA\\b|\\bLEVANTAMENTO\\b|\\bLEV ATM\\b",
+    "direction": "out",
+    "category": "transferencia_pessoal",
+    "priority": 20
+  },
+  {
+    "pattern": "\\bCOWORK|\\bESCRITORIO PARTILHADO\\b",
+    "direction": "out",
+    "category": "escritorio_coworking",
+    "priority": 30
+  },
+  {
+    "pattern": "\\bRENDA\\b|\\bARRENDAMENTO\\b",
+    "direction": "out",
+    "category": "rendas",
+    "priority": 40
+  },
+  {
+    "pattern": "\\bMEO\\b|\\bNOS COMUNICACOES\\b|\\bNOS\\b|\\bVODAFONE\\b|\\bNOWO\\b|\\bDIGI\\b|\\bALTICE\\b",
+    "direction": "out",
+    "category": "telecomunicacoes",
+    "priority": 30
+  },
+  {
+    "pattern": "\\bEDP\\b|\\bENDESA\\b|\\bGOLDENERGY\\b|\\bIBERDROLA\\b|\\bEPAL\\b|\\bAGUAS DE\\b|\\bGALP GAS\\b",
+    "direction": "out",
+    "category": "eletricidade_agua",
+    "priority": 30
+  },
+  {
+    "pattern": "\\bGALP\\b|\\bREPSOL\\b|\\bPRIO\\b|\\bBP\\b|\\bCEPSA\\b|\\bCOMBUSTIVE(L|IS)\\b|\\bGASOLEO\\b",
+    "direction": "out",
+    "category": "combustivel_gasoleo",
+    "priority": 35
+  },
+  {
+    "pattern": "\\bVIA VERDE\\b|\\bPORTAGE(M|NS)\\b|\\bBRISA\\b|\\bOFICINA\\b|\\bPNEUS?\\b",
+    "direction": "out",
+    "category": "viaturas_manutencao",
+    "priority": 35
+  },
+  {
+    "pattern": "\\bRESTAURANTE\\b|\\bREST\\b|\\bCAFE\\b|\\bPASTELARIA\\b|\\bSNACK\\b|\\bTASCA\\b|\\bUBER EATS\\b|\\bGLOVO\\b|\\bBOLT FOOD\\b",
+    "direction": "out",
+    "category": "refeicoes_representacao",
+    "priority": 40
+  },
+  {
+    "pattern": "\\bHOTEL\\b|\\bBOOKING\\b|\\bAIRBNB\\b|\\bCP COMBOIOS\\b|\\bTAP\\b|\\bRYANAIR\\b|\\bEASYJET\\b|\\bUBER\\b|\\bBOLT\\b",
+    "direction": "out",
+    "category": "deslocacoes_alojamento",
+    "priority": 45
+  },
+  {
+    "pattern": "\\bWORTEN\\b|\\bFNAC\\b|\\bPCDIGA\\b|\\bGLOBALDATA\\b|\\bINFORMATICA\\b|\\bCOMPUTADOR\\b|\\bAPPLE STORE\\b",
+    "direction": "out",
+    "category": "equipamento_informatico",
+    "priority": 40
+  },
+  {
+    "pattern": "\\bPAPELARIA\\b|\\bSTAPLES\\b|\\bMATERIAL (DE )?ESCRITORIO\\b",
+    "direction": "out",
+    "category": "material_escritorio",
+    "priority": 40
+  },
+  {
+    "pattern": "\\bASSINATURA\\b|\\bSUBSCRI|\\bADOBE\\b|\\bMICROSOFT\\b|\\bGOOGLE WORKSPACE\\b|\\bNOTION\\b|\\bSLACK\\b|\\bFIGMA\\b|\\bCANVA\\b|\\bDROPBOX\\b",
+    "direction": "out",
+    "category": "software_subscricoes",
+    "priority": 45
+  },
+  {
+    "pattern": "\\bDOMINIOS?\\b|\\bHOSTING\\b|\\bALOJAMENTO WEB\\b|\\bPTISP\\b|\\bAMEN\\b|\\bOVH\\b|\\bHOSTINGER\\b",
+    "direction": "out",
+    "category": "servicos_informaticos",
+    "priority": 40
+  },
+  {
+    "pattern": "\\bFORMACAO\\b|\\bCURSO\\b|\\bACADEMY\\b|\\bWORKSHOP\\b|\\bUDEMY\\b",
+    "direction": "out",
+    "category": "formacao",
+    "priority": 45
+  },
+  {
+    "pattern": "\\bGRAFICA\\b|\\bTIPOGRAFIA\\b|\\bIMPRESSAO\\b",
+    "direction": "out",
+    "category": "servicos_terceiros",
+    "priority": 45
+  },
+  {
+    "pattern": "\\bPUBLICIDADE\\b|\\bFACEBK\\b|\\bMETA ADS\\b|\\bGOOGLE ADS\\b|\\bLINKEDIN ADS\\b",
+    "direction": "out",
+    "category": "publicidade",
+    "priority": 45
+  },
+  {
+    "pattern": "\\bSEGURO\\b|\\bFIDELIDADE\\b|\\bAGEAS\\b|\\bALLIANZ\\b|\\bTRANQUILIDADE\\b|\\bGENERALI\\b",
+    "direction": "out",
+    "category": "seguros",
+    "priority": 40
+  },
+  {
+    "pattern": "\\bCONTABILI|\\bADVOGAD|\\bSOLICITADOR\\b|\\bNOTARIO\\b",
+    "direction": "out",
+    "category": "contabilidade_juridico",
+    "priority": 40
+  },
+  {
+    "pattern": "\\bORDEM DOS\\b|\\bQUOTA\\b|\\bQUOTAS\\b",
+    "direction": "out",
+    "category": "quotas_profissionais",
+    "priority": 45
+  },
+  {
+    "pattern": "\\bCONTINENTE\\b|\\bPINGO DOCE\\b|\\bLIDL\\b|\\bALDI\\b|\\bMINIPRECO\\b|\\bINTERMARCHE\\b|\\bAUCHAN\\b|\\bFARMACIA\\b",
+    "direction": "out",
+    "category": "despesa_pessoal",
+    "priority": 60
+  },
+  {
+    "pattern": "\\bTRF\\b|\\bTRANSF|\\bTRANSFERENCIA\\b|\\bMB WAY\\b|\\bSEPA\\b",
+    "direction": "in",
+    "category": "receita_servicos",
+    "priority": 90,
+    "confidence": 0.5
+  }
+]

@@ -17,6 +17,7 @@ describe('fila de trabalhos', () => {
     let calls = 0;
     const worker = createWorker({
       db: h.db,
+      schedules: false,
       log: () => {},
       handlers: {
         ok: async () => {},
@@ -46,5 +47,17 @@ describe('fila de trabalhos', () => {
     const [dead] = await h.db.select().from(jobs).where(eq(jobs.id, boomId!));
     expect(dead!.status).toBe('dead');
     expect(calls).toBe(2);
+  });
+});
+
+describe('agendador', () => {
+  it('agenda sincronizações e alertas sem duplicar na mesma janela', async () => {
+    const { runSchedules } = await import('../../src/scheduler');
+    const now = new Date('2026-03-01T07:00:00Z');
+    const a = await runSchedules(h.db, now);
+    const b = await runSchedules(h.db, now);
+    expect(a).toEqual(b);
+    const rows = await h.db.select().from(jobs).where(eq(jobs.type, 'insights.refresh'));
+    expect(rows.length).toBe(a.accounts);
   });
 });
