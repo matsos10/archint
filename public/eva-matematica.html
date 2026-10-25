@@ -46,7 +46,7 @@ h2{font-size:20px;margin:24px 0 10px;font-weight:900}
 .meter i{display:block;height:100%;border-radius:99px}
 .lvl{font-size:13px;font-weight:800;margin-top:4px}
 .top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.x{width:42px;height:42px;border-radius:50%;background:#fff;font-size:20px;font-weight:900;box-shadow:0 2px 0 var(--line);flex:none}
+.x{height:42px;padding:0 14px;border-radius:999px;background:#fff;font-size:16px;font-weight:900;box-shadow:0 2px 0 var(--line);flex:none}
 .pbar{flex:1;height:16px;background:#fff;border-radius:99px;overflow:hidden;box-shadow:inset 0 0 0 2px var(--line)}
 .pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pri2),var(--pri));border-radius:99px;transition:width .3s}
 .cnt{font-weight:900;min-width:52px;text-align:right}
@@ -89,6 +89,7 @@ h2{font-size:20px;margin:24px 0 10px;font-weight:900}
 .vert .res{color:var(--ok)}
 .fb .vert{--cw:36px;font-size:26px;margin:4px 0 10px;justify-content:start}
 .fb .vert .d{height:36px;line-height:36px}
+.vert .lab{font-size:15px;font-weight:800;color:var(--muted);align-self:center;padding-left:8px;white-space:nowrap}
 .hint{font-size:15px;font-weight:800;color:var(--muted);text-align:center;margin-top:6px}
 .box{display:inline-block;min-width:40px;border:3px dashed var(--pri);border-radius:8px;text-align:center;color:var(--pri)}
 table.cal{border-collapse:collapse;background:#fff;font-weight:800;font-size:16px}
@@ -313,16 +314,36 @@ function vertQ(a, b, op) {
   }
   const v = { a, b, op, w: op === '−' ? L : L + 1 };
   return { kind: 'vert', prompt: `Faz a conta em coluna: <b>${a} ${op} ${b}</b>`, answer: ans, vert: v, visual: '', unit: '',
-    explain: vertHTML(v, String(ans), carries) + steps.join('<br>') + `<br>Resultado: <b>${N(ans)}</b>.` + (op === '−' ? ` Prova: ${ans} + ${b} = ${a}.` : '') };
+    explain: vertHTML(v, true, carries) + steps.join('<br>') + `<br>Resultado: <b>${N(ans)}</b>.` + (op === '−' ? ` Prova: ${ans} + ${b} = ${a}.` : '') };
 }
+function levelQ(a, b) {
+  const parts = [], labels = [], steps = [];
+  String(a).split('').reverse().map(Number).forEach((d, p) => {
+    if (!d) return;
+    const pv = d * 10 ** p;
+    parts.push(pv * b); labels.push(`${pv} × ${b}`); steps.push(`<b>${COLS[p]}:</b> ${pv} × ${b} = ${pv * b}`);
+  });
+  const ans = a * b, v = { a, b, op: '×', w: String(a).length + 1, parts, labels };
+  steps.push(`<b>Soma:</b> ${parts.join(' + ')} = ${ans}`);
+  return { kind: 'vert', prompt: `Faz a conta em coluna: <b>${a} × ${b}</b>`, answer: ans, vert: v, visual: '', unit: '',
+    explain: vertHTML(v, true) + steps.join('<br>') + `<br>Resultado: <b>${N(ans)}</b>.` };
+}
+const vertRows = v => v.parts ? [...v.parts, v.a * v.b] : [v.op === '+' ? v.a + v.b : v.op === '−' ? v.a - v.b : v.a * v.b];
 function vertHTML(v, solved, carries) {
-  const w = v.w, padL = s => Array(w - s.length).fill('').concat(s.split(''));
-  const cell = d => `<div class="d">${d}</div>`;
-  let h = `<div class="vert" style="grid-template-columns:repeat(${w + 1},var(--cw))">`;
-  if (carries) { h += '<div></div>'; for (let i = 0; i < w; i++) h += `<div class="carry">${carries[w - 1 - i] || ''}</div>`; }
-  h += '<div></div>' + padL(String(v.a)).map(cell).join('') + `<div class="d op">${v.op}</div>` + padL(String(v.b)).map(cell).join('') + '<div class="bar"></div><div></div>';
-  if (solved !== undefined) h += padL(solved).map(d => `<div class="d res">${d}</div>`).join('');
-  else for (let i = 0; i < w; i++) h += `<button class="cell" data-c="${i}" aria-label="algarismo"></button>`;
+  const w = v.w, lv = !!v.parts, padL = s => Array(w - s.length).fill('').concat(s.split(''));
+  const cell = d => `<div class="d">${d}</div>`, end = lv ? '<div></div>' : '';
+  const bar = `<div class="bar" style="grid-column:1 / span ${w + 1}"></div>${end}`;
+  let h = `<div class="vert" style="grid-template-columns:repeat(${w + 1},var(--cw))${lv ? ' auto' : ''}">`;
+  if (carries) { h += '<div></div>'; for (let i = 0; i < w; i++) h += `<div class="carry">${carries[w - 1 - i] || ''}</div>`; h += end; }
+  h += '<div></div>' + padL(String(v.a)).map(cell).join('') + end + `<div class="d op">${v.op}</div>` + padL(String(v.b)).map(cell).join('') + end + bar;
+  vertRows(v).forEach((val, r) => {
+    const part = lv && r < v.parts.length;
+    if (lv && !part) h += bar;
+    h += `<div class="d op">${part && r > 0 && r === v.parts.length - 1 ? '+' : ''}</div>`;
+    if (solved) h += padL(String(val)).map(d => `<div class="d res">${d}</div>`).join('');
+    else for (let i = 0; i < w; i++) h += `<button class="cell" data-r="${r}" data-c="${i}" aria-label="algarismo"></button>`;
+    if (lv) h += `<div class="lab">${part ? `(${v.labels[r]})` : ''}</div>`;
+  });
   return h + '</div>';
 }
 
@@ -350,7 +371,7 @@ const GEN = {
     if (t === 0) { const a = rnd(100, 799); return vertQ(a, rnd(20, 999 - a), '+'); }
     if (t === 1) { const a = rnd(300, 999); return vertQ(a, rnd(40, a - 50), '−'); }
     if (t === 2) return vertQ(rnd(2, 10), rnd(2, 9), '×');
-    if (t === 3) return vertQ(rnd(12, 48), rnd(2, 5), '×');
+    if (t === 3) return rnd(0, 2) ? levelQ(rnd(1, 4) * 10 + rnd(1, 9), rnd(2, 5)) : levelQ(rnd(1, 2) * 100 + rnd(1, 9) * 10 + rnd(1, 9), rnd(2, 4));
     if (t === 4) { const a = rnd(20, 400), c = a + rnd(20, 450); return numQ(`Qual é o número que falta? <b>${a} + ${BOX} = ${c}</b>`, c - a, `O número que falta é ${c} − ${a} = <b>${c - a}</b>. Confirma: ${a} + ${c - a} = ${c}.`); }
     const k = pick([['dobro', 2], ['triplo', 3]]), n = k[1] === 2 ? rnd(12, 99) : rnd(11, 40);
     return numQ(`Qual é o <b>${k[0]}</b> de ${n}?`, n * k[1], `O ${k[0]} é ${k[1]} vezes o número: ${k[1]} × ${n} = <b>${n * k[1]}</b>.`);
@@ -674,11 +695,11 @@ function renderQ() {
   let ans;
   const PAD = `<div class="pad">${[1,2,3,4,5,6,7,8,9].map(n => `<button data-k="${n}">${n}</button>`).join('')}<button data-k="del">⌫</button><button data-k="0">0</button><button data-k="ok" style="background:var(--pri);color:#fff">✓</button></div>`;
   ses.tries = 0;
-  if (q.kind === 'vert') ans = `<div class="hint">✏️ Começa pelas unidades (à direita). Toca num quadrado para o escolher.</div>${vertHTML(q.vert)}${PAD}`;
+  if (q.kind === 'vert') ans = `<div class="hint">✏️ ${q.vert.parts ? 'Multiplica cada algarismo, linha a linha, e no fim soma tudo.' : 'Começa pelas unidades (à direita).'} Toca num quadrado para o escolher.</div>${vertHTML(q.vert)}${PAD}`;
   else if (q.kind === 'mc') ans = `<div class="choices">${q.choices.map((c, i) => `<button class="choice" data-i="${i}">${c}</button>`).join('')}</div>`;
   else ans = `<div class="inrow"><input id="inp" class="inp" inputmode="numeric" autocomplete="off" maxlength="6" aria-label="Resposta">${q.unit ? `<span class="unit">${q.unit}</span>` : ''}</div>${q.topic === 'prob' ? `<div class="hint">Tens ${PROB_TRIES} tentativas.</div>` : ''}${PAD}`;
   app.innerHTML = `
-    <div class="top"><button class="x" id="quit" aria-label="Sair">✕</button>
+    <div class="top"><button class="x" id="quit" aria-label="Voltar ao início">🏠 Início</button>
       <div class="pbar"><i style="width:${ses.i / ses.qs.length * 100}%"></i></div><span class="cnt">${ses.i + 1}/${ses.qs.length}</span></div>
     <div class="card pop">
       <span class="tag" style="background:${tp.color}">${tp.icon} ${tp.name}</span>
@@ -687,11 +708,11 @@ function renderQ() {
       <div id="ans">${ans}</div>
       <div id="fb"></div>
     </div>`;
-  document.getElementById('quit').onclick = () => { if (confirm('Queres sair? O que já respondeste fica guardado.')) home(); };
+  document.getElementById('quit').onclick = () => { if (confirm('Voltar ao início? O que já respondeste fica guardado.')) home(); };
   if (q.kind === 'mc') app.querySelectorAll('.choice').forEach(b => b.onclick = () => check(Number(b.dataset.i)));
   else if (q.kind === 'vert') {
-    ses.cells = Array(q.vert.w).fill(''); ses.sel = q.vert.w - 1; paintCells();
-    app.querySelectorAll('.vert .cell').forEach(b => b.onclick = () => { if (ses.done) return; ses.sel = Number(b.dataset.c); paintCells(); });
+    ses.rows = vertRows(q.vert).map(() => Array(q.vert.w).fill('')); ses.r = 0; ses.sel = q.vert.w - 1; paintCells();
+    app.querySelectorAll('.vert .cell').forEach(b => b.onclick = () => { if (ses.done) return; ses.r = Number(b.dataset.r); ses.sel = Number(b.dataset.c); paintCells(); });
     app.querySelectorAll('.pad button').forEach(b => b.onclick = () => vertKey(b.dataset.k));
   } else {
     const inp = document.getElementById('inp');
@@ -708,21 +729,40 @@ function renderQ() {
   }
 }
 function paintCells() {
-  app.querySelectorAll('.vert .cell').forEach((b, i) => { b.textContent = ses.cells[i]; b.classList.toggle('sel', i === ses.sel && !ses.done); });
+  app.querySelectorAll('.vert .cell').forEach(b => {
+    const r = Number(b.dataset.r), c = Number(b.dataset.c);
+    b.textContent = ses.rows[r][c]; b.classList.toggle('sel', r === ses.r && c === ses.sel && !ses.done);
+  });
 }
 function vertKey(k) {
   if (ses.done) return;
   if (k === 'ok') return submitVert();
-  if (k === 'del') { if (ses.cells[ses.sel] !== '') ses.cells[ses.sel] = ''; else if (ses.sel < ses.cells.length - 1) ses.cells[++ses.sel] = ''; }
-  else { ses.cells[ses.sel] = k; if (ses.sel > 0) ses.sel--; }
+  const row = ses.rows[ses.r], w = row.length;
+  if (k === 'del') {
+    if (row[ses.sel] !== '') row[ses.sel] = '';
+    else if (ses.sel < w - 1) row[++ses.sel] = '';
+    else if (ses.r > 0) { const pr = ses.rows[--ses.r], f = pr.findIndex(x => x !== ''); ses.sel = f < 0 ? w - 1 : f; pr[ses.sel] = ''; }
+  } else {
+    row[ses.sel] = k; if (ses.sel > 0) ses.sel--;
+    const exp = vertRows(ses.qs[ses.i].vert);
+    if (ses.r < exp.length - 1 && row.filter(x => x !== '').length >= String(exp[ses.r]).length) { ses.r++; ses.sel = w - 1; }
+  }
   paintCells();
 }
 function submitVert() {
-  const c = ses.cells, first = c.findIndex(x => x !== '');
-  if (first < 0) return;
-  if (c.slice(first).some(x => x === '')) { document.getElementById('fb').innerHTML = '<div class="fb bad pop">Falta preencher um quadrado no meio do resultado.</div>'; return; }
+  const vals = [];
+  for (const c of ses.rows) {
+    const first = c.findIndex(x => x !== '');
+    if (first < 0 || c.slice(first).some(x => x === '')) {
+      document.getElementById('fb').innerHTML = `<div class="fb bad pop">${ses.rows.length > 1 ? 'Preenche todas as linhas da conta.' : 'Falta preencher um quadrado no meio do resultado.'}</div>`;
+      return;
+    }
+    vals.push(Number(c.join('')));
+  }
   document.getElementById('fb').innerHTML = '';
-  check(Number(c.join('')));
+  ses.vals = vals;
+  const q = ses.qs[ses.i], exp = vertRows(q.vert);
+  check(vals.every((x, i) => x === exp[i]) ? q.answer : -1);
 }
 function submitNum() {
   const inp = document.getElementById('inp');
@@ -741,7 +781,7 @@ function check(given) {
   }
   ses.done = true;
   if (q.kind === 'mc') app.querySelectorAll('.choice').forEach((b, i) => { b.disabled = true; if (i === q.answer) b.classList.add('ok'); else if (i === given) b.classList.add('bad'); });
-  else if (q.kind === 'vert') { paintCells(); app.querySelectorAll('.vert .cell').forEach(b => { b.disabled = true; if (b.textContent) b.classList.add(ok ? 'ok' : 'bad'); }); }
+  else if (q.kind === 'vert') { paintCells(); const exp = vertRows(q.vert); app.querySelectorAll('.vert .cell').forEach(b => { const r = Number(b.dataset.r); b.disabled = true; if (b.textContent) b.classList.add(ses.vals[r] === exp[r] ? 'ok' : 'bad'); }); }
   else { const inp = document.getElementById('inp'); inp.disabled = true; inp.classList.add(ok ? 'ok' : 'bad'); }
   record(q, ok);
   beep(ok);
@@ -751,7 +791,7 @@ function check(given) {
   const last = ses.i === ses.qs.length - 1;
   document.getElementById('fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'} pop">
     <b class="t">${ok ? (ses.tries ? `Muito bem! Conseguiste à ${ses.tries + 1}.ª tentativa! 🎉` : pick(cheers)) : pick(oops)}</b>
-    ${ok ? '' : right.includes('<svg') ? 'A resposta certa é o relógio a verde.<br>' : `A resposta certa é: <b>${right}</b><br>`}${q.explain}
+    ${ok ? '' : q.kind === 'vert' && q.vert.parts ? 'Vê a conta resolvida:<br>' : right.includes('<svg') ? 'A resposta certa é o relógio a verde.<br>' : `A resposta certa é: <b>${right}</b><br>`}${q.explain}
     <button class="btn ${ok ? 'green' : ''}" id="next">${last ? 'Ver resultado 🏁' : 'Continuar ➜'}</button></div>`;
   const nb = document.getElementById('next'); nb.onclick = next; nb.focus({ preventScroll: true });
   document.getElementById('fb').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
