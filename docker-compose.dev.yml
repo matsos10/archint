@@ -1,0 +1,7 @@
+# Override para desenvolvimento/local: publica a porta 3000 no host.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+services:
+  web:
+    ports: ['3000:3000']
+    environment:
+      NODE_ENV: production

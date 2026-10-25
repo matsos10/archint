@@ -1,0 +1,10 @@
+{
+  "name": "@somar/tax-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Motor fiscal e contabilístico português, em TypeScript puro, sem dependências de UI nem de IA.",
+  "exports": { ".": "./src/index.ts", "./params/*": "./params/*" },
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": { "zod": "^4.6.7" }
+}

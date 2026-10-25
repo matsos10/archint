@@ -1,73 +1,34 @@
-# React + TypeScript + Vite
+# Somar
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Contabilidade online para trabalhadores independentes e pequenas empresas em Portugal: contabilidade automatizada,
+faturação, declarações fiscais e acompanhamento por contabilistas certificados parceiros.
 
-Currently, two official plugins are available:
+> **Aviso:** o Somar apoia, mas não substitui um contabilista certificado. O utilizador é responsável pelas declarações
+> que submete. Os parâmetros fiscais devem ser confirmados nas fontes oficiais (Portal das Finanças, Segurança Social).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Estrutura
 
-## React Compiler
+| Caminho | Conteúdo |
+|---|---|
+| `apps/web` | Next.js (App Router) — UI e API |
+| `apps/worker` | Worker de fila (sincronização bancária, OCR, PDF, lembretes) |
+| `packages/db` | Schema Drizzle, migrations SQL (incl. RLS), seeds |
+| `packages/core` | Serviços de servidor: auth/2FA, cripto, armazenamento, contas, fila |
+| `packages/tax-engine` | Motor fiscal em TypeScript puro (sem UI nem IA) |
+| `packages/ai` | Camada de IA (propõe; o motor valida; o utilizador confirma) |
+| `fixtures/` | Caso de referência (ENI, regime simplificado, IVA trimestral) |
+| `apps/archint-planner` | App anterior do repositório (não relacionada, fora do workspace) |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Desenvolvimento
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm db:migrate && pnpm db:seed     # DATABASE_URL / DATABASE_URL_UNPOOLED
+pnpm dev                            # http://localhost:3000
+pnpm test                           # unitários + integração (TEST_DATABASE_URL)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Os testes de integração usam um Postgres real com um papel **não** superutilizador (como no Neon), para que a RLS
+seja efetiva. Por omissão: `postgres://dev:dev@localhost:5432/contas_test`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Deploy: ver [`DEPLOY.md`](DEPLOY.md). Decisões e assunções: ver [`ASSUNCOES.md`](ASSUNCOES.md).

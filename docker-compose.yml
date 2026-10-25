@@ -1,0 +1,48 @@
+# Stack de produção Somar. O proxy reverso/TLS (Nginx Proxy Manager) está fora deste stack:
+# o serviço "web" junta-se à rede Docker partilhada com o NPM e só expõe a porta interna 3000.
+# A base de dados é o Neon (gerido externamente): não há container de Postgres.
+name: somar
+
+x-app: &app
+  env_file: .env
+  restart: unless-stopped
+  volumes:
+    - files:/data/files
+  logging:
+    driver: json-file
+    options: { max-size: '10m', max-file: '5' }
+
+services:
+  migrate:
+    <<: *app
+    build: { context: ., dockerfile: docker/Dockerfile, target: worker }
+    image: somar-worker:${TAG:-latest}
+    command: ['node', 'bootstrap.js', 'bootstrap']
+    restart: 'no'
+
+  web:
+    <<: *app
+    build: { context: ., dockerfile: docker/Dockerfile, target: web }
+    image: somar-web:${TAG:-latest}
+    environment:
+      STORAGE_DIR: /data/files
+    expose: ['3000']
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    networks: [default, proxy]
+
+  worker:
+    <<: *app
+    image: somar-worker:${TAG:-latest}
+    environment:
+      STORAGE_DIR: /data/files
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+volumes:
+  files:
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-npm_proxy}

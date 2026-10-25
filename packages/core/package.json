@@ -1,0 +1,15 @@
+{
+  "name": "@somar/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Serviços de domínio do servidor (auth, cripto, armazenamento, contas) partilhados pelo web e pelo worker.",
+  "exports": { ".": "./src/index.ts", "./*": "./src/*.ts" },
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@somar/db": "workspace:*",
+    "@somar/tax-engine": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "zod": "^4.6.7"
+  }
+}
