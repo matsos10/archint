@@ -22,6 +22,7 @@ export async function runSchedules(db: Db, now = new Date()) {
   const accs = await db.execute<{ id: string }>(sql`select id from accounts where deleted_at is null`);
   for (const a of accs.rows) {
     await enqueueJob(db, 'insights.refresh', {}, { accountId: a.id, dedupeKey: `insights:${a.id}:${day}` });
+    await enqueueJob(db, 'obligations.notify', {}, { accountId: a.id, dedupeKey: `obligations:${a.id}:${day}` });
     // Lembretes às 9h (UTC ≈ hora de Lisboa no inverno): só a partir dessa hora, uma vez por dia
     if (now.getUTCHours() >= 9) {
       await enqueueJob(db, 'invoices.reminders', {}, { accountId: a.id, dedupeKey: `reminders:${a.id}:${day}` });

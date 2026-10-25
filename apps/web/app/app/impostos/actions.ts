@@ -1,9 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { and, eq } from 'drizzle-orm';
 import { taxObligations, withTenant } from '@somar/db';
-import { audit } from '@somar/core';
+import { audit, confirmDeclaration, loadTaxParams, markDeclarationSubmitted, prepareDeclaration } from '@somar/core';
+import { toActionError, type ActionState } from '@/lib/action';
 import { getDb } from '@/lib/db';
 import { requireAccount } from '@/lib/session';
 
@@ -25,4 +27,41 @@ export async function setObligationStatus(id: string, status: string) {
   });
   revalidatePath('/app/impostos');
   return { ok: true };
+}
+
+export async function prepareDeclarationAction(obligationId: string) {
+  const ctx = await requireAccount();
+  const loaded = await loadTaxParams(getDb());
+  let id: string | null = null;
+  try {
+    id = (await withTenant(getDb(), ctx.accountId, (tx) => prepareDeclaration(tx, ctx, obligationId, loaded))).declarationId;
+  } catch (e) {
+    return toActionError(e);
+  }
+  revalidatePath('/app/impostos');
+  if (id) redirect(`/app/impostos/declaracoes/${id}`);
+  return { ok: true };
+}
+
+export async function confirmDeclarationAction(id: string) {
+  const ctx = await requireAccount();
+  try {
+    await withTenant(getDb(), ctx.accountId, (tx) => confirmDeclaration(tx, ctx, id));
+  } catch (e) {
+    return toActionError(e);
+  }
+  revalidatePath(`/app/impostos/declaracoes/${id}`);
+  return { ok: true };
+}
+
+export async function submittedDeclarationAction(id: string, _: ActionState, fd: FormData): Promise<ActionState> {
+  const ctx = await requireAccount();
+  try {
+    await withTenant(getDb(), ctx.accountId, (tx) => markDeclarationSubmitted(tx, ctx, id, String(fd.get('ref') ?? '')));
+  } catch (e) {
+    return toActionError(e);
+  }
+  revalidatePath(`/app/impostos/declaracoes/${id}`);
+  revalidatePath('/app/impostos');
+  return { ok: true, message: 'Registada como submetida.' };
 }

@@ -24,3 +24,5 @@ export * from './invoicing/provider';
 export * from './invoicing/pdf';
 export * from './invoicing/mailer';
 export * from './invoicing/service';
+export * from './declarations/builders';
+export * from './declarations/service';

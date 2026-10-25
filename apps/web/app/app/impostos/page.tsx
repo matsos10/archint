@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { and, count, eq } from 'drizzle-orm';
 import { CalendarClock, ExternalLink } from 'lucide-react';
 import { accounts, taxObligations, withTenant } from '@somar/db';
-import { OBLIGATION_LABELS, effectiveObligationStatus, listObligations, syncObligations } from '@somar/core';
+import { OBLIGATION_LABELS, effectiveObligationStatus, isDeclarative, listObligations, syncObligations } from '@somar/core';
 import { paramsToVerify } from '@somar/tax-engine';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { Alert } from '@/components/ui/alert';
 import { getDb } from '@/lib/db';
 import { requireAccount } from '@/lib/session';
 import { daysBetween, getParams, todayIso } from '@/lib/tax';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatEur } from '@/lib/utils';
 import { ObligationActions } from './obligation-actions';
 import { RegimeSimulator } from './regime-simulator';
 
@@ -159,6 +159,7 @@ function ObligationList({ rows }: { rows: (Awaited<ReturnType<typeof listObligat
                 {o.periodLabel} · Prazo: <strong className="font-medium text-foreground">{formatDate(o.dueDate)}</strong>
                 {o.windowStart && <> (a partir de {formatDate(o.windowStart)})</>}
                 {!done && <> · {relative(o.days)}</>}
+                {o.amountEstimateCents != null && o.amountEstimateCents > 0 && <> · <strong className="font-medium text-foreground">{formatEur(o.amountEstimateCents)}</strong></>}
               </p>
               <p className="text-xs text-muted-foreground/80">
                 {o.legalRef}
@@ -172,7 +173,7 @@ function ObligationList({ rows }: { rows: (Awaited<ReturnType<typeof listObligat
                 )}
               </p>
             </div>
-            <ObligationActions id={o.id} status={o.effective} isPayment={o.type.includes('pagamento')} />
+            <ObligationActions id={o.id} status={o.effective} isPayment={o.type.includes('pagamento')} declarative={isDeclarative(o.type)} declarationId={o.declarationId} />
           </li>
         );
       })}

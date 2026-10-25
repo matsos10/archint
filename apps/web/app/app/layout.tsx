@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { LogOut } from 'lucide-react';
-import { eq } from 'drizzle-orm';
-import { accounts, withTenant } from '@somar/db';
+import { Bell, LogOut } from 'lucide-react';
+import { and, count, eq, isNull } from 'drizzle-orm';
+import { accounts, notifications, withTenant } from '@somar/db';
 import { Logo } from '@/components/brand/logo';
 import { BottomNav, SideNav } from '@/components/app/nav';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -13,9 +13,10 @@ import { signOutAction } from '../(auth)/actions';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requireAccount();
-  const account = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const { account, unread } = await withTenant(getDb(), ctx.accountId, async (tx) => {
     const [a] = await tx.select({ name: accounts.name }).from(accounts).where(eq(accounts.id, ctx.accountId));
-    return a;
+    const [n] = await tx.select({ n: count() }).from(notifications).where(and(eq(notifications.accountId, ctx.accountId), isNull(notifications.readAt)));
+    return { account: a, unread: n?.n ?? 0 };
   });
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[248px_1fr]">
@@ -39,6 +40,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <span className="hidden text-sm text-muted-foreground lg:block">Olá, {ctx.session.user.name.split(' ')[0]}</span>
           <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/app/notificacoes" aria-label={unread ? `Notificações (${unread} por ler)` : 'Notificações'} className="relative">
+                <Bell />
+                {unread > 0 && <span className="absolute top-1.5 right-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground">{unread > 9 ? '9+' : unread}</span>}
+              </Link>
+            </Button>
             <ThemeToggle />
             <form action={signOutAction}>
               <Button variant="ghost" size="icon" aria-label="Terminar sessão">
