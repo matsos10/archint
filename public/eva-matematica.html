@@ -60,6 +60,7 @@ h2{font-size:20px;margin:24px 0 10px;font-weight:900}
 .choice.ok{background:var(--okbg);border-color:var(--ok);color:var(--ok)}
 .choice.bad{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
 .choice:disabled{cursor:default}
+.choice svg{display:block;margin:0 auto;max-width:100%;height:auto}
 .inrow{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .inp{width:170px;font:inherit;font-size:30px;font-weight:900;text-align:center;padding:10px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--ink)}
 .inp:focus{outline:none;border-color:var(--pri)}
@@ -135,6 +136,7 @@ const NAME = 'Eva';
 const TEST_DATE = new Date(2026, 9, 26);
 const KEY = 'eva-matematica-3ano-v1';
 const PROB_TRIES = 3;
+const FRIEND = 'Margarida';
 
 /* ---------- utilidades ---------- */
 const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -205,22 +207,25 @@ function fracSVG(n, k, shape) {
   return `<svg viewBox="0 0 290 80" width="290">${p}</svg>`;
 }
 
-function clockSVG(h, m) {
-  let s = `<svg viewBox="0 0 200 200" width="210"><circle cx="100" cy="100" r="92" fill="#fff" stroke="#2b2d42" stroke-width="6"/>`;
-  for (let i = 0; i < 60; i++) {
-    const a = i * 6 * Math.PI / 180, big = i % 5 === 0, r1 = big ? 78 : 83;
-    s += `<line x1="${100 + r1 * Math.sin(a)}" y1="${100 - r1 * Math.cos(a)}" x2="${100 + 88 * Math.sin(a)}" y2="${100 - 88 * Math.cos(a)}" stroke="#2b2d42" stroke-width="${big ? 3 : 1}"/>`;
+function clockSVG(h, m, o = {}) {
+  const r1 = x => Math.round(x * 10) / 10, P = (deg, r) => `${r1(100 + r * Math.sin(deg * Math.PI / 180))},${r1(100 - r * Math.cos(deg * Math.PI / 180))}`;
+  let s = `<svg viewBox="0 0 200 ${o.label ? 230 : 200}" width="${o.w || 210}" font-family="Nunito,sans-serif"><circle cx="100" cy="100" r="92" fill="#fff" stroke="#2b2d42" stroke-width="6"/>`;
+  if (o.sector) {
+    const [a, b] = o.sector;
+    s += b - a >= 60 ? '<circle cx="100" cy="100" r="88" fill="#dcd7ff"/>'
+      : `<path d="M100,100 L${P(a * 6, 88)} A88,88 0 ${b - a > 30 ? 1 : 0} 1 ${P(b * 6, 88)} Z" fill="#dcd7ff"/>`;
   }
-  for (let i = 1; i <= 12; i++) {
-    const a = i * 30 * Math.PI / 180;
-    s += `<text x="${100 + 64 * Math.sin(a)}" y="${100 - 64 * Math.cos(a) + 7}" text-anchor="middle" font-size="20" font-weight="800" fill="#2b2d42" font-family="Nunito,sans-serif">${i}</text>`;
-  }
-  const ha = ((h % 12) + m / 60) * 30 * Math.PI / 180, ma = m * 6 * Math.PI / 180;
-  s += `<line x1="100" y1="100" x2="${100 + 44 * Math.sin(ha)}" y2="${100 - 44 * Math.cos(ha)}" stroke="#e0384f" stroke-width="9" stroke-linecap="round"/>`;
-  s += `<line x1="100" y1="100" x2="${100 + 72 * Math.sin(ma)}" y2="${100 - 72 * Math.cos(ma)}" stroke="#6c5ce7" stroke-width="5" stroke-linecap="round"/>`;
-  return s + `<circle cx="100" cy="100" r="7" fill="#2b2d42"/></svg>`;
+  let big = '', small = '';
+  for (let i = 0; i < 60; i++) { if (i % 5) small += `M${P(i * 6, 83)}L${P(i * 6, 88)}`; else big += `M${P(i * 6, 78)}L${P(i * 6, 88)}`; }
+  s += `<path d="${small}" stroke="#2b2d42" stroke-width="1"/><path d="${big}" stroke="#2b2d42" stroke-width="3"/><g text-anchor="middle" font-size="20" font-weight="800" fill="#2b2d42">`;
+  for (let i = 1; i <= 12; i++) { const [x, y] = P(i * 30, 64).split(','); s += `<text x="${x}" y="${r1(+y + 7)}">${i}</text>`; }
+  s += `</g><path d="M100,100L${P(((h % 12) + m / 60) * 30, 44)}" stroke="#e0384f" stroke-width="9" stroke-linecap="round"/>`;
+  s += `<path d="M100,100L${P(m * 6, 72)}" stroke="#6c5ce7" stroke-width="5" stroke-linecap="round"/>`;
+  if (o.sec !== undefined) s += `<path d="M100,100L${P(o.sec * 6, 80)}" stroke="#ff9f43" stroke-width="2"/>`;
+  s += '<circle cx="100" cy="100" r="7" fill="#2b2d42"/>';
+  if (o.label) s += `<text x="100" y="224" text-anchor="middle" font-size="17" font-weight="900" fill="#2b2d42">${o.label}</text>`;
+  return s + '</svg>';
 }
-
 function calHTML(month, hl) {
   const first = (new Date(2026, month, 1).getDay() + 6) % 7, len = MDAYS[month];
   let h = `<table class="cal"><caption>${MONTHS[month]} 2026</caption><tr>${WDS.map(d => `<th>${d}</th>`).join('')}</tr><tr>`;
@@ -364,7 +369,7 @@ const GEN = {
         `<b>${ordWords(n)}</b> escreve-se <b>${n}.º</b> (o "º" mostra que é ordinal).`);
     }
     if (t === 2) { const n = rnd(3, 30); return numQ(`Numa fila, a ${NAME} está em <b>${n}.º</b> lugar. Quantas pessoas estão à frente da ${NAME}?`, n - 1, `Se está em ${n}.º lugar, à frente dela estão as pessoas do 1.º ao ${n - 1}.º: <b>${n - 1}</b> pessoas.`, { unit: 'pessoas' }); }
-    if (t === 3) { const n = rnd(5, 40); return mcQ(`Numa corrida, o Tomás chegou logo a seguir ao <b>${n}.º</b> classificado. Em que lugar ficou o Tomás?`, `${n + 1}.º`, [`${n - 1}.º`, `${n}.º`, `${n + 2}.º`], `Logo a seguir ao ${n}.º vem o <b>${n + 1}.º</b> (${ordWords(n + 1)}).`); }
+    if (t === 3) { const n = rnd(5, 40); return mcQ(`Numa corrida, a ${FRIEND} chegou logo a seguir ao <b>${n}.º</b> classificado. Em que lugar ficou a ${FRIEND}?`, `${n + 1}.º`, [`${n - 1}.º`, `${n}.º`, `${n + 2}.º`], `Logo a seguir ao ${n}.º vem o <b>${n + 1}.º</b> (${ordWords(n + 1)}).`); }
     if (t === 4) { const k = rnd(2, 12); return mcQ(`Qual é o <b>${k}.º</b> mês do ano?`, MONTHS[k - 1], [MONTHS[k % 12], MONTHS[(k + 10) % 12], MONTHS[(k + 2) % 12], MONTHS[(k + 4) % 12]], `Conta a partir de janeiro (1.º): o ${k}.º mês (${ordWords(k)}) é <b>${MONTHS[k - 1]}</b>.`); }
     const n = rnd(12, 60);
     return mcQ(`Que ordinal vem imediatamente <b>antes</b> de <b>${ordWords(n)}</b>?`, ordWords(n - 1), [ordWords(n + 1), ordWords(n - 2), ordWords(n - 10)], `${ordWords(n)} é o ${n}.º. Antes vem o ${n - 1}.º: <b>${ordWords(n - 1)}</b>.`);
@@ -441,12 +446,13 @@ const GEN = {
   },
 
   prob() {
-    const t = rnd(0, 9);
+    const t = rnd(0, 10);
+    if (t === 10) { const a = rnd(35, 240), b = rnd(35, 240); return numQ(`A ${NAME} e a ${FRIEND} são melhores amigas e colecionam autocolantes. A ${NAME} tem ${a} e a ${FRIEND} tem ${b}. Quantos autocolantes têm as duas juntas?`, a + b, `Juntamos as duas coleções (adição): ${a} + ${b} = <b>${a + b}</b> autocolantes.`, { unit: 'autocolantes' }); }
     if (t === 0) { const a = rnd(120, 480), b = rnd(40, 380); return numQ(`A ${NAME} tinha ${a} cromos. A avó deu-lhe mais ${b}. Com quantos cromos ficou a ${NAME}?`, a + b, `Recebeu mais, por isso juntamos (adição): ${a} + ${b} = <b>${a + b}</b> cromos.`, { unit: 'cromos' }); }
     if (t === 1) { const a = rnd(300, 900), b = rnd(60, a - 80); return numQ(`Na biblioteca da escola havia ${a} livros. Foram emprestados ${b}. Quantos livros ficaram na biblioteca?`, a - b, `Saíram livros, por isso tiramos (subtração): ${a} − ${b} = <b>${a - b}</b> livros.`, { unit: 'livros' }); }
     if (t === 2) { const a = pick([6, 10, 12]), b = rnd(3, 9); return numQ(`Cada caixa tem ${a} ovos. Quantos ovos há em ${b} caixas?`, a * b, `${b} caixas com ${a} ovos cada: ${b} × ${a} = <b>${a * b}</b> ovos.`, { unit: 'ovos' }); }
-    if (t === 3) { const a = rnd(40, 300), b = a + rnd(15, 250); return numQ(`A Leonor tem ${a} berlindes e o Rui tem ${b}. Quantos berlindes tem o Rui <b>a mais</b> do que a Leonor?`, b - a, `Para saber quantos tem a mais, calculamos a diferença: ${b} − ${a} = <b>${b - a}</b> berlindes.`, { unit: 'berlindes' }); }
-    if (t === 4) { const p = rnd(2, 5), q = pick([6, 8, 10, 12]), r = rnd(2, p * q - 3); return numQ(`A ${NAME} comprou ${p} pacotes de lápis de cor. Cada pacote tem ${q} lápis. Depois deu ${r} lápis à Matilde. Com quantos lápis ficou a ${NAME}?`, p * q - r, `1.º passo: ${p} × ${q} = ${p * q} lápis. 2.º passo: ${p * q} − ${r} = <b>${p * q - r}</b> lápis.`, { unit: 'lápis' }); }
+    if (t === 3) { const a = rnd(40, 300), b = a + rnd(15, 250); return numQ(`A ${FRIEND} tem ${a} berlindes e o Rui tem ${b}. Quantos berlindes tem o Rui <b>a mais</b> do que a ${FRIEND}?`, b - a, `Para saber quantos tem a mais, calculamos a diferença: ${b} − ${a} = <b>${b - a}</b> berlindes.`, { unit: 'berlindes' }); }
+    if (t === 4) { const p = rnd(2, 5), q = pick([6, 8, 10, 12]), r = rnd(2, p * q - 3); return numQ(`A ${NAME} comprou ${p} pacotes de lápis de cor. Cada pacote tem ${q} lápis. Depois deu ${r} lápis à ${FRIEND}, a sua melhor amiga. Com quantos lápis ficou a ${NAME}?`, p * q - r, `1.º passo: ${p} × ${q} = ${p * q} lápis. 2.º passo: ${p * q} − ${r} = <b>${p * q - r}</b> lápis.`, { unit: 'lápis' }); }
     if (t === 5) { const a = rnd(8, 25), b = rnd(2, 6); return numQ(`Um livro custa ${a} euros e um caderno custa ${b} euros. Quanto paga a mãe da ${NAME} por 1 livro e 2 cadernos?`, a + 2 * b, `2 cadernos: 2 × ${b} = ${2 * b} euros. Com o livro: ${a} + ${2 * b} = <b>${a + 2 * b}</b> euros.`, { unit: 'euros' }); }
     if (t === 6) { const a = rnd(20, 45), b = rnd(5, 15), c = rnd(3, 18); return numQ(`No autocarro iam ${a} pessoas. Na paragem saíram ${b} e entraram ${c}. Quantas pessoas vão agora no autocarro?`, a - b + c, `${a} − ${b} = ${a - b}; depois ${a - b} + ${c} = <b>${a - b + c}</b> pessoas.`, { unit: 'pessoas' }); }
     if (t === 7) { const r = rnd(3, 6), c = rnd(4, 6); return numQ(`Na sala da ${NAME} há ${r} filas com ${c} mesas em cada fila. Quantas mesas há na sala?`, r * c, `${r} filas × ${c} mesas = <b>${r * c}</b> mesas.`, { unit: 'mesas' }); }
@@ -496,34 +502,42 @@ const GEN = {
   },
 
   horas() {
-    const t = rnd(0, 5);
+    const t = rnd(0, 6);
     if (t === 0) {
       const h = rnd(1, 12), m = rnd(0, 11) * 5, sw = (m / 5) || 12;
       return mcQ('Que horas marca o relógio?', fmt12(h * 60 + m), [fmt12(sw * 60 + (h % 12) * 5), fmt12(h * 60 + m + 5), fmt12((h - 1) * 60 + m), fmt12((h + 1) * 60 + m)],
         `O ponteiro pequeno (vermelho) mostra as horas: ${m >= 30 ? 'passou do' : m ? 'está logo depois do' : 'aponta para o'} ${h}. O ponteiro grande (roxo) aponta para o ${sw}, que são ${m} minutos (${sw} × 5). São <b>${fmt12(h * 60 + m)}</b>.`, { visual: clockSVG(h, m) });
     }
     if (t === 1) {
-      const k = rnd(2, 4);
+      const k = rnd(2, 3), H1 = clockSVG(3, 0, { sector: [0, 60], label: '1 hora', w: 150 }), M30 = clockSVG(4, 30, { sector: [0, 30], label: 'meia hora', w: 150 });
       const f = pick([
-        ['Quantos minutos tem <b>1 hora</b>?', 60, '1 hora = <b>60</b> minutos.'],
-        ['Quantos minutos tem <b>meia hora</b>?', 30, 'Meia hora é metade de 60 minutos: <b>30</b> minutos.'],
-        ['Quantos minutos tem <b>um quarto de hora</b>?', 15, '60 minutos divididos em 4 partes iguais: <b>15</b> minutos.'],
-        ['Quantos minutos são <b>três quartos de hora</b>?', 45, '3 × 15 minutos = <b>45</b> minutos.'],
-        [`Quantos minutos são <b>${k} horas</b>?`, 60 * k, `${k} × 60 = <b>${60 * k}</b> minutos.`],
-        ['Quantas horas tem <b>um dia</b>?', 24, 'Um dia tem <b>24</b> horas.'],
-        ['Quantos segundos tem <b>1 minuto</b>?', 60, '1 minuto = <b>60</b> segundos.'],
-        ['<b>1 hora e meia</b> são quantos minutos?', 90, '60 + 30 = <b>90</b> minutos.'],
-        [`<b>90 minutos</b> = 1 hora e ${BOX} minutos`, 30, '90 − 60 = <b>30</b>. Então 90 minutos = 1 hora e 30 minutos.'],
+        ['Quantos minutos tem <b>1 hora</b>?', 60, 'Numa hora o ponteiro grande dá <b>uma volta completa</b>: passa pelos 60 minutos. 1 hora = <b>60</b> minutos.', clockSVG(3, 0, { sector: [0, 60], label: '1 volta = 1 hora' })],
+        ['Quantos minutos tem <b>meia hora</b>?', 30, 'Em meia hora o ponteiro grande dá <b>meia volta</b>: do 12 até ao 6. Metade de 60 = <b>30</b> minutos.', clockSVG(3, 30, { sector: [0, 30], label: 'meia volta' })],
+        ['Quantos minutos tem <b>um quarto de hora</b>?', 15, 'Num quarto de hora o ponteiro grande anda do 12 até ao 3: <b>15</b> minutos.', clockSVG(3, 15, { sector: [0, 15], label: 'um quarto de volta' })],
+        ['Quantos minutos são <b>três quartos de hora</b>?', 45, 'Em três quartos de hora o ponteiro grande anda do 12 até ao 9: 3 × 15 = <b>45</b> minutos.', clockSVG(3, 45, { sector: [0, 45], label: 'três quartos de volta' })],
+        [`Quantos minutos são <b>${k} horas</b>?`, 60 * k, `Cada hora é uma volta do ponteiro grande (60 minutos): ${k} × 60 = <b>${60 * k}</b> minutos.`, Array.from({ length: k }, (_, i) => clockSVG(3 + i, 0, { sector: [0, 60], label: `${i + 1}.ª hora`, w: k === 3 ? 105 : 150 })).join('')],
+        ['Quantas horas tem <b>um dia</b>?', 24, 'O ponteiro pequeno dá 2 voltas por dia: 12 + 12 = <b>24</b> horas.', clockSVG(12, 0, { label: '2 voltas por dia' }), 'horas'],
+        ['Quantos segundos tem <b>1 minuto</b>?', 60, 'O ponteiro dos segundos (laranja) dá uma volta completa num minuto: 1 minuto = <b>60</b> segundos.', clockSVG(10, 10, { sec: 40, label: 'ponteiro dos segundos' }), 'segundos'],
+        ['<b>1 hora e meia</b> são quantos minutos?', 90, '1 hora (uma volta) + meia hora (meia volta) = 60 + 30 = <b>90</b> minutos.', H1 + M30],
+        [`<b>90 minutos</b> = 1 hora e ${BOX} minutos`, 30, '90 − 60 = <b>30</b>. Uma volta completa (60 min) e mais meia volta (30 min).', H1 + M30],
       ]);
-      return numQ(f[0], f[1], f[2], { unit: f[1] === 24 ? 'horas' : f[1] === 60 && f[0].includes('segundos') ? 'segundos' : 'minutos' });
+      return numQ(f[0], f[1], f[2], { unit: f[4] || 'minutos', visual: f[3] });
     }
     if (t === 2) {
-      const s = rnd(8, 16) * 60 + pick([0, 15, 30, 45]), d = pick([15, 30, 45, 60, 75, 90, 120]);
-      return mcQ(`O filme começou às <b>${fmtT(s)}</b> e acabou às <b>${fmtT(s + d)}</b>. Quanto tempo durou?`, fmtDur(d), [d + 15, d - 15, d + 60, d + 30].filter(x => x > 0).map(fmtDur), `De ${fmtT(s)} até ${fmtT(s + d)} passaram <b>${fmtDur(d)}</b>. Dica: conta primeiro as horas inteiras e depois os minutos.`);
+      const s = rnd(8, 16) * 60 + pick([0, 15, 30, 45]), d = pick([15, 30, 45, 60, 75, 90, 120]), ev = pick(['O filme', 'O jogo de futebol', `A festa de anos da ${FRIEND}`, 'A aula de natação']);
+      return mcQ(`${ev} começou e acabou às horas que os relógios mostram. Quanto tempo durou?`, fmtDur(d), [d + 15, d - 15, d + 60, d + 30].filter(x => x > 0).map(fmtDur),
+        `Começou às ${fmt12(s)} e acabou às ${fmt12(s + d)}: passaram <b>${fmtDur(d)}</b>. Dica: conta primeiro as voltas inteiras do ponteiro grande (horas) e depois os minutos.`,
+        { visual: clockSVG(Math.floor(s / 60), s % 60, { label: 'Começou', w: 150 }) + clockSVG(Math.floor((s + d) / 60), (s + d) % 60, { label: 'Acabou', w: 150 }) });
     }
     if (t === 3) {
-      const s = rnd(8, 16) * 60 + pick([0, 10, 15, 20, 30, 45]), d = pick([15, 20, 30, 45, 50, 60, 90]);
-      return mcQ(`A aula começa às <b>${fmtT(s)}</b> e dura <b>${fmtDur(d)}</b>. A que horas acaba?`, fmtT(s + d), [fmtT(s + d + 15), fmtT(s + d - 15), fmtT(s + d + 60), fmtT(s + d - 60)], `${fmtT(s)} + ${fmtDur(d)} = <b>${fmtT(s + d)}</b>. Lembra-te: 60 minutos fazem 1 hora.`);
+      const s = rnd(8, 16) * 60 + pick([0, 10, 15, 20, 30, 45]), d = pick([15, 20, 30, 45, 50, 60, 90]), C = x => clockSVG(Math.floor(x / 60), x % 60, { w: 130 });
+      return mcQ(`A aula começa à hora deste relógio e dura <b>${fmtDur(d)}</b>. Qual é o relógio que mostra a hora a que a aula acaba?`, C(s + d), [s + d + 15, s + d - 15, s + d + 60, s + d - 60].map(C),
+        `A aula começa às ${fmt12(s)}. ${fmt12(s)} + ${fmtDur(d)} = <b>${fmt12(s + d)}</b>. Lembra-te: 60 minutos fazem 1 hora (uma volta do ponteiro grande).`, { visual: clockSVG(Math.floor(s / 60), s % 60, { label: 'Começa' }) });
+    }
+    if (t === 5) {
+      const h = rnd(1, 12), m = rnd(0, 11) * 5, sw = (m / 5) || 12, C = (hh, mm) => clockSVG(hh, mm, { w: 130 });
+      return mcQ(`Qual destes relógios marca <b>${fmt12(h * 60 + m)}</b>?`, C(h, m), [C(sw, (h % 12) * 5), C(h % 12 + 1, m), C(h, (m + 30) % 60), C(h === 1 ? 12 : h - 1, (m + 15) % 60)],
+        `O ponteiro pequeno (vermelho) fica ${m ? 'entre o ' + h + ' e o ' + (h % 12 + 1) : 'no ' + h} e o ponteiro grande (roxo) aponta para o ${sw} (${m} minutos).`);
     }
     if (t === 4) {
       const h = rnd(1, 11), m = pick([0, 15, 30, 45]), nh = HW[h % 12 + 1];
@@ -531,8 +545,8 @@ const GEN = {
       return mcQ('Como se diz a hora que o relógio marca?', lab, [`${HW[h]} e um quarto`, `${HW[h]} e meia`, `${nh} menos um quarto`, `${HW[h]} em ponto`, `${nh} e um quarto`, `${HW[h]} menos um quarto`],
         `O ponteiro grande está no ${(m / 5) || 12}: ${{ 0: 'em ponto', 15: 'passou um quarto de hora (15 min)', 30: 'passou meia hora (30 min)', 45: 'faltam 15 minutos para a hora seguinte' }[m]}. Diz-se <b>${lab}</b> (${fmt12(h * 60 + m)}).`, { visual: clockSVG(h, m) });
     }
-    const h = rnd(1, 11);
-    return mcQ(`Quando são <b>${HW[h]} da tarde</b>, que horas marca um relógio digital?`, `${h + 12}h00`, [`${h}h00`, `${h + 10}h00`, `${h + 11}h00`, `${h + 2}h00`], `À tarde somamos 12: ${h} + 12 = <b>${h + 12}h00</b>.`);
+    const h = rnd(1, 7);
+    return mcQ(`São <b>${HW[h]} da tarde</b>, como mostra o relógio. Que horas marca um relógio digital?`, `${h + 12}h00`, [`${h}h00`, `${h + 10}h00`, `${h + 11}h00`, `${h + 2}h00`], `À tarde somamos 12: ${h} + 12 = <b>${h + 12}h00</b>.`, { visual: clockSVG(h, 0) });
   },
 
   area() {
@@ -584,7 +598,11 @@ function load() {
   for (const k in f) if (S[k] === undefined) S[k] = f[k];
   for (const k in T) if (!S.topics[k]) S.topics[k] = { a: 0, c: 0, recent: [] };
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function save() {
+  for (let i = 0; i < 8; i++) {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); return; } catch (e) { if (!S.mistakes.length) return; S.mistakes.splice(0, 10); }
+  }
+}
 const qKey = q => q.topic + '|' + q.prompt + '|' + q.visual;
 function mastery(k) { const r = S.topics[k].recent; return r.length ? Math.round(100 * r.reduce((a, b) => a + b, 0) / r.length) : null; }
 function streak() {
@@ -733,7 +751,7 @@ function check(given) {
   const last = ses.i === ses.qs.length - 1;
   document.getElementById('fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'} pop">
     <b class="t">${ok ? (ses.tries ? `Muito bem! Conseguiste à ${ses.tries + 1}.ª tentativa! 🎉` : pick(cheers)) : pick(oops)}</b>
-    ${ok ? '' : `A resposta certa é: <b>${right}</b><br>`}${q.explain}
+    ${ok ? '' : right.includes('<svg') ? 'A resposta certa é o relógio a verde.<br>' : `A resposta certa é: <b>${right}</b><br>`}${q.explain}
     <button class="btn ${ok ? 'green' : ''}" id="next">${last ? 'Ver resultado 🏁' : 'Continuar ➜'}</button></div>`;
   const nb = document.getElementById('next'); nb.onclick = next; nb.focus({ preventScroll: true });
   document.getElementById('fb').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
