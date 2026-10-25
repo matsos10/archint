@@ -1,0 +1,8 @@
+{
+  "name": "@somar/fixtures",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { "./eni-simplificado-2025": "./eni-simplificado-2025/index.ts" },
+  "dependencies": { "@somar/tax-engine": "workspace:*", "@somar/core": "workspace:*", "@somar/db": "workspace:*" }
+}

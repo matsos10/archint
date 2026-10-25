@@ -1,0 +1,186 @@
+[
+  {
+    "number": "FT 2025A/1",
+    "sequence": 1,
+    "docType": "FT",
+    "issueDate": "2025-01-31",
+    "dueDate": "2025-03-02",
+    "client": "A",
+    "lines": [
+      {
+        "description": "Identidade visual — app móvel (janeiro)",
+        "quantity": 1,
+        "unitPriceCents": 300000,
+        "vatRateCode": "normal",
+        "vatRatePct": 23
+      }
+    ],
+    "netCents": 300000,
+    "vatCents": 69000,
+    "withholdingCents": 69000,
+    "totalCents": 300000,
+    "incomeType": "servicos_tabela_151",
+    "paidOn": "2025-02-10"
+  },
+  {
+    "number": "FT 2025A/2",
+    "sequence": 2,
+    "docType": "FT",
+    "issueDate": "2025-03-15",
+    "dueDate": "2025-04-14",
+    "client": "B",
+    "lines": [
+      {
+        "description": "Design de embalagens — linha de pastelaria",
+        "quantity": 1,
+        "unitPriceCents": 180000,
+        "vatRateCode": "normal",
+        "vatRatePct": 23
+      }
+    ],
+    "netCents": 180000,
+    "vatCents": 41400,
+    "withholdingCents": 41400,
+    "totalCents": 180000,
+    "incomeType": "servicos_tabela_151",
+    "paidOn": "2025-04-02"
+  },
+  {
+    "number": "FT 2025A/3",
+    "sequence": 3,
+    "docType": "FT",
+    "issueDate": "2025-04-30",
+    "dueDate": "2025-05-30",
+    "client": "A",
+    "lines": [
+      {
+        "description": "Design de interface — fevereiro a abril",
+        "quantity": 1,
+        "unitPriceCents": 600000,
+        "vatRateCode": "normal",
+        "vatRatePct": 23
+      }
+    ],
+    "netCents": 600000,
+    "vatCents": 138000,
+    "withholdingCents": 138000,
+    "totalCents": 600000,
+    "incomeType": "servicos_tabela_151",
+    "paidOn": "2025-05-12"
+  },
+  {
+    "number": "FT 2025A/4",
+    "sequence": 4,
+    "docType": "FT",
+    "issueDate": "2025-06-20",
+    "dueDate": "2025-07-20",
+    "client": "C",
+    "lines": [
+      {
+        "description": "Sinalética e materiais de comunicação",
+        "quantity": 1,
+        "unitPriceCents": 450000,
+        "vatRateCode": "normal",
+        "vatRatePct": 23
+      }
+    ],
+    "netCents": 450000,
+    "vatCents": 103500,
+    "withholdingCents": 103500,
+    "totalCents": 450000,
+    "incomeType": "servicos_tabela_151",
+    "paidOn": "2025-07-08"
+  },
+  {
+    "number": "FT 2025A/5",
+    "sequence": 5,
+    "docType": "FT",
+    "issueDate": "2025-07-31",
+    "dueDate": "2025-08-30",
+    "client": "A",
+    "lines": [
+      {
+        "description": "Design de interface — maio a julho",
+        "quantity": 1,
+        "unitPriceCents": 600000,
+        "vatRateCode": "normal",
+        "vatRatePct": 23
+      }
+    ],
+    "netCents": 600000,
+    "vatCents": 138000,
+    "withholdingCents": 138000,
+    "totalCents": 600000,
+    "incomeType": "servicos_tabela_151",
+    "paidOn": "2025-08-11"
+  },
+  {
+    "number": "FT 2025A/6",
+    "sequence": 6,
+    "docType": "FT",
+    "issueDate": "2025-09-12",
+    "dueDate": "2025-10-12",
+    "client": "D",
+    "lines": [
+      {
+        "description": "Convites e papelaria de casamento",
+        "quantity": 1,
+        "unitPriceCents": 120000,
+        "vatRateCode": "normal",
+        "vatRatePct": 23
+      }
+    ],
+    "netCents": 120000,
+    "vatCents": 27600,
+    "withholdingCents": 0,
+    "totalCents": 147600,
+    "incomeType": "servicos_tabela_151",
+    "paidOn": "2025-09-15"
+  },
+  {
+    "number": "FT 2025A/7",
+    "sequence": 7,
+    "docType": "FT",
+    "issueDate": "2025-10-31",
+    "dueDate": "2025-11-30",
+    "client": "C",
+    "lines": [
+      {
+        "description": "Campanha de inverno — design e paginação",
+        "quantity": 1,
+        "unitPriceCents": 750000,
+        "vatRateCode": "normal",
+        "vatRatePct": 23
+      }
+    ],
+    "netCents": 750000,
+    "vatCents": 172500,
+    "withholdingCents": 172500,
+    "totalCents": 750000,
+    "incomeType": "servicos_tabela_151",
+    "paidOn": "2025-11-20"
+  },
+  {
+    "number": "FT 2025A/8",
+    "sequence": 8,
+    "docType": "FT",
+    "issueDate": "2025-12-19",
+    "dueDate": "2026-01-18",
+    "client": "B",
+    "lines": [
+      {
+        "description": "Design de embalagens — edição de Natal",
+        "quantity": 1,
+        "unitPriceCents": 240000,
+        "vatRateCode": "normal",
+        "vatRatePct": 23
+      }
+    ],
+    "netCents": 240000,
+    "vatCents": 55200,
+    "withholdingCents": 55200,
+    "totalCents": 240000,
+    "incomeType": "servicos_tabela_151",
+    "paidOn": null
+  }
+]

@@ -2,6 +2,7 @@ packages:
   - apps/web
   - apps/worker
   - packages/*
+  - fixtures
 onlyBuiltDependencies:
   - esbuild
   - sharp

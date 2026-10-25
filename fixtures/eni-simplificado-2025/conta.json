@@ -1,0 +1,16 @@
+{
+  "name": "Marta Ferreira — Design Gráfico",
+  "legalForm": "eni",
+  "nif": "234567899",
+  "vatRegime": "normal_trimestral",
+  "incomeTaxRegime": "irs_simplificado",
+  "taxRegion": "continente",
+  "activityStartDate": "2022-09-01",
+  "cae": "74100",
+  "mainIncomeType": "servicos_tabela_151",
+  "hasEmploymentIncome": false,
+  "addressLine": "Rua das Flores, 12, 2.º Esq.",
+  "postalCode": "4050-262",
+  "city": "Porto",
+  "email": "marta@exemplo.pt"
+}

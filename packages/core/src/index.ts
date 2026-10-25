@@ -10,3 +10,4 @@ export * from './accounts';
 export * from './storage';
 export * from './env';
 export * from './jobs';
+export * from './tax';

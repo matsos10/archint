@@ -6,7 +6,7 @@ export default defineConfig({
       {
         test: {
           name: 'unit',
-          include: ['packages/tax-engine/test/**/*.test.ts', 'packages/ai/test/**/*.test.ts', 'packages/core/test/unit/**/*.test.ts', 'apps/**/test/unit/**/*.test.ts'],
+          include: ['packages/tax-engine/test/**/*.test.ts', 'packages/ai/test/**/*.test.ts', 'packages/core/test/unit/**/*.test.ts', 'apps/**/test/unit/**/*.test.ts', 'fixtures/test/unit/**/*.test.ts'],
           environment: 'node',
           setupFiles: ['./test/setup-env.ts'],
         },
@@ -14,7 +14,7 @@ export default defineConfig({
       {
         test: {
           name: 'integration',
-          include: ['packages/core/test/integration/**/*.test.ts', 'packages/db/test/**/*.test.ts', 'apps/**/test/integration/**/*.test.ts', 'fixtures/test/**/*.test.ts'],
+          include: ['packages/core/test/integration/**/*.test.ts', 'packages/db/test/**/*.test.ts', 'apps/**/test/integration/**/*.test.ts', 'fixtures/test/integration/**/*.test.ts'],
           environment: 'node',
           globalSetup: ['./test/global-setup.ts'],
           setupFiles: ['./test/setup-env.ts'],

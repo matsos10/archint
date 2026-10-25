@@ -16,6 +16,7 @@ const config: NextConfig = {
   serverExternalPackages: ['pg'],
   poweredByHeader: false,
   typedRoutes: false,
+  agentRules: false,
   experimental: {
     serverActions: { bodySizeLimit: '12mb' },
   },

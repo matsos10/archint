@@ -1,0 +1,932 @@
+[
+  {
+    "id": "t001",
+    "date": "2025-01-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t002",
+    "date": "2025-01-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t003",
+    "date": "2025-01-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t004",
+    "date": "2025-01-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -29960,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t005",
+    "date": "2025-01-20",
+    "description": "COMPRA PTISP DOMINIOS HOSTING",
+    "amountCents": -7380,
+    "category": "servicos_informaticos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t006",
+    "date": "2025-01-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t007",
+    "date": "2025-01-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t008",
+    "date": "2025-02-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t009",
+    "date": "2025-02-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t010",
+    "date": "2025-02-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t011",
+    "date": "2025-02-10",
+    "description": "TRF ATLANTICO SOFTWARE LDA FT2025A/1",
+    "amountCents": 300000,
+    "category": "receita_servicos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": "FT 2025A/1"
+  },
+  {
+    "id": "t012",
+    "date": "2025-02-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -38948,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t013",
+    "date": "2025-02-18",
+    "description": "COMPRA PAPELARIA CENTRAL",
+    "amountCents": -2460,
+    "category": "material_escritorio",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t014",
+    "date": "2025-02-24",
+    "description": "PAG ESTADO IVA 4T 2024",
+    "amountCents": -121000,
+    "category": "pagamento_iva",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t015",
+    "date": "2025-02-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t016",
+    "date": "2025-02-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t017",
+    "date": "2025-03-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t018",
+    "date": "2025-03-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t019",
+    "date": "2025-03-05",
+    "description": "COMPRA WORTEN COMPUTADOR PORTATIL",
+    "amountCents": -184500,
+    "category": "equipamento_informatico",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t020",
+    "date": "2025-03-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t021",
+    "date": "2025-03-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -38948,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t022",
+    "date": "2025-03-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t023",
+    "date": "2025-03-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t024",
+    "date": "2025-04-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t025",
+    "date": "2025-04-02",
+    "description": "TRF PADARIA LUSA LDA FT2025A/2",
+    "amountCents": 180000,
+    "category": "receita_servicos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": "FT 2025A/2"
+  },
+  {
+    "id": "t026",
+    "date": "2025-04-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t027",
+    "date": "2025-04-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t028",
+    "date": "2025-04-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": true,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t029",
+    "date": "2025-04-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -38948,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t030",
+    "date": "2025-04-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t031",
+    "date": "2025-04-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t032",
+    "date": "2025-05-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t033",
+    "date": "2025-05-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t034",
+    "date": "2025-05-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t035",
+    "date": "2025-05-12",
+    "description": "TRF ATLANTICO SOFTWARE LDA FT2025A/3",
+    "amountCents": 600000,
+    "category": "receita_servicos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": "FT 2025A/3"
+  },
+  {
+    "id": "t036",
+    "date": "2025-05-14",
+    "description": "COMPRA GALP COMBUSTIVEL",
+    "amountCents": -6150,
+    "category": "combustivel_gasoleo",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t037",
+    "date": "2025-05-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -23968,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t038",
+    "date": "2025-05-23",
+    "description": "PAG ESTADO IVA 1T 2025",
+    "amountCents": -57500,
+    "category": "pagamento_iva",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t039",
+    "date": "2025-05-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t040",
+    "date": "2025-05-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t041",
+    "date": "2025-06-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t042",
+    "date": "2025-06-03",
+    "description": "COMPRA RESTAURANTE O PATIO",
+    "amountCents": -3390,
+    "category": "refeicoes_representacao",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t043",
+    "date": "2025-06-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t044",
+    "date": "2025-06-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t045",
+    "date": "2025-06-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -23968,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t046",
+    "date": "2025-06-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t047",
+    "date": "2025-06-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t048",
+    "date": "2025-07-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t049",
+    "date": "2025-07-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t050",
+    "date": "2025-07-08",
+    "description": "TRF HOTEL RIBEIRA SA FT2025A/4",
+    "amountCents": 450000,
+    "category": "receita_servicos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": "FT 2025A/4"
+  },
+  {
+    "id": "t051",
+    "date": "2025-07-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t052",
+    "date": "2025-07-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -23968,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t053",
+    "date": "2025-07-18",
+    "description": "TRF AT REEMBOLSO IRS 2024",
+    "amountCents": 132000,
+    "category": "reembolso_impostos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t054",
+    "date": "2025-07-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t055",
+    "date": "2025-07-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t056",
+    "date": "2025-08-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t057",
+    "date": "2025-08-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t058",
+    "date": "2025-08-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t059",
+    "date": "2025-08-11",
+    "description": "TRF ATLANTICO SOFTWARE LDA FT2025A/5",
+    "amountCents": 600000,
+    "category": "receita_servicos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": "FT 2025A/5"
+  },
+  {
+    "id": "t060",
+    "date": "2025-08-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -52430,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t061",
+    "date": "2025-08-22",
+    "description": "COMPRA LOJA INFORMATICA CABOS",
+    "amountCents": -4305,
+    "category": "equipamento_informatico",
+    "duplicate": false,
+    "missingReceipt": true,
+    "invoice": null
+  },
+  {
+    "id": "t062",
+    "date": "2025-08-25",
+    "description": "PAG ESTADO IVA 2T 2025",
+    "amountCents": -224365,
+    "category": "pagamento_iva",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t063",
+    "date": "2025-08-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t064",
+    "date": "2025-08-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t065",
+    "date": "2025-09-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t066",
+    "date": "2025-09-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t067",
+    "date": "2025-09-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t068",
+    "date": "2025-09-15",
+    "description": "TRF JOAO MENDES FT2025A/6",
+    "amountCents": 147600,
+    "category": "receita_servicos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": "FT 2025A/6"
+  },
+  {
+    "id": "t069",
+    "date": "2025-09-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -52430,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t070",
+    "date": "2025-09-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t071",
+    "date": "2025-09-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t072",
+    "date": "2025-10-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t073",
+    "date": "2025-10-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t074",
+    "date": "2025-10-07",
+    "description": "COMPRA GRAFICA NORTE IMPRESSAO",
+    "amountCents": -36900,
+    "category": "servicos_terceiros",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t075",
+    "date": "2025-10-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t076",
+    "date": "2025-10-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -52430,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t077",
+    "date": "2025-10-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t078",
+    "date": "2025-10-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t079",
+    "date": "2025-11-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t080",
+    "date": "2025-11-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t081",
+    "date": "2025-11-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t082",
+    "date": "2025-11-12",
+    "description": "COMPRA DESIGN ACADEMY FORMACAO",
+    "amountCents": -24600,
+    "category": "formacao",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t083",
+    "date": "2025-11-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -35952,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t084",
+    "date": "2025-11-20",
+    "description": "TRF HOTEL RIBEIRA SA FT2025A/7",
+    "amountCents": 750000,
+    "category": "receita_servicos",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": "FT 2025A/7"
+  },
+  {
+    "id": "t085",
+    "date": "2025-11-24",
+    "description": "PAG ESTADO IVA 3T 2025",
+    "amountCents": -149040,
+    "category": "pagamento_iva",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t086",
+    "date": "2025-11-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t087",
+    "date": "2025-11-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t088",
+    "date": "2025-12-01",
+    "description": "DD COWORK LX RENDA MENSAL",
+    "amountCents": -18450,
+    "category": "escritorio_coworking",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t089",
+    "date": "2025-12-03",
+    "description": "COMPRA SOFTDESIGN PT ASSINATURA",
+    "amountCents": -6150,
+    "category": "software_subscricoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t090",
+    "date": "2025-12-08",
+    "description": "DD MEO FATURA",
+    "amountCents": -4920,
+    "category": "telecomunicacoes",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t091",
+    "date": "2025-12-15",
+    "description": "PAG SEG SOCIAL CONTRIBUICOES",
+    "amountCents": -35952,
+    "category": "seguranca_social",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t092",
+    "date": "2025-12-28",
+    "description": "COMISSAO MANUTENCAO CONTA",
+    "amountCents": -520,
+    "category": "comissoes_bancarias",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  },
+  {
+    "id": "t093",
+    "date": "2025-12-28",
+    "description": "TRF CONTA PESSOAL MARTA F",
+    "amountCents": -120000,
+    "category": "transferencia_pessoal",
+    "duplicate": false,
+    "missingReceipt": false,
+    "invoice": null
+  }
+]

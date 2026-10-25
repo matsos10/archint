@@ -1,11 +1,13 @@
 import { connectTestDb, truncateAll } from '@somar/db/testing';
-import { plans, type DbHandle } from '@somar/db';
-import { createAccount, sha256Hex, signUp } from '../../src';
+import { type DbHandle } from '@somar/db';
+import { runSeeders } from '@somar/db/seed';
+import { createAccount, invalidateTaxParamsCache, sha256Hex, signUp } from '../../src';
 
 export async function freshDb(): Promise<DbHandle> {
   const h = connectTestDb();
   await truncateAll(h);
-  await h.db.insert(plans).values({ code: 'gratuito', name: 'Gratuito' });
+  await runSeeders(h.db);
+  invalidateTaxParamsCache();
   return h;
 }
 

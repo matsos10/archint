@@ -90,10 +90,12 @@ export const categories = pgTable(
     deductible: boolean('deductible').notNull().default(false),
     deductiblePct: numeric('deductible_pct', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
     defaultVatRate: vatRateCodeEnum('default_vat_rate'),
-    /** % do IVA suportado que é dedutível (art. 20.º e 21.º CIVA). */
-    vatDeductiblePct: numeric('vat_deductible_pct', { precision: 5, scale: 2, mode: 'number' })
-      .notNull()
-      .default(0),
+    /** Natureza da despesa para o direito à dedução (chave de params.vat.deductibility, art. 21.º CIVA). */
+    vatDeductionKey: varchar('vat_deduction_key', { length: 40 }).notNull().default('geral'),
+    /** Sobreposição manual da % de IVA dedutível (null = usar os parâmetros do ano). */
+    vatDeductiblePct: numeric('vat_deductible_pct', { precision: 5, scale: 2, mode: 'number' }),
+    /** Campo da declaração periódica para o IVA dedutível: imobilizado, existências ou outros. */
+    vatBucket: varchar('vat_bucket', { length: 15 }).notNull().default('outros'),
     /** Para receitas: tipo de rendimento da categoria B (coeficiente do regime simplificado). */
     irsIncomeType: irsIncomeTypeEnum('irs_income_type'),
     /** Conta SNC sugerida (SAF-T contabilidade). */

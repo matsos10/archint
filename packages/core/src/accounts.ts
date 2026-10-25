@@ -4,6 +4,7 @@ import { accounts, memberships, plans, sessions, subscriptions, withTenant, type
 import { audit } from './audit';
 import { AppError } from './errors';
 import { isCompanyNif, isIndividualNif } from './nif';
+import { syncObligations } from './tax';
 
 export const LEGAL_FORMS = ['trabalhador_independente', 'eni', 'unipessoal_lda', 'lda'] as const;
 export const VAT_REGIMES = ['normal_mensal', 'normal_trimestral', 'isento_art53', 'isento_art9'] as const;
@@ -81,7 +82,7 @@ export type AccountProfile = z.output<typeof accountProfileSchema>;
  */
 export async function createAccount(db: Db, userId: string, input: AccountProfileInput, opts: { sessionId?: string; ip?: string | null } = {}) {
   const profile = accountProfileSchema.parse(input);
-  return db.transaction(async (tx) => {
+  const account = await db.transaction(async (tx) => {
     const [account] = await tx
       .insert(accounts)
       .values({ ...profile, onboardingCompletedAt: new Date() })
@@ -101,6 +102,17 @@ export async function createAccount(db: Db, userId: string, input: AccountProfil
     });
     return account!;
   });
+  await syncObligationsSafely(db, account.id);
+  return account;
+}
+
+/** Gera o calendário fiscal; uma falha (ex.: parâmetros em falta) não impede a operação principal. */
+async function syncObligationsSafely(db: Db, accountId: string) {
+  try {
+    await syncObligations(db, accountId);
+  } catch (e) {
+    console.error('[obligations] falha ao sincronizar', accountId, e);
+  }
 }
 
 export async function getAccount(tx: TenantTx, accountId: string) {
@@ -126,6 +138,9 @@ export async function updateAccountProfile(db: Db, ctx: { accountId: string; use
       data: { changed: Object.keys(changed) },
     });
     return after!;
+  }).then(async (after) => {
+    await syncObligationsSafely(db, ctx.accountId);
+    return after;
   });
 }
 

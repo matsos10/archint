@@ -115,7 +115,9 @@ describe('isolamento multi-tenant (RLS + filtros de aplicação)', () => {
       tx.insert(categories).values({ accountId: a.accountId, code: 'own', name: 'Da Ana', kind: 'expense' }),
     );
     const seenByB = await withTenant(h.db, b.accountId, (tx) => tx.select().from(categories));
-    expect(seenByB.map((c) => c.code)).toEqual(['sys']);
+    expect(seenByB.map((c) => c.code)).toContain('sys');
+    expect(seenByB.map((c) => c.code)).not.toContain('own');
+    expect(seenByB.every((c) => c.accountId === null)).toBe(true);
     const upd = await withTenant(h.db, b.accountId, (tx) =>
       tx.update(categories).set({ name: 'alterada' }).where(eq(categories.code, 'sys')).returning(),
     );

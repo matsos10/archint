@@ -17,6 +17,7 @@ COPY packages/db/package.json packages/db/
 COPY packages/core/package.json packages/core/
 COPY packages/tax-engine/package.json packages/tax-engine/
 COPY packages/ai/package.json packages/ai/
+COPY fixtures/package.json fixtures/
 # Secret opcional "extra_ca": CA adicional para builds atrás de um proxy corporativo
 # (docker build --secret id=extra_ca,src=/caminho/ca.crt ...). Não fica na imagem.
 RUN --mount=type=secret,id=extra_ca,required=false \

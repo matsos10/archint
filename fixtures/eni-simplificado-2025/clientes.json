@@ -1,0 +1,34 @@
+[
+  {
+    "key": "A",
+    "name": "Atlântico Software, Lda.",
+    "nif": "509123457",
+    "isCompany": true,
+    "hasOrganizedAccounting": true,
+    "email": "contas@atlantico.example"
+  },
+  {
+    "key": "B",
+    "name": "Padaria Lusa, Lda.",
+    "nif": "510234569",
+    "isCompany": true,
+    "hasOrganizedAccounting": true,
+    "email": "geral@padarialusa.example"
+  },
+  {
+    "key": "C",
+    "name": "Hotel Ribeira, S.A.",
+    "nif": "507345673",
+    "isCompany": true,
+    "hasOrganizedAccounting": true,
+    "email": "financeiro@hotelribeira.example"
+  },
+  {
+    "key": "D",
+    "name": "João Mendes",
+    "nif": "219876541",
+    "isCompany": false,
+    "hasOrganizedAccounting": false,
+    "email": "joao.mendes@example.com"
+  }
+]

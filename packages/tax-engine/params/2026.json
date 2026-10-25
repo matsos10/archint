@@ -1,0 +1,337 @@
+{
+  "year": 2026,
+  "currency": "EUR",
+  "references": {
+    "vat.rates": {
+      "legal": "Art. 18.º CIVA; taxas das Regiões Autónomas (DL 347/85, alterado)",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/civa_rep/Pages/codigo-do-iva-indice.aspx",
+      "verify": true,
+      "note": "Confirmar a taxa reduzida da Madeira (4% vs 5%)."
+    },
+    "vat.monthlyPeriodicityThresholdCents": {
+      "legal": "Art. 41.º, n.º 1, a) CIVA",
+      "verify": false
+    },
+    "vat.art53": {
+      "legal": "Art. 53.º CIVA (limite de 15 000 € desde 2025)",
+      "verify": true,
+      "note": "Confirmar limite e regra de cessação imediata (ultrapassagem superior a 25%)."
+    },
+    "vat.deadlines": {
+      "legal": "Art. 41.º, n.º 1 e art. 27.º, n.º 1 CIVA",
+      "verify": true,
+      "note": "Entrega até ao dia 20 e pagamento até ao dia 25 do 2.º mês seguinte ao período."
+    },
+    "vat.deductibility": {
+      "legal": "Art. 21.º CIVA (exclusões do direito à dedução)",
+      "verify": true
+    },
+    "irs.brackets": {
+      "legal": "Art. 68.º CIRS (Orçamento do Estado para 2026)",
+      "verify": true,
+      "note": "Valores da proposta de OE2026 (limites +3,51%; taxas do 2.º ao 5.º escalão -0,3 p.p.). Confirmar na lei publicada."
+    },
+    "irs.solidarity": {
+      "legal": "Art. 68.º-A CIRS",
+      "verify": false
+    },
+    "irs.simplified.coefficients": {
+      "legal": "Art. 31.º, n.º 1 CIRS",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs31.aspx",
+      "verify": true
+    },
+    "irs.simplified.startReduction": {
+      "legal": "Art. 31.º, n.º 10 CIRS",
+      "verify": true,
+      "note": "Redução de 50% no ano de início e 25% no seguinte, se não houver rendimentos da categoria A no ano."
+    },
+    "irs.simplified.expenseJustification": {
+      "legal": "Art. 31.º, n.ºs 13 e 14 CIRS",
+      "verify": true,
+      "note": "Acréscimo da diferença positiva entre 15% dos rendimentos e as despesas/deduções justificadas."
+    },
+    "irs.simplified.maxGrossCents": {
+      "legal": "Art. 28.º, n.º 2 CIRS",
+      "verify": false
+    },
+    "irs.specificDeductionCents": {
+      "legal": "Art. 25.º, n.º 1, a) CIRS (8,54 × IAS)",
+      "verify": true
+    },
+    "irs.minimoExistenciaCents": {
+      "legal": "Art. 70.º CIRS (14 × RMMG de 920 €)",
+      "verify": true
+    },
+    "irs.deductions": {
+      "legal": "Arts. 78.º, 78.º-A, 78.º-C, 78.º-D CIRS",
+      "verify": true
+    },
+    "irs.withholding": {
+      "legal": "Arts. 101.º e 101.º-B CIRS",
+      "verify": true,
+      "note": "Taxa de 23% para atividades do art. 151.º desde 2025."
+    },
+    "irs.paymentsOnAccount": {
+      "legal": "Art. 102.º CIRS",
+      "verify": false
+    },
+    "irs.modelo3": {
+      "legal": "Art. 60.º CIRS",
+      "verify": false
+    },
+    "socialSecurity": {
+      "legal": "Código Contributivo (Lei 110/2009), arts. 132.º–168.º",
+      "url": "https://www.seg-social.pt/trabalhadores-independentes",
+      "verify": true
+    },
+    "socialSecurity.iasCents": {
+      "legal": "Portaria de atualização do IAS para 2026",
+      "verify": true,
+      "note": "Valor estimado de 537,13 €; confirmar a portaria publicada."
+    },
+    "socialSecurity.rate": {
+      "legal": "Art. 168.º Código Contributivo (21,4%; 25,2% ENI e cônjuges)",
+      "verify": false
+    },
+    "socialSecurity.relevantIncomeCoefficients": {
+      "legal": "Art. 162.º Código Contributivo",
+      "verify": true
+    },
+    "irc": {
+      "legal": "Arts. 87.º, 87.º-A, 104.º, 120.º, 121.º CIRC",
+      "verify": true,
+      "note": "Taxa geral 19% e PME 15% previstas para 2026; confirmar."
+    },
+    "obligations.efaturaCommunicationDay": {
+      "legal": "Art. 3.º DL 198/2012",
+      "verify": true,
+      "note": "Confirmar o dia-limite em vigor para a comunicação mensal."
+    },
+    "obligations.payrollDeclarationDay": {
+      "legal": "Art. 119.º CIRS; art. 40.º Código Contributivo",
+      "verify": false
+    }
+  },
+  "vat": {
+    "rates": {
+      "continente": {
+        "normal": 23,
+        "intermedia": 13,
+        "reduzida": 6
+      },
+      "madeira": {
+        "normal": 22,
+        "intermedia": 12,
+        "reduzida": 4
+      },
+      "acores": {
+        "normal": 16,
+        "intermedia": 9,
+        "reduzida": 4
+      }
+    },
+    "monthlyPeriodicityThresholdCents": 65000000,
+    "art53": {
+      "thresholdCents": 1500000,
+      "immediateExitThresholdCents": 1875000
+    },
+    "deadlines": {
+      "declarationDay": 20,
+      "paymentDay": 25,
+      "monthsAfterPeriodEnd": 2
+    },
+    "deductibility": {
+      "geral": 100,
+      "gasoleo": 50,
+      "gpl_gnv": 50,
+      "gasolina": 0,
+      "eletricidade_viaturas": 100,
+      "viaturas_turismo": 0,
+      "alimentacao_bebidas": 0,
+      "alojamento": 0,
+      "despesas_representacao": 0,
+      "eventos_congressos": 50,
+      "tabaco": 0
+    }
+  },
+  "irs": {
+    "brackets": [
+      {
+        "upToCents": 834200,
+        "rate": 0.125
+      },
+      {
+        "upToCents": 1258700,
+        "rate": 0.157
+      },
+      {
+        "upToCents": 1783800,
+        "rate": 0.212
+      },
+      {
+        "upToCents": 2308900,
+        "rate": 0.241
+      },
+      {
+        "upToCents": 2939700,
+        "rate": 0.311
+      },
+      {
+        "upToCents": 4309000,
+        "rate": 0.349
+      },
+      {
+        "upToCents": 4656600,
+        "rate": 0.431
+      },
+      {
+        "upToCents": 8663400,
+        "rate": 0.446
+      },
+      {
+        "upToCents": null,
+        "rate": 0.48
+      }
+    ],
+    "solidarity": [
+      {
+        "fromCents": 8000000,
+        "toCents": 25000000,
+        "rate": 0.025
+      },
+      {
+        "fromCents": 25000000,
+        "toCents": null,
+        "rate": 0.05
+      }
+    ],
+    "simplified": {
+      "coefficients": {
+        "servicos_tabela_151": 0.75,
+        "servicos_outros": 0.35,
+        "vendas": 0.15,
+        "hotelaria_restauracao": 0.15,
+        "propriedade_intelectual": 0.95,
+        "subsidios_exploracao": 0.1,
+        "subsidios_outros": 0.3
+      },
+      "startReduction": {
+        "firstYear": 0.5,
+        "secondYear": 0.25,
+        "appliesTo": [
+          "servicos_tabela_151",
+          "servicos_outros"
+        ]
+      },
+      "expenseJustification": {
+        "pct": 0.15,
+        "appliesTo": [
+          "servicos_tabela_151",
+          "servicos_outros"
+        ]
+      },
+      "maxGrossCents": 20000000
+    },
+    "specificDeductionCents": 458709,
+    "minimoExistenciaCents": 1288000,
+    "deductions": {
+      "generalFamilyPct": 0.35,
+      "generalFamilyCapPerTaxpayerCents": 25000,
+      "healthPct": 0.15,
+      "healthCapCents": 100000,
+      "educationPct": 0.3,
+      "educationCapCents": 80000,
+      "dependentCents": 60000,
+      "dependentUnder6ExtraCents": 30000
+    },
+    "withholding": {
+      "rates": {
+        "servicos_tabela_151": 0.23,
+        "servicos_outros": 0.115,
+        "propriedade_intelectual": 0.165
+      },
+      "exemptionThresholdCents": 1500000
+    },
+    "paymentsOnAccount": {
+      "rate": 0.765,
+      "minimumCents": 20000,
+      "dueDates": [
+        "07-20",
+        "09-20",
+        "12-20"
+      ]
+    },
+    "modelo3": {
+      "windowStart": "04-01",
+      "windowEnd": "06-30"
+    }
+  },
+  "socialSecurity": {
+    "iasCents": 53713,
+    "rate": 0.214,
+    "rateEniWithSpouse": 0.252,
+    "relevantIncomeCoefficients": {
+      "servicos_tabela_151": 0.7,
+      "servicos_outros": 0.7,
+      "vendas": 0.2,
+      "hotelaria_restauracao": 0.2,
+      "propriedade_intelectual": 0.7,
+      "subsidios_exploracao": 0,
+      "subsidios_outros": 0
+    },
+    "minimumContributionCents": 2000,
+    "maxBaseIasMultiple": 12,
+    "exemptionFirstMonths": 12,
+    "accumulationExemption": {
+      "maxRelevantMonthlyIasMultiple": 4,
+      "minEmploymentMonthlyIasMultiple": 1
+    },
+    "baseAdjustment": {
+      "minPct": -25,
+      "maxPct": 25,
+      "stepPct": 5
+    },
+    "declarationMonths": [
+      1,
+      4,
+      7,
+      10
+    ],
+    "paymentDay": 20,
+    "paymentWindowStartDay": 10
+  },
+  "irc": {
+    "rate": 0.19,
+    "smeRate": 0.15,
+    "smeLimitCents": 5000000,
+    "municipalSurchargeRate": 0.015,
+    "stateSurcharge": [
+      {
+        "fromCents": 150000000,
+        "toCents": 750000000,
+        "rate": 0.03
+      },
+      {
+        "fromCents": 750000000,
+        "toCents": 3500000000,
+        "rate": 0.05
+      },
+      {
+        "fromCents": 3500000000,
+        "toCents": null,
+        "rate": 0.09
+      }
+    ],
+    "modelo22Deadline": "05-31",
+    "iesDeadline": "07-15",
+    "paymentsOnAccountDueDates": [
+      "07-31",
+      "09-30",
+      "12-15"
+    ]
+  },
+  "obligations": {
+    "efaturaCommunicationDay": 5,
+    "payrollDeclarationDay": 10
+  }
+}

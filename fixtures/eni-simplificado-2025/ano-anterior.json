@@ -1,0 +1,15 @@
+{
+  "openingBalanceCents": 800000,
+  "socialSecurity": {
+    "incomeByQuarter2024": {
+      "3": 600000,
+      "4": 780000
+    }
+  },
+  "vatQ4_2024PaidCents": 121000,
+  "irs2024RefundCents": 132000,
+  "personalDeductions2025": {
+    "generalFamilyExpensesCents": 100000
+  },
+  "withholdingExemption": false
+}

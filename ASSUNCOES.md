@@ -23,3 +23,19 @@ Onde há regras fiscais, os valores estão também sinalizados no código/parâm
 | 16 | Estatutos suportados | Trabalhador independente, ENI, Unipessoal Lda., Lda. | Públicos-alvo indicados. Sociedades anónimas e cooperativas fora do âmbito. | 1 |
 | 17 | Regimes no onboarding | Sociedades: sempre IRC e contabilidade organizada; art. 53.º CIVA só para pessoas singulares | Art. 53.º, n.º 1 CIVA exclui quem tenha ou deva ter contabilidade organizada (o caso das sociedades). | 1 |
 | 18 | Tipografia e identidade | Geist (pacote npm, sem pedido externo), cor de destaque azul cobalto (azulejo), neutros quentes | Identidade própria, distinta do Indy; fontes locais evitam dependência de rede no build. | 1 |
+| 19 | Fonte dos parâmetros fiscais | `params/2025.json` e `params/2026.json` → tabela `tax_parameter_sets` (versão publicada mais recente por ano); edição só por novas versões na área `/admin/parametros` | Nunca fixos no código; cada declaração guarda o `param_set_id` usado. | 2 |
+| 20 | Escalões IRS 2025 | Lei n.º 55-A/2025 (12,5% … 48%; limites 8 059 … 83 696 €) | Valores conhecidos à data; **a confirmar**. | 2 |
+| 21 | Escalões IRS 2026 | Proposta de OE2026: limites +3,51%, taxas do 2.º ao 5.º escalão −0,3 p.p. | **Estimativa**; confirmar na Lei do OE2026 publicada. | 2 |
+| 22 | IAS 2026 | 537,13 € | **Estimativa**; confirmar a portaria. Afeta limites da Segurança Social e a dedução específica (8,54 × IAS). | 2 |
+| 23 | Retenção na fonte cat. B | 23% (art. 151.º), 11,5% (outros serviços), 16,5% (propriedade intelectual); dispensa até 15 000 € | OE2025; **a confirmar** para 2026. | 2 |
+| 24 | Justificação dos 15% | Aplica-se aos coeficientes 0,75 e 0,35; conta max(dedução específica, contribuições SS) + despesas e-fatura (base + IVA não dedutível) + pessoal + rendas + imóveis + quotas; com categoria A, a dedução automática não é usada | Interpretação do art. 31.º, n.ºs 13–14 CIRS; **a confirmar**. | 2 |
+| 25 | Mínimo de existência | Versão simplificada: o imposto não reduz o rendimento coletável abaixo do mínimo, quando predominam rendimentos da cat. A ou do art. 151.º | O art. 70.º atual tem fórmula própria; estimativa conservadora. | 2 |
+| 26 | Tributação | Individual, sem quociente conjugal; deduções à coleta: gerais, saúde, educação, dependentes | Simplificação do MVP; o simulador oficial da AT é a referência. | 2 |
+| 27 | Isenção de SS no início | Contribuições a partir do 12.º mês posterior ao início (os 12 primeiros meses isentos); declarações trimestrais só quando fixam a base de meses não isentos | Art. 157.º/164.º CRC; **a confirmar**. | 2 |
+| 28 | Contribuição mínima SS | 20 € quando o rendimento relevante é positivo; 0 € sem rendimentos | Art. 168.º CRC. | 2 |
+| 29 | Prazos IVA | Declaração até dia 20 e pagamento até dia 25 do 2.º mês após o período | Arts. 41.º e 27.º CIVA (redação recente); **a confirmar**. | 2 |
+| 30 | Comunicação de faturas | Dia 5 do mês seguinte; marcada como automática (software certificado) | DL 198/2012; **confirmar o dia em vigor**. | 2 |
+| 31 | Taxa reduzida de IVA da Madeira | 4% | **A confirmar** (4% vs 5%). | 2 |
+| 32 | Obrigações anteriores à adesão | Não são geradas (prazo < data de onboarding) | Evita falsos "em atraso" numa conta nova; histórico importado não gera prazos. | 2 |
+| 33 | IRC 2026 | Taxa geral 19%, PME 15% nos primeiros 50 000 €; derrama municipal 1,5% por omissão | Previsto no OE2026; **a confirmar**; derrama varia por município. | 2 |
+| 34 | Fixture de referência | ENI fictícia "Marta Ferreira — Design Gráfico", 2025, 8 faturas, 93 movimentos | Cálculos à mão em `fixtures/eni-simplificado-2025/README.md`. | 2 |

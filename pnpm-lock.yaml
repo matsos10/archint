@@ -113,6 +113,18 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
 
+  fixtures:
+    dependencies:
+      '@somar/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@somar/db':
+        specifier: workspace:*
+        version: link:../packages/db
+      '@somar/tax-engine':
+        specifier: workspace:*
+        version: link:../packages/tax-engine
+
   packages/ai:
     dependencies:
       zod:
@@ -136,6 +148,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@somar/tax-engine':
+        specifier: workspace:*
+        version: link:../tax-engine
       drizzle-orm:
         specifier: ^0.45.4
         version: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
