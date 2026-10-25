@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { and, eq } from 'drizzle-orm';
 import { bankAccounts, transactions, withTenant } from '@somar/db';
-import { audit, correctCategory, importTransactions, parseStatement, refreshInsights } from '@somar/core';
+import { aiCategorizePending, audit, confirmAiCategory, correctCategory, importTransactions, parseStatement, refreshInsights } from '@somar/core';
+import { accountLlm } from '@/lib/ai';
 import { getDb } from '@/lib/db';
 import { requireAccount } from '@/lib/session';
 import { toActionError, type ActionState } from '@/lib/action';
@@ -11,6 +12,13 @@ import { toActionError, type ActionState } from '@/lib/action';
 export async function setCategoryAction(transactionId: string, categoryId: string) {
   const ctx = await requireAccount();
   const r = await withTenant(getDb(), ctx.accountId, async (tx) => {
+    const [cur] = await tx.select({ source: transactions.categorySource }).from(transactions).where(and(eq(transactions.id, transactionId), eq(transactions.accountId, ctx.accountId)));
+    if (cur?.source === 'ai') {
+      // Confirmação/correção de uma sugestão da IA: regista a decisão no registo de IA.
+      await confirmAiCategory(tx, ctx, transactionId, categoryId);
+      await refreshInsights(tx, ctx.accountId);
+      return { learnedPattern: null, propagated: 0 };
+    }
     const res = await correctCategory(tx, ctx.accountId, transactionId, categoryId);
     await audit(tx, { accountId: ctx.accountId, actorUserId: ctx.userId, action: 'transaction.categorized', entityType: 'transaction', entityId: transactionId, data: { categoryId, learned: res.learnedPattern } });
     await refreshInsights(tx, ctx.accountId);
@@ -78,4 +86,20 @@ export async function importStatementAction(_: ImportState, fd: FormData): Promi
   } catch (e) {
     return toActionError(e);
   }
+}
+
+export async function aiSuggestCategoriesAction(): Promise<{ applied: number; status: string }> {
+  const ctx = await requireAccount();
+  const r = await withTenant(getDb(), ctx.accountId, async (tx) => aiCategorizePending(tx, ctx, await accountLlm(tx, ctx.accountId)));
+  revalidatePath('/app/transacoes');
+  return r;
+}
+
+export async function confirmAiAction(transactionId: string) {
+  const ctx = await requireAccount();
+  await withTenant(getDb(), ctx.accountId, async (tx) => {
+    await confirmAiCategory(tx, ctx, transactionId);
+    await refreshInsights(tx, ctx.accountId);
+  });
+  revalidatePath('/app/transacoes');
 }

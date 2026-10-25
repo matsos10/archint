@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react';
 import { Select } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { resolveDuplicateAction, setCategoryAction } from './actions';
+import { Check, Sparkles } from 'lucide-react';
+import { aiSuggestCategoriesAction, confirmAiAction, resolveDuplicateAction, setCategoryAction } from './actions';
 
 export interface CategoryOption {
   id: string;
@@ -69,6 +70,29 @@ export function DuplicateControls({ transactionId }: { transactionId: string }) 
       <Button size="sm" variant="ghost" disabled={pending} onClick={() => start(() => resolveDuplicateAction(transactionId, 'keep'))}>
         Não é
       </Button>
+    </div>
+  );
+}
+
+export function ConfirmAiButton({ transactionId, confidence }: { transactionId: string; confidence: number | null }) {
+  const [pending, start] = useTransition();
+  return (
+    <Button size="sm" variant="ghost" disabled={pending} onClick={() => start(() => confirmAiAction(transactionId))} title="Aceitar a sugestão da IA">
+      <Check /> Aceitar{confidence != null ? ` (${Math.round(confidence * 100)}%)` : ''}
+    </Button>
+  );
+}
+
+export function AiSuggestButton({ count }: { count: number }) {
+  const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<string>();
+  const labels: Record<string, string> = { disabled: 'A IA está desligada ou indisponível.', rate_limited: 'Atingiste o limite de pedidos de IA do teu plano.', error: 'A IA não respondeu. Tenta mais tarde.', timeout: 'A IA demorou demasiado. Tenta mais tarde.', invalid_output: 'A IA não encontrou sugestões seguras.' };
+  return (
+    <div className="flex items-center gap-3">
+      <Button variant="outline" size="sm" disabled={pending} onClick={() => start(async () => { const r = await aiSuggestCategoriesAction(); setMsg(r.applied ? `${r.applied} sugestão(ões) para rever.` : labels[r.status] ?? 'Sem sugestões.'); })}>
+        <Sparkles /> {pending ? 'A pensar…' : `Sugerir categorias com IA (${count})`}
+      </Button>
+      {msg && <span className="text-sm text-muted-foreground" role="status">{msg}</span>}
     </div>
   );
 }

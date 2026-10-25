@@ -7,6 +7,7 @@
     "./eni-simplificado-2025": "./eni-simplificado-2025/index.ts"
   },
   "dependencies": {
+    "@somar/ai": "workspace:*",
     "@somar/core": "workspace:*",
     "@somar/db": "workspace:*",
     "@somar/tax-engine": "workspace:*",

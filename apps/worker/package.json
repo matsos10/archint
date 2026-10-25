@@ -10,11 +10,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@somar/ai": "workspace:*",
     "@somar/core": "workspace:*",
     "@somar/db": "workspace:*",
     "@somar/tax-engine": "workspace:*",
     "drizzle-orm": "^0.45.4",
     "pg": "^8.23.1"
   },
-  "devDependencies": { "esbuild": "^0.28.2" }
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
 }

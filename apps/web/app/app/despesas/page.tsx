@@ -99,6 +99,12 @@ export default async function ExpensesPage() {
                   </div>
                   <Badge variant={s.variant}>{s.label}</Badge>
                 </div>
+                {(r.extracted as { source?: string } | null)?.source === 'ai' && r.status !== 'confirmed' && (
+                  <div className="rounded-xl bg-accent/40 px-4 py-2.5 text-sm">
+                    <p className="font-medium">Lido pela IA{r.extractionConfidence != null ? ` — confiança ${Math.round(r.extractionConfidence * 100)}%` : ''}. Confirma os valores antes de contarem para os impostos.</p>
+                    {((r.extracted as { issues?: string[] }).issues ?? []).map((i) => <p key={i} className="text-muted-foreground">• {i}</p>)}
+                  </div>
+                )}
                 {r.status !== 'confirmed' && (
                   <ReceiptEditor
                     receiptId={r.id}

@@ -142,6 +142,8 @@ export const transactions = pgTable(
       onDelete: 'set null',
     }),
     notes: text('notes'),
+    /** Registo de IA da última sugestão de categoria (para registar a decisão do utilizador). */
+    aiLogId: uuid('ai_log_id'),
     ...timestamps,
   },
   (t) => [
@@ -200,6 +202,7 @@ export const receipts = pgTable(
     vatCents: bigint('vat_cents', { mode: 'number' }),
     confirmedBy: uuid('confirmed_by').references(() => users.id, { onDelete: 'set null' }),
     confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    aiLogId: uuid('ai_log_id'),
     ...timestamps,
   },
   (t) => [index('receipts_account_idx').on(t.accountId), index('receipts_tx_idx').on(t.transactionId)],

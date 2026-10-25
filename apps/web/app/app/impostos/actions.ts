@@ -3,8 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { and, eq } from 'drizzle-orm';
-import { taxObligations, withTenant } from '@somar/db';
-import { audit, confirmDeclaration, loadTaxParams, markDeclarationSubmitted, prepareDeclaration } from '@somar/core';
+import { declarations, taxObligations, withTenant } from '@somar/db';
+import { audit, computeSavings, confirmDeclaration, explainWithAi, loadTaxParams, markDeclarationSubmitted, prepareDeclaration, type DeclarationData } from '@somar/core';
+import { accountLlm } from '@/lib/ai';
 import { toActionError, type ActionState } from '@/lib/action';
 import { getDb } from '@/lib/db';
 import { requireAccount } from '@/lib/session';
@@ -64,4 +65,24 @@ export async function submittedDeclarationAction(id: string, _: ActionState, fd:
   revalidatePath(`/app/impostos/declaracoes/${id}`);
   revalidatePath('/app/impostos');
   return { ok: true, message: 'Registada como submetida.' };
+}
+
+export async function explainDeclarationAction(id: string) {
+  const ctx = await requireAccount();
+  return withTenant(getDb(), ctx.accountId, async (tx) => {
+    const [d] = await tx.select().from(declarations).where(and(eq(declarations.id, id), eq(declarations.accountId, ctx.accountId)));
+    if (!d) return null;
+    const data = d.data as unknown as DeclarationData;
+    const facts = [
+      ...data.summary.map((s) => ({ label: s.label, amountCents: s.valueCents })),
+      ...data.sections.flatMap((sec) => sec.fields.filter((f) => f.valueCents).slice(0, 8).map((f) => ({ label: `${sec.title} — ${f.label}`, amountCents: f.valueCents }))),
+    ];
+    return explainWithAi(tx, ctx, await accountLlm(tx, ctx.accountId), { title: data.title, question: `Explica, em linguagem simples, de onde vêm os valores de: ${data.title}.`, facts });
+  });
+}
+
+export async function aiSavingsAction() {
+  const ctx = await requireAccount();
+  const loaded = await loadTaxParams(getDb());
+  return withTenant(getDb(), ctx.accountId, async (tx) => computeSavings(tx, ctx, { llm: await accountLlm(tx, ctx.accountId), loaded }));
 }

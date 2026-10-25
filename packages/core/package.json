@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@somar/ai": "workspace:*",
     "@somar/db": "workspace:*",
     "@somar/tax-engine": "workspace:*",
     "drizzle-orm": "^0.45.4",

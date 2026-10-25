@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { getDb } from '@/lib/db';
 import { requireAccount } from '@/lib/session';
 import { cn, formatDate, formatEur } from '@/lib/utils';
-import { CategorySelect, DuplicateControls } from './row-controls';
+import { AiSuggestButton, CategorySelect, ConfirmAiButton, DuplicateControls } from './row-controls';
+import { globalLlm } from '@/lib/ai';
 
 export const metadata: Metadata = { title: 'Transações' };
 
@@ -57,6 +58,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     tx.select({ total: sql<number>`count(*)::int` }).from(transactions).where(eq(transactions.accountId, ctx.accountId)),
   ))[0]?.total ?? 0;
 
+  const uncategorized = rows.filter(({ t }) => !t.categoryId && !t.duplicateOfId).length;
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -117,6 +119,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
             </form>
           </div>
 
+          {uncategorized > 0 && globalLlm() && <AiSuggestButton count={uncategorized} />}
           {rows.length === 0 ? (
             <p className="rounded-2xl border bg-card px-6 py-10 text-center text-sm text-muted-foreground">Nada para mostrar com este filtro. 🎉</p>
           ) : (
@@ -144,6 +147,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       {t.duplicateOfId ? <DuplicateControls transactionId={t.id} /> : <CategorySelect transactionId={t.id} value={t.categoryId} options={cats} label={t.description} />}
+                      {t.categorySource === 'ai' && t.status === 'to_review' && <ConfirmAiButton transactionId={t.id} confidence={t.categoryConfidence} />}
                     </div>
                     <span className={cn('text-right font-medium tabular', t.amountCents > 0 && 'text-success')}>
                       {t.amountCents > 0 ? '+' : ''}

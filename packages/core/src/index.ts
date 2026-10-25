@@ -26,3 +26,4 @@ export * from './invoicing/mailer';
 export * from './invoicing/service';
 export * from './declarations/builders';
 export * from './declarations/service';
+export * from './ai';

@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { and, count, eq } from 'drizzle-orm';
 import { CalendarClock, ExternalLink } from 'lucide-react';
 import { accounts, taxObligations, withTenant } from '@somar/db';
-import { OBLIGATION_LABELS, effectiveObligationStatus, isDeclarative, listObligations, syncObligations } from '@somar/core';
+import { OBLIGATION_LABELS, computeSavings, effectiveObligationStatus, isDeclarative, listObligations, syncObligations } from '@somar/core';
+import { globalLlm } from '@/lib/ai';
+import { SavingsList } from './savings';
 import { paramsToVerify } from '@somar/tax-engine';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,10 +58,12 @@ export default async function TaxesPage({ searchParams }: { searchParams: Promis
   });
   if (existing === 0) await syncObligations(db, ctx.accountId, range, params);
 
-  const { account, obligations } = await withTenant(db, ctx.accountId, async (tx) => {
+  const { account, obligations, savings } = await withTenant(db, ctx.accountId, async (tx) => {
     const [account] = await tx.select().from(accounts).where(and(eq(accounts.id, ctx.accountId)));
     const all = await listObligations(tx, ctx.accountId, { from: range.from, to: range.to });
-    return { account: account!, obligations: all };
+    // Sem IA por omissão (rápido e gratuito): os valores vêm sempre do motor fiscal.
+    const savings = await computeSavings(tx, ctx, { llm: null, loaded: params }).catch(() => []);
+    return { account: account!, obligations: all, savings };
   });
 
   const horizon = new Date(Date.parse(today) + (showAll ? 400 : 90) * 86_400_000).toISOString().slice(0, 10);
@@ -118,6 +122,16 @@ export default async function TaxesPage({ searchParams }: { searchParams: Promis
           Ver os próximos 12 meses ({hiddenLater} prazos)
         </Link>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Oportunidades de poupança</CardTitle>
+          <CardDescription>Detetadas a partir da tua contabilidade; o efeito é calculado pelo motor fiscal.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SavingsList initial={savings} aiAvailable={!!globalLlm() && account.aiEnabled} />
+        </CardContent>
+      </Card>
 
       {individual && account.incomeTaxRegime !== 'irc_geral' && (
         <Card>

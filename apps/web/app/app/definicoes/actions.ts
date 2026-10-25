@@ -4,7 +4,7 @@ import QRCode from 'qrcode';
 import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 import { accounts, files, withTenant } from '@somar/db';
-import { AppError, audit, beginTotpEnrollment, confirmTotpEnrollment, defaultStorage, disableTotp, encryptString, fileChecksum, storageKeyFor, updateAccountProfile } from '@somar/core';
+import { AppError, audit, beginTotpEnrollment, setAccountAiEnabled, confirmTotpEnrollment, defaultStorage, disableTotp, encryptString, fileChecksum, storageKeyFor, updateAccountProfile } from '@somar/core';
 import { getDb } from '@/lib/db';
 import { requestMeta, requireAccount, requireUser } from '@/lib/session';
 import { toActionError, type ActionState } from '@/lib/action';
@@ -122,4 +122,15 @@ function isValidIban(iban: string) {
   let mod = 0;
   for (const d of r) mod = (mod * 10 + Number(d)) % 97;
   return mod === 1;
+}
+
+export async function setAiEnabledAction(enabled: boolean): Promise<ActionState> {
+  const ctx = await requireAccount();
+  try {
+    await withTenant(getDb(), ctx.accountId, (tx) => setAccountAiEnabled(tx, { accountId: ctx.accountId, userId: ctx.session.user.id }, enabled));
+    revalidatePath('/app', 'layout');
+    return { ok: true, message: enabled ? 'Funcionalidades de IA ativadas.' : 'Funcionalidades de IA desativadas.' };
+  } catch (e) {
+    return toActionError(e);
+  }
 }

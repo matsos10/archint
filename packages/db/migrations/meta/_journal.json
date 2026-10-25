@@ -22,6 +22,20 @@
       "when": 1792962872794,
       "tag": "0002_category_vat_treatment",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792966307188,
+      "tag": "0003_ai_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792966622334,
+      "tag": "0004_account_ai_toggle",
+      "breakpoints": true
     }
   ]
 }

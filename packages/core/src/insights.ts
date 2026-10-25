@@ -129,10 +129,11 @@ export async function refreshInsights(tx: TenantTx, accountId: string, today = n
   }
 
   // Resolve os alertas que deixaram de se aplicar
+  // Só os alertas das regras são geridos aqui; os da IA são resolvidos pelo utilizador.
   await tx
     .update(insights)
     .set({ status: 'resolved' })
-    .where(and(eq(insights.accountId, accountId), eq(insights.status, 'open'), keep.length ? notInArray(insights.dedupeKey, keep) : undefined));
+    .where(and(eq(insights.accountId, accountId), eq(insights.status, 'open'), eq(insights.source, 'rule'), keep.length ? notInArray(insights.dedupeKey, keep) : undefined));
   // Reabre os que voltaram a aplicar-se
   if (keep.length) {
     await tx.update(insights).set({ status: 'open' }).where(and(eq(insights.accountId, accountId), eq(insights.status, 'resolved'), inArray(insights.dedupeKey, keep)));

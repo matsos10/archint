@@ -1,0 +1,1 @@
+ALTER TABLE "accounts" ADD COLUMN "ai_enabled" boolean DEFAULT true NOT NULL;

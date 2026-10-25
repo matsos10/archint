@@ -17,3 +17,4 @@ export * from './regime-simulator';
 export * from './calendar';
 export * from './at-qrcode';
 export * from './invoice';
+export * from './nif';

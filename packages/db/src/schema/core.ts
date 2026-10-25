@@ -120,6 +120,8 @@ export const accounts = pgTable('accounts', {
   iban: text('iban_enc'),
   brandColor: varchar('brand_color', { length: 7 }),
   logoFileId: uuid('logo_file_id'),
+  /** Consentimento para processamento por IA (pode ser desligado a qualquer momento). */
+  aiEnabled: boolean('ai_enabled').notNull().default(true),
   onboardingCompletedAt: timestamp('onboarding_completed_at', { withTimezone: true }),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
   ...timestamps,

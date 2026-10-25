@@ -132,6 +132,7 @@ export async function buildYearData(tx: TenantTx, accountId: string, year: numbe
   }
 
   let efatura = 0;
+  let aiPendingReceipts = 0;
   let expenses = 0;
   let ssPaid = 0;
   const monthly = new Map<string, MonthPoint>();
@@ -147,7 +148,10 @@ export async function buildYearData(tx: TenantTx, accountId: string, year: numbe
     if (c?.code === 'seguranca_social') ssPaid += -t.amountCents;
     if (c?.kind !== 'expense' || t.amountCents >= 0) continue;
     const gross = -t.amountCents;
-    const hasReceipt = !!r && r.totalCents != null && r.vatCents != null;
+    // Valores lidos pela IA só contam depois de confirmados pelo utilizador (a IA propõe, o utilizador confirma).
+    const aiPending = !!r && (r.extracted as { source?: string } | null)?.source === 'ai' && r.status !== 'confirmed';
+    if (aiPending) aiPendingReceipts++;
+    const hasReceipt = !!r && !aiPending && r.totalCents != null && r.vatCents != null;
     const rate: VatRateCode =
       (hasReceipt ? inferRateCode(r!.totalCents! - r!.vatCents!, r!.vatCents!, region, params) : null) ?? c.defaultVatRate ?? 'normal';
     const vat = hasReceipt ? r!.vatCents! : rate === 'isenta' || rate === 'nao_sujeita' ? 0 : vatFromGross(gross, vatRatePct(rate, region, params));
@@ -188,6 +192,8 @@ export async function buildYearData(tx: TenantTx, accountId: string, year: numbe
     efatura += net;
     bump(r.documentDate!, 'expensesCents', net);
   }
+
+  if (aiPendingReceipts) warnings.push(`${aiPendingReceipts} justificativo(s) lidos pela IA aguardam a tua confirmação: só contam para o IVA e o IRS depois de confirmados.`);
 
   // ---------- Motor fiscal ----------
   const vat = computeVatYear({ regime: account.vatRegime, year, operations: ops }, params);

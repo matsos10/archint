@@ -14,6 +14,8 @@ import { getDb } from '@/lib/db';
 import { requireAccount } from '@/lib/session';
 import { cn, formatDate, formatEur } from '@/lib/utils';
 import { DeclarationActions } from './declaration-actions';
+import { ExplainButton } from '@/components/explain-button';
+import { explainDeclarationAction } from '../../actions';
 
 export const metadata: Metadata = { title: 'Declaração' };
 
@@ -58,6 +60,8 @@ export default async function DeclarationPage({ params }: { params: Promise<{ id
           </Card>
         ))}
       </section>
+
+      <ExplainButton action={explainDeclarationAction.bind(null, d.id)} />
 
       {data.sections.map((sec) => (
         <Card key={sec.title}>

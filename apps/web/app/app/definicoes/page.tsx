@@ -7,15 +7,17 @@ import { requireAccount } from '@/lib/session';
 import { ProfileForm } from './profile-form';
 import { TwoFactorSettings } from './two-factor';
 import { BrandingForm } from './branding-form';
-import { decryptString } from '@somar/core';
+import { aiUsageThisMonth, decryptString } from '@somar/core';
+import { globalLlm } from '@/lib/ai';
+import { AiSettings } from './ai-settings';
 
 export const metadata: Metadata = { title: 'Definições' };
 
 export default async function SettingsPage() {
   const ctx = await requireAccount();
-  const account = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const { account, usage } = await withTenant(getDb(), ctx.accountId, async (tx) => {
     const [a] = await tx.select().from(accounts).where(eq(accounts.id, ctx.accountId));
-    return a!;
+    return { account: a!, usage: await aiUsageThisMonth(tx, ctx.accountId) };
   });
   return (
     <div className="grid max-w-3xl gap-8">
@@ -58,6 +60,15 @@ export default async function SettingsPage() {
             withholdingExempt={account.withholdingExempt}
             individual={account.legalForm === 'trabalhador_independente' || account.legalForm === 'eni'}
           />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Inteligência artificial</CardTitle>
+          <CardDescription>A IA propõe, o motor fiscal valida, tu confirmas.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AiSettings enabled={account.aiEnabled} available={!!globalLlm()} usage={usage} />
         </CardContent>
       </Card>
       <Card>

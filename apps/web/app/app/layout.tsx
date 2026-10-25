@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Bell, LogOut } from 'lucide-react';
+import { Bell, LogOut, MessageCircle } from 'lucide-react';
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { accounts, notifications, withTenant } from '@somar/db';
 import { Logo } from '@/components/brand/logo';
@@ -40,6 +40,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <span className="hidden text-sm text-muted-foreground lg:block">Olá, {ctx.session.user.name.split(' ')[0]}</span>
           <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" asChild className="lg:hidden">
+              <Link href="/app/assistente" aria-label="Assistente">
+                <MessageCircle />
+              </Link>
+            </Button>
             <Button variant="ghost" size="icon" asChild>
               <Link href="/app/notificacoes" aria-label={unread ? `Notificações (${unread} por ler)` : 'Notificações'} className="relative">
                 <Bell />

@@ -22,6 +22,10 @@ export async function runSchedules(db: Db, now = new Date()) {
   const accs = await db.execute<{ id: string }>(sql`select id from accounts where deleted_at is null`);
   for (const a of accs.rows) {
     await enqueueJob(db, 'insights.refresh', {}, { accountId: a.id, dedupeKey: `insights:${a.id}:${day}` });
+    if (process.env.ANTHROPIC_API_KEY) {
+      const week = `${now.getUTCFullYear()}-${Math.floor((Date.parse(day) - Date.UTC(now.getUTCFullYear(), 0, 1)) / (7 * 86_400_000))}`;
+      await enqueueJob(db, 'ai.anomalies', {}, { accountId: a.id, dedupeKey: `ai.anomalies:${a.id}:${week}` });
+    }
     await enqueueJob(db, 'obligations.notify', {}, { accountId: a.id, dedupeKey: `obligations:${a.id}:${day}` });
     // Lembretes às 9h (UTC ≈ hora de Lisboa no inverno): só a partir dessa hora, uma vez por dia
     if (now.getUTCHours() >= 9) {
