@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matemática da Eva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff7ec; --card:#ffffff; --ink:#2b2d42; --muted:#6c6f85; --line:#eadfce;
+  --pri:#6c5ce7; --pri2:#a29bfe; --ok:#1e9e5a; --okbg:#e3f8ec; --bad:#e0384f; --badbg:#fde7eb;
+  --star:#f7b731; --shade:#ff9f43;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Nunito,ui-rounded,system-ui,sans-serif;font-size:18px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+#app{max-width:760px;margin:0 auto;padding:16px 16px 56px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+h1{font-size:30px;margin:4px 0 2px;font-weight:900}
+h2{font-size:20px;margin:24px 0 10px;font-weight:900}
+.muted{color:var(--muted)}
+.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 2px 0 var(--line),0 6px 18px rgba(80,60,20,.06)}
+.hero{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.count-down{background:var(--pri);color:#fff;border-radius:16px;padding:10px 14px;font-weight:800;text-align:center}
+.count-down b{display:block;font-size:22px}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.chip{background:#fff;border-radius:999px;padding:6px 14px;font-weight:800;box-shadow:0 2px 0 var(--line)}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.btn{display:block;width:100%;padding:16px;border-radius:18px;font-weight:900;font-size:19px;text-align:center;background:var(--pri);color:#fff;box-shadow:0 4px 0 #4b3fc4;transition:transform .05s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #4b3fc4}
+.btn small{display:block;font-weight:700;font-size:14px;opacity:.9}
+.btn.orange{background:#ff7a59;box-shadow:0 4px 0 #d9573a}
+.btn.green{background:#20bf6b;box-shadow:0 4px 0 #168a4c}
+.btn.red{background:#eb3b5a;box-shadow:0 4px 0 #b52640}
+.btn:disabled{background:#cfcbe0;box-shadow:0 4px 0 #b4b0c8;cursor:default}
+.btn.ghostbtn{background:#fff;color:var(--ink);box-shadow:0 4px 0 var(--line)}
+.topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.topic{background:#fff;border-radius:18px;padding:14px;text-align:left;box-shadow:0 3px 0 var(--line);position:relative;border:3px solid transparent}
+.topic.sug{border-color:var(--star)}
+.topic .ic{font-size:28px}
+.topic .nm{font-weight:900;font-size:17px;margin-top:2px}
+.topic .ds{font-size:13px;color:var(--muted);min-height:34px}
+.topic .badge{position:absolute;top:10px;right:10px;background:var(--star);color:#5a3d00;font-size:12px;font-weight:900;padding:2px 8px;border-radius:999px}
+.meter{height:10px;background:#f1eadf;border-radius:99px;overflow:hidden;margin-top:8px}
+.meter i{display:block;height:100%;border-radius:99px}
+.lvl{font-size:13px;font-weight:800;margin-top:4px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.x{width:42px;height:42px;border-radius:50%;background:#fff;font-size:20px;font-weight:900;box-shadow:0 2px 0 var(--line);flex:none}
+.pbar{flex:1;height:16px;background:#fff;border-radius:99px;overflow:hidden;box-shadow:inset 0 0 0 2px var(--line)}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pri2),var(--pri));border-radius:99px;transition:width .3s}
+.cnt{font-weight:900;min-width:52px;text-align:right}
+.tag{display:inline-block;color:#fff;font-weight:900;font-size:14px;padding:4px 12px;border-radius:999px}
+.prompt{font-size:22px;font-weight:800;margin:14px 0 6px}
+.visual{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin:14px 0;overflow-x:auto}
+.visual svg{max-width:100%;height:auto}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.choice{background:#fff;border:3px solid var(--line);border-radius:16px;padding:14px 10px;font-weight:800;font-size:20px;box-shadow:0 3px 0 var(--line);min-height:60px}
+.choice:hover:not(:disabled){border-color:var(--pri2)}
+.choice.ok{background:var(--okbg);border-color:var(--ok);color:var(--ok)}
+.choice.bad{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.choice:disabled{cursor:default}
+.inrow{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.inp{width:170px;font:inherit;font-size:30px;font-weight:900;text-align:center;padding:10px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--ink)}
+.inp:focus{outline:none;border-color:var(--pri)}
+.inp.ok{border-color:var(--ok);background:var(--okbg)}
+.inp.bad{border-color:var(--bad);background:var(--badbg)}
+.unit{font-weight:800;color:var(--muted)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:300px;margin:14px auto 0}
+.pad button{background:#fff;border-radius:14px;padding:12px 0;font-size:24px;font-weight:900;box-shadow:0 3px 0 var(--line)}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.fb{margin-top:16px;border-radius:16px;padding:14px 16px;font-size:18px}
+.fb.ok{background:var(--okbg);color:#14663b}
+.fb.bad{background:var(--badbg);color:#8e1d2f}
+.fb b.t{font-size:21px;display:block;margin-bottom:4px}
+.fb .btn{margin-top:12px}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 3px;font-weight:900}
+.frac span:first-child{border-bottom:3px solid currentColor;padding:0 4px}
+.box{display:inline-block;min-width:40px;border:3px dashed var(--pri);border-radius:8px;text-align:center;color:var(--pri)}
+table.cal{border-collapse:collapse;background:#fff;font-weight:800;font-size:16px}
+table.cal caption{font-weight:900;font-size:18px;padding-bottom:6px;text-transform:capitalize}
+table.cal th,table.cal td{width:42px;height:36px;text-align:center;border:2px solid var(--line)}
+table.cal th{background:#f4efff;font-size:13px}
+table.cal td.hl{background:#ffe8c7}
+.picto{border-collapse:collapse;background:#fff;font-size:16px}
+.picto td{border:2px solid var(--line);padding:6px 10px;font-weight:800}
+.picto td.sy{font-size:24px;letter-spacing:2px;min-width:180px}
+.legend{font-weight:800;margin-top:8px;text-align:center}
+.res{text-align:center}
+.res .big-score{font-size:56px;font-weight:900;margin:6px 0}
+.res .stars{font-size:38px;letter-spacing:4px}
+.list{list-style:none;padding:0;margin:0}
+.list li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:2px dashed var(--line);font-weight:700}
+.list li:last-child{border-bottom:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.row>*{flex:1;min-width:180px}
+.settings{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.settings button{background:#fff;border-radius:12px;padding:8px 14px;font-weight:800;box-shadow:0 2px 0 var(--line)}
+.confetti{position:fixed;top:-40px;font-size:28px;pointer-events:none;animation:fall 2.6s linear forwards;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.pop{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+@media (max-width:480px){
+  .prompt{font-size:20px}
+  table.cal th,table.cal td{width:36px;height:32px}
+  .picto td.sy{min-width:120px;font-size:20px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* =========================================================
+   Matemática da Eva — 3.º ano · teste de 26 de outubro
+   Temas: cálculo, ordinais, numeração decimal, frações,
+   problemas, calendário, horas, área e gráficos.
+   O progresso fica guardado no navegador (localStorage).
+   ========================================================= */
+
+const NAME = 'Eva';
+const TEST_DATE = new Date(2026, 9, 26);
+const KEY = 'eva-matematica-3ano-v1';
+
+/* ---------- utilidades ---------- */
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pad2 = n => String(n).padStart(2, '0');
+const N = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); // 4 582
+const F = (a, b) => `<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const BOX = '<span class="box">?</span>';
+const todayStr = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
+function numQ(prompt, answer, explain, opts = {}) {
+  return { kind: 'num', prompt, answer, explain, visual: opts.visual || '', unit: opts.unit || '' };
+}
+function mcQ(prompt, correct, distractors, explain, opts = {}) {
+  correct = String(correct);
+  const uniq = [...new Set(distractors.map(String))].filter(d => d !== correct);
+  const choices = shuffle([correct, ...shuffle(uniq).slice(0, (opts.n || 4) - 1)]);
+  return { kind: 'mc', prompt, choices, answer: choices.indexOf(correct), explain, visual: opts.visual || '' };
+}
+
+/* ---------- números por extenso ---------- */
+const U = ['zero','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez','onze','doze','treze','catorze','quinze','dezasseis','dezassete','dezoito','dezanove'];
+const D = ['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+const C = ['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+function words(n) {
+  if (n < 20) return U[n];
+  if (n < 100) { const u = n % 10; return D[Math.floor(n / 10)] + (u ? ' e ' + U[u] : ''); }
+  if (n < 1000) { if (n === 100) return 'cem'; const r = n % 100; return C[Math.floor(n / 100)] + (r ? ' e ' + words(r) : ''); }
+  const m = Math.floor(n / 1000), r = n % 1000;
+  const s = m === 1 ? 'mil' : words(m) + ' mil';
+  if (!r) return s;
+  return s + (r < 100 || r % 100 === 0 ? ' e ' : ' ') + words(r);
+}
+const OU = ['','primeiro','segundo','terceiro','quarto','quinto','sexto','sétimo','oitavo','nono'];
+const OD = ['','décimo','vigésimo','trigésimo','quadragésimo','quinquagésimo','sexagésimo','septuagésimo','octogésimo','nonagésimo'];
+function ordWords(n) {
+  if (n === 100) return 'centésimo';
+  return [OD[Math.floor(n / 10)], OU[n % 10]].filter(Boolean).join(' ');
+}
+const FRN = {2:['meio','meios'],3:['terço','terços'],4:['quarto','quartos'],5:['quinto','quintos'],6:['sexto','sextos'],7:['sétimo','sétimos'],8:['oitavo','oitavos'],9:['nono','nonos'],10:['décimo','décimos']};
+const fracName = (k, n) => `${words(k)} ${k === 1 ? FRN[n][0] : FRN[n][1]}`;
+
+const MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const MDAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
+const WD = ['segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado','domingo'];
+const WDP = ['segundas-feiras','terças-feiras','quartas-feiras','quintas-feiras','sextas-feiras','sábados','domingos'];
+const WDS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+const HW = ['','uma','duas','três','quatro','cinco','seis','sete','oito','nove','dez','onze','doze'];
+const fmtT = t => { t = ((t % 1440) + 1440) % 1440; return `${Math.floor(t / 60)}h${pad2(t % 60)}`; };
+const fmt12 = t => { t = ((t % 720) + 720) % 720; return `${Math.floor(t / 60) || 12}h${pad2(t % 60)}`; };
+const fmtDur = d => { const h = Math.floor(d / 60), m = d % 60; return h && m ? `${h} h ${m} min` : h ? `${h} h` : `${m} min`; };
+
+/* ---------- desenhos (SVG / HTML) ---------- */
+function fracSVG(n, k, shape) {
+  const fill = i => i < k ? 'var(--shade)' : '#fff';
+  if (shape === 'pie') {
+    const cx = 80, cy = 80, r = 70; let p = '';
+    for (let i = 0; i < n; i++) {
+      const a0 = (-90 + i * 360 / n) * Math.PI / 180, a1 = (-90 + (i + 1) * 360 / n) * Math.PI / 180;
+      const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0), x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+      p += `<path d="M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${360 / n > 180 ? 1 : 0} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" fill="${fill(i)}" stroke="#2b2d42" stroke-width="3"/>`;
+    }
+    return `<svg viewBox="0 0 160 160" width="170">${p}</svg>`;
+  }
+  const w = 280, h = 70, cw = w / n; let p = '';
+  for (let i = 0; i < n; i++) p += `<rect x="${5 + i * cw}" y="5" width="${cw}" height="${h}" fill="${fill(i)}" stroke="#2b2d42" stroke-width="3"/>`;
+  return `<svg viewBox="0 0 290 80" width="290">${p}</svg>`;
+}
+
+function clockSVG(h, m) {
+  let s = `<svg viewBox="0 0 200 200" width="210"><circle cx="100" cy="100" r="92" fill="#fff" stroke="#2b2d42" stroke-width="6"/>`;
+  for (let i = 0; i < 60; i++) {
+    const a = i * 6 * Math.PI / 180, big = i % 5 === 0, r1 = big ? 78 : 83;
+    s += `<line x1="${100 + r1 * Math.sin(a)}" y1="${100 - r1 * Math.cos(a)}" x2="${100 + 88 * Math.sin(a)}" y2="${100 - 88 * Math.cos(a)}" stroke="#2b2d42" stroke-width="${big ? 3 : 1}"/>`;
+  }
+  for (let i = 1; i <= 12; i++) {
+    const a = i * 30 * Math.PI / 180;
+    s += `<text x="${100 + 64 * Math.sin(a)}" y="${100 - 64 * Math.cos(a) + 7}" text-anchor="middle" font-size="20" font-weight="800" fill="#2b2d42" font-family="Nunito,sans-serif">${i}</text>`;
+  }
+  const ha = ((h % 12) + m / 60) * 30 * Math.PI / 180, ma = m * 6 * Math.PI / 180;
+  s += `<line x1="100" y1="100" x2="${100 + 44 * Math.sin(ha)}" y2="${100 - 44 * Math.cos(ha)}" stroke="#e0384f" stroke-width="9" stroke-linecap="round"/>`;
+  s += `<line x1="100" y1="100" x2="${100 + 72 * Math.sin(ma)}" y2="${100 - 72 * Math.cos(ma)}" stroke="#6c5ce7" stroke-width="5" stroke-linecap="round"/>`;
+  return s + `<circle cx="100" cy="100" r="7" fill="#2b2d42"/></svg>`;
+}
+
+function calHTML(month, hl) {
+  const first = (new Date(2026, month, 1).getDay() + 6) % 7, len = MDAYS[month];
+  let h = `<table class="cal"><caption>${MONTHS[month]} 2026</caption><tr>${WDS.map(d => `<th>${d}</th>`).join('')}</tr><tr>`;
+  for (let i = 0; i < first; i++) h += '<td></td>';
+  for (let d = 1; d <= len; d++) {
+    h += `<td${d === hl ? ' class="hl"' : ''}>${d}</td>`;
+    if ((first + d) % 7 === 0 && d < len) h += '</tr><tr>';
+  }
+  const rest = (7 - (first + len) % 7) % 7;
+  for (let i = 0; i < rest; i++) h += '<td></td>';
+  return h + '</tr></table>';
+}
+
+function polyomino(n, W, H) {
+  const s = new Set([`${rnd(1, W - 2)},${rnd(1, H - 2)}`]); let g = 0;
+  while (s.size < n && g++ < 2000) {
+    const [x, y] = pick([...s]).split(',').map(Number), [dx, dy] = pick([[1,0],[-1,0],[0,1],[0,-1]]);
+    const nx = x + dx, ny = y + dy;
+    if (nx >= 0 && ny >= 0 && nx < W && ny < H) s.add(`${nx},${ny}`);
+  }
+  return [...s].map(c => c.split(',').map(Number));
+}
+function gridSVG(cells, W, H, color, label) {
+  const c = 28, o = 4; let s = `<svg viewBox="0 0 ${W * c + 2 * o} ${H * c + 2 * o + (label ? 30 : 0)}" width="${W * c + 2 * o}">`;
+  for (const [x, y] of cells) s += `<rect x="${o + x * c}" y="${o + y * c}" width="${c}" height="${c}" fill="${color}"/>`;
+  for (let x = 0; x <= W; x++) s += `<line x1="${o + x * c}" y1="${o}" x2="${o + x * c}" y2="${o + H * c}" stroke="#c9bfae" stroke-width="1.5"/>`;
+  for (let y = 0; y <= H; y++) s += `<line x1="${o}" y1="${o + y * c}" x2="${o + W * c}" y2="${o + y * c}" stroke="#c9bfae" stroke-width="1.5"/>`;
+  if (label) s += `<text x="${(W * c) / 2 + o}" y="${H * c + 2 * o + 22}" text-anchor="middle" font-size="20" font-weight="900" fill="#2b2d42" font-family="Nunito,sans-serif">${label}</text>`;
+  return s + '</svg>';
+}
+
+const CHART_THEMES = [
+  { t: 'Fruto preferido dos alunos da turma', who: 'alunos', cats: [['🍎','Maçã'],['🍌','Banana'],['🍊','Laranja'],['🍓','Morango'],['🍇','Uvas']] },
+  { t: 'Desporto preferido', who: 'alunos', cats: [['⚽','Futebol'],['🏊','Natação'],['🤸','Ginástica'],['🏀','Basquete'],['🚴','Ciclismo']] },
+  { t: 'Animal de estimação preferido', who: 'alunos', cats: [['🐶','Cão'],['🐱','Gato'],['🐰','Coelho'],['🐟','Peixe'],['🐦','Pássaro']] },
+  { t: 'Livros lidos na semana da leitura', who: 'livros', cats: [['📘','3.º A'],['📗','3.º B'],['📙','3.º C'],['📕','3.º D']] },
+];
+const BAR_COLORS = ['#ff7a59','#f7b731','#20bf6b','#45aaf2','#a55eea'];
+function barSVG(title, cats, vals) {
+  const W = 360, H = 250, l = 34, b = 46, t = 30, max = 10, ch = H - b - t, bw = (W - l - 10) / cats.length;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" font-family="Nunito,sans-serif">`;
+  s += `<text x="${W / 2}" y="18" text-anchor="middle" font-size="15" font-weight="900" fill="#2b2d42">${title}</text>`;
+  for (let v = 0; v <= max; v++) {
+    const y = t + ch - v * ch / max;
+    s += `<line x1="${l}" y1="${y}" x2="${W - 6}" y2="${y}" stroke="${v ? '#eee4d4' : '#2b2d42'}" stroke-width="${v ? 1 : 2}"/>`;
+    s += `<text x="${l - 6}" y="${y + 4}" text-anchor="end" font-size="11" font-weight="800" fill="#6c6f85">${v}</text>`;
+  }
+  cats.forEach(([ic, nm], i) => {
+    const x = l + i * bw + bw * .18, w = bw * .64, hgt = vals[i] * ch / max;
+    s += `<rect x="${x}" y="${t + ch - hgt}" width="${w}" height="${hgt}" rx="4" fill="${BAR_COLORS[i % 5]}"/>`;
+    s += `<text x="${x + w / 2}" y="${t + ch + 20}" text-anchor="middle" font-size="16">${ic}</text>`;
+    s += `<text x="${x + w / 2}" y="${t + ch + 38}" text-anchor="middle" font-size="12" font-weight="800" fill="#2b2d42">${nm}</text>`;
+  });
+  s += `<line x1="${l}" y1="${t}" x2="${l}" y2="${t + ch}" stroke="#2b2d42" stroke-width="2"/>`;
+  return s + '</svg>';
+}
+function pictoHTML(title, cats, vals, sym, per, who) {
+  let h = `<div><div class="legend">${title}</div><table class="picto" style="margin-top:6px">`;
+  cats.forEach(([ic, nm], i) => { h += `<tr><td>${ic} ${nm}</td><td class="sy">${sym.repeat(vals[i] / per)}</td></tr>`; });
+  return h + `</table><div class="legend">${sym} = ${per} ${who}</div></div>`;
+}
+
+/* ---------- temas ---------- */
+const DOMAINS = [
+  { name: 'Números e Operações', topics: ['calc','ord','num','frac','prob'] },
+  { name: 'Geometria e Medida', topics: ['cal','horas','area'] },
+  { name: 'Organização e Tratamento de Dados', topics: ['graf'] },
+];
+const T = {
+  calc: { name: 'Cálculo', icon: '➕', color: '#ff7a59', desc: 'Adição, subtração e multiplicação' },
+  ord:  { name: 'Números ordinais', icon: '🥇', color: '#f39c12', desc: '1.º, 2.º, 3.º… e como se leem' },
+  num:  { name: 'Numeração decimal', icon: '🔢', color: '#45aaf2', desc: 'Milhares, centenas, dezenas e unidades' },
+  frac: { name: 'Frações', icon: '🍕', color: '#eb3b5a', desc: 'Metade, terço, quarto… e partes de um todo' },
+  prob: { name: 'Problemas', icon: '🧩', color: '#8854d0', desc: 'Ler, pensar e calcular' },
+  cal:  { name: 'Calendário', icon: '📅', color: '#20bf6b', desc: 'Dias, semanas, meses e anos' },
+  horas:{ name: 'Horas e tempo', icon: '⏰', color: '#0fb9b1', desc: 'Relógio, horas e minutos' },
+  area: { name: 'Área', icon: '🟩', color: '#26de81', desc: 'Contar quadrículas' },
+  graf: { name: 'Gráficos', icon: '📊', color: '#4b7bec', desc: 'Gráficos de barras e pictogramas' },
+};
+
+const GEN = {
+  calc() {
+    const t = rnd(0, 5);
+    if (t === 0) { const a = rnd(100, 799), b = rnd(20, 999 - a); return numQ(`Calcula: <b>${a} + ${b}</b>`, a + b, `Soma as unidades, depois as dezenas e depois as centenas (sem esquecer o "e vai um"): ${a} + ${b} = <b>${a + b}</b>.`); }
+    if (t === 1) { const a = rnd(300, 999), b = rnd(40, a - 50); return numQ(`Calcula: <b>${a} − ${b}</b>`, a - b, `${a} − ${b} = <b>${a - b}</b>. Confirma com a prova: ${a - b} + ${b} = ${a}.`); }
+    if (t === 2) { const a = rnd(2, 10), b = rnd(2, 10); return numQ(`Calcula: <b>${a} × ${b}</b>`, a * b, `${a} × ${b} = <b>${a * b}</b>` + (a <= 6 ? ` (${a} vezes o ${b}: ${Array(a).fill(b).join(' + ')} = ${a * b}).` : ` (tabuada do ${b}).`)); }
+    if (t === 3) { const a = rnd(12, 48), b = rnd(2, 5), d = a - a % 10, u = a % 10; return numQ(`Calcula: <b>${a} × ${b}</b>`, a * b, `Decompõe o ${a}: ${d} × ${b} + ${u} × ${b} = ${d * b} + ${u * b} = <b>${a * b}</b>.`); }
+    if (t === 4) { const a = rnd(20, 400), c = a + rnd(20, 450); return numQ(`Qual é o número que falta? <b>${a} + ${BOX} = ${c}</b>`, c - a, `O número que falta é ${c} − ${a} = <b>${c - a}</b>. Confirma: ${a} + ${c - a} = ${c}.`); }
+    const k = pick([['dobro', 2], ['triplo', 3]]), n = k[1] === 2 ? rnd(12, 99) : rnd(11, 40);
+    return numQ(`Qual é o <b>${k[0]}</b> de ${n}?`, n * k[1], `O ${k[0]} é ${k[1]} vezes o número: ${k[1]} × ${n} = <b>${n * k[1]}</b>.`);
+  },
+
+  ord() {
+    const t = rnd(0, 5);
+    if (t === 0) {
+      const n = rnd(11, 99), rev = (n % 10) * 10 + Math.floor(n / 10);
+      return mcQ(`Como se lê <b>${n}.º</b>?`, ordWords(n), [ordWords(n + 1), rev > 10 && rev < 100 && rev !== n ? ordWords(rev) : ordWords(n - 1), words(n), ordWords(n > 20 ? n - 10 : n + 10)],
+        `${n}.º lê-se <b>${ordWords(n)}</b>. Atenção: "${words(n)}" é o número cardinal, não o ordinal.`);
+    }
+    if (t === 1) {
+      const n = rnd(11, 99), rev = (n % 10) * 10 + Math.floor(n / 10);
+      return mcQ(`Como se escreve <b>${ordWords(n)}</b>?`, `${n}.º`, [`${n + 1}.º`, rev > 10 && rev !== n ? `${rev}.º` : `${n - 1}.º`, `${n}`, `${n > 20 ? n - 10 : n + 10}.º`],
+        `<b>${ordWords(n)}</b> escreve-se <b>${n}.º</b> (o "º" mostra que é ordinal).`);
+    }
+    if (t === 2) { const n = rnd(3, 30); return numQ(`Numa fila, a ${NAME} está em <b>${n}.º</b> lugar. Quantas pessoas estão à frente da ${NAME}?`, n - 1, `Se está em ${n}.º lugar, à frente dela estão as pessoas do 1.º ao ${n - 1}.º: <b>${n - 1}</b> pessoas.`, { unit: 'pessoas' }); }
+    if (t === 3) { const n = rnd(5, 40); return mcQ(`Numa corrida, o Tomás chegou logo a seguir ao <b>${n}.º</b> classificado. Em que lugar ficou o Tomás?`, `${n + 1}.º`, [`${n - 1}.º`, `${n}.º`, `${n + 2}.º`], `Logo a seguir ao ${n}.º vem o <b>${n + 1}.º</b> (${ordWords(n + 1)}).`); }
+    if (t === 4) { const k = rnd(2, 12); return mcQ(`Qual é o <b>${k}.º</b> mês do ano?`, MONTHS[k - 1], [MONTHS[k % 12], MONTHS[(k + 10) % 12], MONTHS[(k + 2) % 12], MONTHS[(k + 4) % 12]], `Conta a partir de janeiro (1.º): o ${k}.º mês (${ordWords(k)}) é <b>${MONTHS[k - 1]}</b>.`); }
+    const n = rnd(12, 60);
+    return mcQ(`Que ordinal vem imediatamente <b>antes</b> de <b>${ordWords(n)}</b>?`, ordWords(n - 1), [ordWords(n + 1), ordWords(n - 2), ordWords(n - 10)], `${ordWords(n)} é o ${n}.º. Antes vem o ${n - 1}.º: <b>${ordWords(n - 1)}</b>.`);
+  },
+
+  num() {
+    const t = rnd(0, 8);
+    if (t === 0) {
+      const n = rnd(1000, 9999), s = String(n), pos = rnd(0, 3), nm = ['dos milhares','das centenas','das dezenas','das unidades'][pos];
+      return numQ(`No número <b>${N(n)}</b>, qual é o algarismo <b>${nm}</b>?`, Number(s[pos]), `${N(n)} = ${s[0]} milhares, ${s[1]} centenas, ${s[2]} dezenas e ${s[3]} unidades. O algarismo ${nm} é <b>${s[pos]}</b>.`);
+    }
+    if (t === 1) {
+      const ds = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 3), n = ds[0] * 100 + ds[1] * 10 + ds[2], p = rnd(0, 2), d = ds[p], v = d * [100, 10, 1][p];
+      return mcQ(`Qual é o <b>valor</b> do algarismo <b>${d}</b> no número <b>${n}</b>?`, v, [d, d * 10, d * 100, d * 1000], `O ${d} está na posição das ${['centenas','dezenas','unidades'][p]}, por isso vale <b>${v}</b>.`);
+    }
+    if (t === 2) {
+      const m = rnd(0, 1) ? rnd(1, 9) : 0, c = rnd(1, 9), d = rnd(0, 9), u = rnd(0, 9), n = m * 1000 + c * 100 + d * 10 + u;
+      const parts = [m && `${m} M`, `${c} C`, d && `${d} D`, u && `${u} U`].filter(Boolean);
+      return numQ(`Que número é <b>${parts.join(' + ')}</b>?`, n, `M = milhares, C = centenas, D = dezenas, U = unidades. ${[m && `${m * 1000}`, c * 100, d && d * 10, u].filter(Boolean).join(' + ')} = <b>${N(n)}</b>.`);
+    }
+    if (t === 3) {
+      if (rnd(0, 1)) { const n = rnd(12, 99) * 10; return numQ(`Quantas <b>dezenas</b> tem o número <b>${n}</b>?`, n / 10, `Cada dezena são 10 unidades. ${n} = ${n / 10} × 10, por isso tem <b>${n / 10}</b> dezenas.`, { unit: 'dezenas' }); }
+      const n = rnd(11, 60) * 100; return numQ(`Quantas <b>centenas</b> tem o número <b>${N(n)}</b>?`, n / 100, `Cada centena são 100 unidades. ${N(n)} = ${n / 100} × 100, por isso tem <b>${n / 100}</b> centenas.`, { unit: 'centenas' });
+    }
+    if (t === 4) { const n = rnd(0, 1) ? rnd(101, 999) : rnd(1001, 9999); return numQ(`Escreve com algarismos: <i>${words(n)}</i>`, n, `"${words(n)}" escreve-se <b>${N(n)}</b>.`); }
+    if (t === 5) {
+      const n = rnd(1, 9) * 100 + pick([99, 90, rnd(1, 98)]) + (rnd(0, 2) ? 0 : 1000 * rnd(1, 8)), suc = rnd(0, 1);
+      return numQ(`Qual é o <b>${suc ? 'sucessor' : 'antecessor'}</b> de <b>${N(n)}</b>?`, suc ? n + 1 : n - 1, `O ${suc ? 'sucessor vem logo a seguir: ' + N(n) + ' + 1' : 'antecessor vem logo antes: ' + N(n) + ' − 1'} = <b>${N(suc ? n + 1 : n - 1)}</b>.`);
+    }
+    if (t === 6) {
+      const a = rnd(100, 989), b = rnd(0, 6) ? a - a % 100 + rnd(0, 99) : a;
+      const sg = a < b ? '<' : a > b ? '>' : '=', nm = { '<': 'é menor que', '>': 'é maior que', '=': 'é igual a' };
+      return mcQ(`Que sinal fica bem? <b>${a} ${BOX} ${b}</b>`, sg, ['<', '>', '='], `${a} ${nm[sg]} ${b}, por isso: <b>${a} ${sg} ${b}</b>. Dica: a "boca" do sinal abre-se para o número maior.`, { n: 3 });
+    }
+    if (t === 7) {
+      const ds = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 3), perms = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]].map(p => ds[p[0]] * 100 + ds[p[1]] * 10 + ds[p[2]]);
+      const opts = shuffle(perms).slice(0, 4), big = rnd(0, 1), ans = big ? Math.max(...opts) : Math.min(...opts);
+      return mcQ(`Qual destes números é o <b>${big ? 'maior' : 'menor'}</b>?`, ans, opts.filter(x => x !== ans), `Compara primeiro as centenas, depois as dezenas e depois as unidades. O ${big ? 'maior' : 'menor'} é <b>${ans}</b>.`);
+    }
+    const c = rnd(1, 9), d = rnd(1, 9), u = rnd(0, 9), n = c * 100 + d * 10 + u;
+    return numQ(`Completa: <b>${n} = ${c} centenas + ${BOX} dezenas + ${u} unidades</b>`, d, `${n} = ${c * 100} + ${d * 10} + ${u}. Faltam <b>${d}</b> dezenas.`);
+  },
+
+  frac() {
+    const t = rnd(0, 5);
+    if (t === 0) {
+      const n = rnd(2, 8), k = rnd(1, n - 1);
+      return mcQ('Que fração da figura está pintada?', F(k, n), [F(n - k, n), F(k, n - k), F(n, k), F(k, n + 1)],
+        `A figura está dividida em <b>${n}</b> partes iguais (denominador, em baixo) e <b>${k}</b> estão pintadas (numerador, em cima): ${F(k, n)}.`, { visual: fracSVG(n, k, pick(['pie', 'bar'])) });
+    }
+    if (t === 1) {
+      const n = rnd(2, 10), k = rnd(1, n - 1);
+      return mcQ(`Como se lê a fração ${F(k, n)}?`, fracName(k, n), [fracName(k, n === 10 ? 9 : n + 1), k + 1 < n ? fracName(k + 1, n) : fracName(k, n === 2 ? 3 : n - 1), `${words(k)} sobre ${words(n)}`, n > 2 ? fracName(k, n - 1) : fracName(k, 4)],
+        `${F(k, n)} lê-se <b>${fracName(k, n)}</b>.`);
+    }
+    if (t === 2) {
+      const d = pick([2, 2, 3, 4, 5, 10]), q = d * rnd(2, 10);
+      const txt = { 2: 'a <b>metade</b>', 3: 'a <b>terça parte</b>', 4: 'a <b>quarta parte</b>', 5: 'a <b>quinta parte</b>', 10: 'a <b>décima parte</b>' }[d];
+      return numQ(rnd(0, 1) ? `Quanto é ${F(1, d)} de <b>${q}</b>?` : `Qual é ${txt} de <b>${q}</b>?`, q / d, `Divide ${q} em ${d} partes iguais: cada parte tem <b>${q / d}</b>, porque ${d} × ${q / d} = ${q}.`);
+    }
+    if (t === 3) {
+      const [a, b] = shuffle([2, 3, 4, 5, 6, 8, 10]).slice(0, 2), big = Math.min(a, b);
+      return mcQ(`Qual é a fração <b>maior</b>?`, F(1, big), [F(1, Math.max(a, b)), 'São iguais'],
+        `Quanto mais partes tem o todo, mais pequena é cada parte. Uma pizza dividida em ${big} é maior em cada fatia do que dividida em ${Math.max(a, b)}. Por isso ${F(1, big)} é maior.`, { n: 3, visual: fracSVG(a, 1, 'bar') + fracSVG(b, 1, 'bar') });
+    }
+    if (t === 4) {
+      const n = pick([4, 6, 8, 10, 12]), k = rnd(1, n - 1), left = rnd(0, 1);
+      const r = left ? n - k : k;
+      return mcQ(`Uma pizza foi dividida em <b>${n}</b> fatias iguais. A ${NAME} comeu <b>${k}</b>. Que fração da pizza ${left ? '<b>sobrou</b>' : 'a ' + NAME + ' <b>comeu</b>'}?`, F(r, n), [F(left ? k : n - k, n), F(r, n + 1), F(n, r)],
+        `A pizza tem ${n} fatias (denominador). ${left ? `Sobraram ${n} − ${k} = ${r}` : `Comeu ${k}`} (numerador): ${F(r, n)}.`);
+    }
+    const n = rnd(2, 10);
+    return mcQ(`Que fração representa a unidade inteira (o todo) dividida em <b>${n}</b> partes iguais?`, F(n, n), [F(1, n), F(n, 1), F(n - 1, n)], `Se todas as ${n} partes estão pintadas temos ${F(n, n)}, que é igual a 1 (a unidade inteira).`, { visual: fracSVG(n, n, 'bar') });
+  },
+
+  prob() {
+    const t = rnd(0, 9);
+    if (t === 0) { const a = rnd(120, 480), b = rnd(40, 380); return numQ(`A ${NAME} tinha ${a} cromos. A avó deu-lhe mais ${b}. Com quantos cromos ficou a ${NAME}?`, a + b, `Recebeu mais, por isso juntamos (adição): ${a} + ${b} = <b>${a + b}</b> cromos.`, { unit: 'cromos' }); }
+    if (t === 1) { const a = rnd(300, 900), b = rnd(60, a - 80); return numQ(`Na biblioteca da escola havia ${a} livros. Foram emprestados ${b}. Quantos livros ficaram na biblioteca?`, a - b, `Saíram livros, por isso tiramos (subtração): ${a} − ${b} = <b>${a - b}</b> livros.`, { unit: 'livros' }); }
+    if (t === 2) { const a = pick([6, 10, 12]), b = rnd(3, 9); return numQ(`Cada caixa tem ${a} ovos. Quantos ovos há em ${b} caixas?`, a * b, `${b} caixas com ${a} ovos cada: ${b} × ${a} = <b>${a * b}</b> ovos.`, { unit: 'ovos' }); }
+    if (t === 3) { const a = rnd(40, 300), b = a + rnd(15, 250); return numQ(`A Leonor tem ${a} berlindes e o Rui tem ${b}. Quantos berlindes tem o Rui <b>a mais</b> do que a Leonor?`, b - a, `Para saber quantos tem a mais, calculamos a diferença: ${b} − ${a} = <b>${b - a}</b> berlindes.`, { unit: 'berlindes' }); }
+    if (t === 4) { const p = rnd(2, 5), q = pick([6, 8, 10, 12]), r = rnd(2, p * q - 3); return numQ(`A ${NAME} comprou ${p} pacotes de lápis de cor. Cada pacote tem ${q} lápis. Depois deu ${r} lápis à Matilde. Com quantos lápis ficou a ${NAME}?`, p * q - r, `1.º passo: ${p} × ${q} = ${p * q} lápis. 2.º passo: ${p * q} − ${r} = <b>${p * q - r}</b> lápis.`, { unit: 'lápis' }); }
+    if (t === 5) { const a = rnd(8, 25), b = rnd(2, 6); return numQ(`Um livro custa ${a} euros e um caderno custa ${b} euros. Quanto paga a mãe da ${NAME} por 1 livro e 2 cadernos?`, a + 2 * b, `2 cadernos: 2 × ${b} = ${2 * b} euros. Com o livro: ${a} + ${2 * b} = <b>${a + 2 * b}</b> euros.`, { unit: 'euros' }); }
+    if (t === 6) { const a = rnd(20, 45), b = rnd(5, 15), c = rnd(3, 18); return numQ(`No autocarro iam ${a} pessoas. Na paragem saíram ${b} e entraram ${c}. Quantas pessoas vão agora no autocarro?`, a - b + c, `${a} − ${b} = ${a - b}; depois ${a - b} + ${c} = <b>${a - b + c}</b> pessoas.`, { unit: 'pessoas' }); }
+    if (t === 7) { const r = rnd(3, 6), c = rnd(4, 6); return numQ(`Na sala da ${NAME} há ${r} filas com ${c} mesas em cada fila. Quantas mesas há na sala?`, r * c, `${r} filas × ${c} mesas = <b>${r * c}</b> mesas.`, { unit: 'mesas' }); }
+    if (t === 8) { const k = pick([['galinhas', 2], ['vacas', 4], ['patos', 2], ['cavalos', 4]]), n = rnd(3, 9); return numQ(`Numa quinta há ${n} ${k[0]}. Quantas patas têm ao todo?`, n * k[1], `Cada animal tem ${k[1]} patas: ${n} × ${k[1]} = <b>${n * k[1]}</b> patas.`, { unit: 'patas' }); }
+    const tot = rnd(80, 250), lid = rnd(20, tot - 15); return numQ(`O livro da ${NAME} tem ${tot} páginas. A ${NAME} já leu ${lid}. Quantas páginas faltam ler?`, tot - lid, `${tot} − ${lid} = <b>${tot - lid}</b> páginas.`, { unit: 'páginas' });
+  },
+
+  cal() {
+    const t = rnd(0, 6);
+    if (t === 0) {
+      const k = rnd(2, 5);
+      const f = pick([
+        ['Quantos dias tem uma semana?', 7, 'Uma semana tem <b>7</b> dias: de segunda-feira a domingo.'],
+        ['Quantos meses tem um ano?', 12, 'Um ano tem <b>12</b> meses: de janeiro a dezembro.'],
+        ['Quantos dias tem um ano comum (não bissexto)?', 365, 'Um ano comum tem <b>365</b> dias. O ano bissexto tem 366.'],
+        ['Quantos dias tem um ano bissexto?', 366, 'O ano bissexto tem <b>366</b> dias (fevereiro tem 29 dias).'],
+        [`Quantos dias há em ${k} semanas?`, 7 * k, `Cada semana tem 7 dias: ${k} × 7 = <b>${7 * k}</b> dias.`],
+        [`Quantas semanas são ${7 * k} dias?`, k, `${k} × 7 = ${7 * k}, por isso são <b>${k}</b> semanas.`],
+      ]);
+      return numQ(f[0], f[1], f[2]);
+    }
+    if (t === 1) {
+      const m = rnd(0, 11);
+      return mcQ(`Quantos dias tem o mês de <b>${MONTHS[m]}</b>${m === 1 ? ' num ano comum' : ''}?`, MDAYS[m], [28, 30, 31], `${MONTHS[m][0].toUpperCase() + MONTHS[m].slice(1)} tem <b>${MDAYS[m]}</b> dias. Lembra-te: "Trinta dias tem novembro, abril, junho e setembro; vinte e oito tem um, e os outros trinta e um."`, { n: 3 });
+    }
+    if (t === 2) {
+      const m = rnd(0, 11), nx = rnd(0, 1), ans = MONTHS[(m + (nx ? 1 : 11)) % 12];
+      return mcQ(`Qual é o mês que vem <b>${nx ? 'a seguir a' : 'antes de'}</b> ${MONTHS[m]}?`, ans, [MONTHS[(m + (nx ? 11 : 1)) % 12], MONTHS[(m + 2) % 12], MONTHS[(m + 10) % 12]], `${nx ? 'A seguir a' : 'Antes de'} ${MONTHS[m]} vem <b>${ans}</b>.`);
+    }
+    if (t === 3) {
+      const w = rnd(0, 6), v = pick([['daqui a 2 dias', 2], ['daqui a 3 dias', 3], ['daqui a 5 dias', 5], ['daqui a 8 dias', 8], ['amanhã', 1], ['depois de amanhã', 2], ['ontem', -1], ['anteontem', -2]]);
+      const ans = WD[(w + v[1] + 70) % 7], past = v[1] < 0;
+      return mcQ(`Hoje é <b>${WD[w]}</b>. Que dia da semana ${past ? 'foi' : 'será'} <b>${v[0]}</b>?`, ans, [WD[(w + v[1] + 71) % 7], WD[(w + v[1] + 69) % 7], WD[(w - v[1] + 70) % 7], WD[w]],
+        `Conta ${past ? 'para trás' : 'para a frente'} ${Math.abs(v[1])} dia${Math.abs(v[1]) > 1 ? 's' : ''} a partir de ${WD[w]}: <b>${ans}</b>.` + (Math.abs(v[1]) >= 7 ? ' (Uma semana depois é o mesmo dia da semana!)' : ''));
+    }
+    const m = rnd(0, 11), len = MDAYS[m], first = (new Date(2026, m, 1).getDay() + 6) % 7, wdOf = d => (first + d - 1) % 7;
+    if (t === 4) {
+      const d = rnd(1, len);
+      return mcQ(`Observa o calendário. Que dia da semana é o dia <b>${d}</b> de ${MONTHS[m]}?`, WD[wdOf(d)], [WD[(wdOf(d) + 1) % 7], WD[(wdOf(d) + 6) % 7], WD[(wdOf(d) + 2) % 7]], `Procura o ${d} no calendário e sobe até ao topo da coluna: <b>${WD[wdOf(d)]}</b>.`, { visual: calHTML(m, d) });
+    }
+    if (t === 5) {
+      const w = rnd(0, 6); let c = 0; for (let d = 1; d <= len; d++) if (wdOf(d) === w) c++;
+      return numQ(`Observa o calendário. ${w < 5 ? 'Quantas' : 'Quantos'} <b>${WDP[w]}</b> tem ${MONTHS[m]}?`, c, `Conta os números na coluna "${WDS[w]}": são <b>${c}</b>.`, { visual: calHTML(m) });
+    }
+    const d = rnd(1, len - 7);
+    return numQ(`A ${NAME} tem um jogo no dia <b>${d}</b> de ${MONTHS[m]}. O jogo seguinte é <b>uma semana depois</b>. Em que dia é o jogo seguinte?`, d + 7, `Uma semana = 7 dias: ${d} + 7 = <b>${d + 7}</b> de ${MONTHS[m]}. No calendário é o número logo por baixo!`, { visual: calHTML(m, d) });
+  },
+
+  horas() {
+    const t = rnd(0, 5);
+    if (t === 0) {
+      const h = rnd(1, 12), m = rnd(0, 11) * 5, sw = (m / 5) || 12;
+      return mcQ('Que horas marca o relógio?', fmt12(h * 60 + m), [fmt12(sw * 60 + (h % 12) * 5), fmt12(h * 60 + m + 5), fmt12((h - 1) * 60 + m), fmt12((h + 1) * 60 + m)],
+        `O ponteiro pequeno (vermelho) mostra as horas: ${m >= 30 ? 'passou do' : m ? 'está logo depois do' : 'aponta para o'} ${h}. O ponteiro grande (roxo) aponta para o ${sw}, que são ${m} minutos (${sw} × 5). São <b>${fmt12(h * 60 + m)}</b>.`, { visual: clockSVG(h, m) });
+    }
+    if (t === 1) {
+      const k = rnd(2, 4);
+      const f = pick([
+        ['Quantos minutos tem <b>1 hora</b>?', 60, '1 hora = <b>60</b> minutos.'],
+        ['Quantos minutos tem <b>meia hora</b>?', 30, 'Meia hora é metade de 60 minutos: <b>30</b> minutos.'],
+        ['Quantos minutos tem <b>um quarto de hora</b>?', 15, '60 minutos divididos em 4 partes iguais: <b>15</b> minutos.'],
+        ['Quantos minutos são <b>três quartos de hora</b>?', 45, '3 × 15 minutos = <b>45</b> minutos.'],
+        [`Quantos minutos são <b>${k} horas</b>?`, 60 * k, `${k} × 60 = <b>${60 * k}</b> minutos.`],
+        ['Quantas horas tem <b>um dia</b>?', 24, 'Um dia tem <b>24</b> horas.'],
+        ['Quantos segundos tem <b>1 minuto</b>?', 60, '1 minuto = <b>60</b> segundos.'],
+        ['<b>1 hora e meia</b> são quantos minutos?', 90, '60 + 30 = <b>90</b> minutos.'],
+        [`<b>90 minutos</b> = 1 hora e ${BOX} minutos`, 30, '90 − 60 = <b>30</b>. Então 90 minutos = 1 hora e 30 minutos.'],
+      ]);
+      return numQ(f[0], f[1], f[2], { unit: f[1] === 24 ? 'horas' : f[1] === 60 && f[0].includes('segundos') ? 'segundos' : 'minutos' });
+    }
+    if (t === 2) {
+      const s = rnd(8, 16) * 60 + pick([0, 15, 30, 45]), d = pick([15, 30, 45, 60, 75, 90, 120]);
+      return mcQ(`O filme começou às <b>${fmtT(s)}</b> e acabou às <b>${fmtT(s + d)}</b>. Quanto tempo durou?`, fmtDur(d), [d + 15, d - 15, d + 60, d + 30].filter(x => x > 0).map(fmtDur), `De ${fmtT(s)} até ${fmtT(s + d)} passaram <b>${fmtDur(d)}</b>. Dica: conta primeiro as horas inteiras e depois os minutos.`);
+    }
+    if (t === 3) {
+      const s = rnd(8, 16) * 60 + pick([0, 10, 15, 20, 30, 45]), d = pick([15, 20, 30, 45, 50, 60, 90]);
+      return mcQ(`A aula começa às <b>${fmtT(s)}</b> e dura <b>${fmtDur(d)}</b>. A que horas acaba?`, fmtT(s + d), [fmtT(s + d + 15), fmtT(s + d - 15), fmtT(s + d + 60), fmtT(s + d - 60)], `${fmtT(s)} + ${fmtDur(d)} = <b>${fmtT(s + d)}</b>. Lembra-te: 60 minutos fazem 1 hora.`);
+    }
+    if (t === 4) {
+      const h = rnd(1, 11), m = pick([0, 15, 30, 45]), nh = HW[h % 12 + 1];
+      const lab = { 0: `${HW[h]} em ponto`, 15: `${HW[h]} e um quarto`, 30: `${HW[h]} e meia`, 45: `${nh} menos um quarto` }[m];
+      return mcQ('Como se diz a hora que o relógio marca?', lab, [`${HW[h]} e um quarto`, `${HW[h]} e meia`, `${nh} menos um quarto`, `${HW[h]} em ponto`, `${nh} e um quarto`, `${HW[h]} menos um quarto`],
+        `O ponteiro grande está no ${(m / 5) || 12}: ${{ 0: 'em ponto', 15: 'passou um quarto de hora (15 min)', 30: 'passou meia hora (30 min)', 45: 'faltam 15 minutos para a hora seguinte' }[m]}. Diz-se <b>${lab}</b> (${fmt12(h * 60 + m)}).`, { visual: clockSVG(h, m) });
+    }
+    const h = rnd(1, 11);
+    return mcQ(`Quando são <b>${HW[h]} da tarde</b>, que horas marca um relógio digital?`, `${h + 12}h00`, [`${h}h00`, `${h + 10}h00`, `${h + 11}h00`, `${h + 2}h00`], `À tarde somamos 12: ${h} + 12 = <b>${h + 12}h00</b>.`);
+  },
+
+  area() {
+    const t = rnd(0, 3);
+    if (t === 0) {
+      const n = rnd(5, 14), cells = polyomino(n, 7, 5);
+      return numQ('Qual é a área da figura? (Cada quadrícula vale 1.)', cells.length, `Conta as quadrículas pintadas, uma a uma: são <b>${cells.length}</b>. A área é ${cells.length} quadrículas.`, { unit: 'quadrículas', visual: gridSVG(cells, 7, 5, '#7bed9f') });
+    }
+    if (t === 1) {
+      const w = rnd(2, 6), h = rnd(2, 4), cells = [];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) cells.push([x + 1, y + 1]);
+      return numQ(`Este retângulo tem ${w} quadrículas de comprimento e ${h} de largura. Qual é a sua área?`, w * h, `São ${h} filas com ${w} quadrículas cada: ${h} × ${w} = <b>${w * h}</b> quadrículas.`, { unit: 'quadrículas', visual: gridSVG(cells, w + 2, h + 2, '#70a1ff') });
+    }
+    if (t === 2) {
+      const a = rnd(5, 12), b = rnd(0, 3) ? Math.max(4, a + pick([-3, -2, -1, 1, 2, 3])) : a;
+      const A = polyomino(a, 5, 5), B = polyomino(b, 5, 5), ans = A.length > B.length ? 'A figura A' : A.length < B.length ? 'A figura B' : 'Têm a mesma área';
+      return mcQ('Qual das figuras tem <b>maior área</b>?', ans, ['A figura A', 'A figura B', 'Têm a mesma área'], `A figura A tem ${A.length} quadrículas e a figura B tem ${B.length}. Resposta: <b>${ans}</b>.`, { n: 3, visual: gridSVG(A, 5, 5, '#ffa502', 'A') + gridSVG(B, 5, 5, '#70a1ff', 'B') });
+    }
+    return mcQ('O que é a <b>área</b> de uma figura?', 'A medida da superfície (o espaço) que a figura ocupa', ['O comprimento da linha à volta da figura', 'O número de lados da figura', 'A altura da figura'], 'A área é a medida da <b>superfície</b> que a figura ocupa. A linha à volta chama-se perímetro (fronteira).');
+  },
+
+  graf() {
+    const th = pick(CHART_THEMES), cats = shuffle(th.cats).slice(0, 4), t = rnd(0, 1);
+    let vals, visual, explainRead;
+    if (t === 0) { vals = shuffle([1,2,3,4,5,6,7,8,9,10]).slice(0, 4); visual = barSVG(th.t, cats, vals); explainRead = 'Olha para o topo de cada barra e lê o número no eixo.'; }
+    else { const per = 2; vals = shuffle([2,4,6,8,10,12]).slice(0, 4); visual = pictoHTML(th.t, cats, vals, pick(['⭐','😀','🔵']), per, th.who); explainRead = `Cada símbolo vale ${per}: conta os símbolos e multiplica por ${per}.`; }
+    const q = rnd(0, 4), i = rnd(0, 3), j = (i + rnd(1, 3)) % 4, nm = k => `${cats[k][0]} ${cats[k][1]}`;
+    if (q === 0) return numQ(`Observa o gráfico. Quantos ${th.who} correspondem a <b>${nm(i)}</b>?`, vals[i], `${explainRead} ${nm(i)}: <b>${vals[i]}</b>.`, { visual, unit: th.who });
+    if (q === 1 || q === 2) {
+      const mx = q === 1, k = vals.indexOf(mx ? Math.max(...vals) : Math.min(...vals));
+      return mcQ(`Observa o gráfico. Qual teve <b>${mx ? 'mais' : 'menos'}</b> ${th.who}?`, nm(k), cats.map((_, x) => nm(x)), `${explainRead} O valor ${mx ? 'maior' : 'menor'} é ${vals[k]}: <b>${nm(k)}</b>.`, { visual });
+    }
+    if (q === 3) { const a = Math.max(vals[i], vals[j]), b = Math.min(vals[i], vals[j]), A = vals[i] > vals[j] ? i : j, B = A === i ? j : i;
+      return numQ(`Observa o gráfico. Quantos ${th.who} <b>a mais</b> tem ${nm(A)} do que ${nm(B)}?`, a - b, `${nm(A)}: ${a}; ${nm(B)}: ${b}. Diferença: ${a} − ${b} = <b>${a - b}</b>.`, { visual, unit: th.who }); }
+    const s = vals.reduce((x, y) => x + y, 0);
+    return numQ(`Observa o gráfico. Quantos ${th.who} há <b>ao todo</b>?`, s, `Soma todos os valores: ${vals.join(' + ')} = <b>${s}</b>.`, { visual, unit: th.who });
+  },
+};
+
+/* ---------- memória ---------- */
+function freshState() {
+  const topics = {}; Object.keys(T).forEach(k => topics[k] = { a: 0, c: 0, recent: [] });
+  return { stars: 0, answered: 0, correct: 0, topics, mistakes: [], history: [], days: [], sound: true };
+}
+let S;
+function load() {
+  try { S = JSON.parse(localStorage.getItem(KEY)) || freshState(); } catch (e) { S = freshState(); }
+  const f = freshState();
+  for (const k in f) if (S[k] === undefined) S[k] = f[k];
+  for (const k in T) if (!S.topics[k]) S.topics[k] = { a: 0, c: 0, recent: [] };
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+const qKey = q => q.topic + '|' + q.prompt + '|' + q.visual;
+function mastery(k) { const r = S.topics[k].recent; return r.length ? Math.round(100 * r.reduce((a, b) => a + b, 0) / r.length) : null; }
+function streak() {
+  const set = new Set(S.days); let d = new Date(), n = 0;
+  if (!set.has(todayStr(d))) d.setDate(d.getDate() - 1);
+  while (set.has(todayStr(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function suggestion() {
+  let best = null, bv = 101;
+  for (const k in T) { const m = mastery(k); const v = m === null ? -1 : m; if (v < bv) { bv = v; best = k; } }
+  return bv >= 80 ? null : best;
+}
+
+/* ---------- som ---------- */
+let AC;
+function beep(ok) {
+  if (!S.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const notes = ok ? [660, 880] : [300, 220];
+    notes.forEach((f, i) => {
+      const o = AC.createOscillator(), g = AC.createGain(), t0 = AC.currentTime + i * 0.12;
+      o.frequency.value = f; o.type = 'sine'; g.gain.setValueAtTime(0.15, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.2);
+      o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0 + 0.22);
+    });
+  } catch (e) {}
+}
+function confetti() {
+  const em = ['🎉','⭐','🌟','🎈','✨','🏆'];
+  for (let i = 0; i < 26; i++) {
+    const s = document.createElement('div'); s.className = 'confetti'; s.textContent = pick(em);
+    s.style.left = Math.random() * 100 + 'vw'; s.style.animationDelay = Math.random() * 0.8 + 's';
+    document.body.appendChild(s); setTimeout(() => s.remove(), 3600);
+  }
+}
+
+/* ---------- sessões ---------- */
+const app = document.getElementById('app');
+let ses = null;
+
+function makeQ(topic, seen) {
+  let q;
+  for (let i = 0; i < 25; i++) { q = GEN[topic](); q.topic = topic; if (!seen.has(qKey(q))) break; }
+  seen.add(qKey(q)); return q;
+}
+function start(mode, topic) {
+  const seen = new Set(); let qs = [];
+  if (mode === 'topic') for (let i = 0; i < 10; i++) qs.push(makeQ(topic, seen));
+  else if (mode === 'quick') for (let i = 0; i < 10; i++) qs.push(makeQ(pick(Object.keys(T)), seen));
+  else if (mode === 'test') {
+    const plan = { calc: 3, ord: 2, num: 3, frac: 2, prob: 3, cal: 2, horas: 2, area: 1, graf: 2 };
+    for (const k in plan) for (let i = 0; i < plan[k]; i++) qs.push(makeQ(k, seen));
+  } else if (mode === 'review') {
+    qs = shuffle(S.mistakes).slice(0, 10).map(q => q.kind === 'mc' ? reshuffle(q) : { ...q });
+  }
+  ses = { mode, topic, qs, i: 0, ok: 0, res: [], done: false };
+  renderQ();
+}
+function reshuffle(q) {
+  const right = q.choices[q.answer], choices = shuffle(q.choices);
+  return { ...q, choices, answer: choices.indexOf(right) };
+}
+const MODE_NAME = { topic: 'Treino', quick: 'Treino rápido', test: 'Teste de treino', review: 'Rever erros' };
+
+function renderQ() {
+  const q = ses.qs[ses.i], tp = T[q.topic];
+  ses.done = false;
+  let ans;
+  if (q.kind === 'mc') ans = `<div class="choices">${q.choices.map((c, i) => `<button class="choice" data-i="${i}">${c}</button>`).join('')}</div>`;
+  else ans = `<div class="inrow"><input id="inp" class="inp" inputmode="numeric" autocomplete="off" maxlength="6" aria-label="Resposta">${q.unit ? `<span class="unit">${q.unit}</span>` : ''}</div>
+    <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n => `<button data-k="${n}">${n}</button>`).join('')}<button data-k="del">⌫</button><button data-k="0">0</button><button data-k="ok" style="background:var(--pri);color:#fff">✓</button></div>`;
+  app.innerHTML = `
+    <div class="top"><button class="x" id="quit" aria-label="Sair">✕</button>
+      <div class="pbar"><i style="width:${ses.i / ses.qs.length * 100}%"></i></div><span class="cnt">${ses.i + 1}/${ses.qs.length}</span></div>
+    <div class="card pop">
+      <span class="tag" style="background:${tp.color}">${tp.icon} ${tp.name}</span>
+      <div class="prompt">${q.prompt}</div>
+      ${q.visual ? `<div class="visual">${q.visual}</div>` : ''}
+      <div id="ans">${ans}</div>
+      <div id="fb"></div>
+    </div>`;
+  document.getElementById('quit').onclick = () => { if (confirm('Queres sair? O que já respondeste fica guardado.')) home(); };
+  if (q.kind === 'mc') app.querySelectorAll('.choice').forEach(b => b.onclick = () => check(Number(b.dataset.i)));
+  else {
+    const inp = document.getElementById('inp');
+    inp.addEventListener('input', () => { inp.value = inp.value.replace(/\D/g, ''); });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); submitNum(); } });
+    app.querySelectorAll('.pad button').forEach(b => b.onclick = () => {
+      if (ses.done) return;
+      const k = b.dataset.k;
+      if (k === 'del') inp.value = inp.value.slice(0, -1);
+      else if (k === 'ok') submitNum();
+      else if (inp.value.length < 6) inp.value += k;
+    });
+    if (matchMedia('(pointer:fine)').matches) inp.focus();
+  }
+}
+function submitNum() {
+  const inp = document.getElementById('inp');
+  if (ses.done || !inp.value) return;
+  check(Number(inp.value));
+}
+function check(given) {
+  if (ses.done) return;
+  ses.done = true;
+  const q = ses.qs[ses.i], ok = q.kind === 'mc' ? given === q.answer : given === q.answer;
+  if (q.kind === 'mc') app.querySelectorAll('.choice').forEach((b, i) => { b.disabled = true; if (i === q.answer) b.classList.add('ok'); else if (i === given) b.classList.add('bad'); });
+  else { const inp = document.getElementById('inp'); inp.disabled = true; inp.classList.add(ok ? 'ok' : 'bad'); }
+  record(q, ok);
+  beep(ok);
+  const right = q.kind === 'mc' ? q.choices[q.answer] : `${N(q.answer)}${q.unit ? ' ' + q.unit : ''}`;
+  const cheers = ['Muito bem! 🎉', 'Boa, ' + NAME + '! ⭐', 'Excelente! 🌟', 'Certíssimo! 💪', 'Fantástico! 🚀'];
+  const oops = ['Quase! Vamos ver 🤔', 'Não faz mal, aprende-se assim 💡', 'Ups! Olha a explicação 👀'];
+  const last = ses.i === ses.qs.length - 1;
+  document.getElementById('fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'} pop">
+    <b class="t">${ok ? pick(cheers) : pick(oops)}</b>
+    ${ok ? '' : `A resposta certa é: <b>${right}</b><br>`}${q.explain}
+    <button class="btn ${ok ? 'green' : ''}" id="next">${last ? 'Ver resultado 🏁' : 'Continuar ➜'}</button></div>`;
+  const nb = document.getElementById('next'); nb.onclick = next; nb.focus({ preventScroll: true });
+  document.getElementById('fb').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function record(q, ok) {
+  const t = S.topics[q.topic];
+  t.a++; t.c += ok ? 1 : 0; t.recent.push(ok ? 1 : 0); if (t.recent.length > 10) t.recent.shift();
+  S.answered++; if (ok) { S.correct++; S.stars++; ses.ok++; }
+  ses.res.push({ topic: q.topic, ok });
+  const k = qKey(q), idx = S.mistakes.findIndex(m => qKey(m) === k);
+  if (!ok && idx < 0) { S.mistakes.push(q); if (S.mistakes.length > 60) S.mistakes.shift(); }
+  if (ok && idx >= 0 && ses.mode === 'review') S.mistakes.splice(idx, 1);
+  const td = todayStr(); if (!S.days.includes(td)) S.days.push(td);
+  save();
+}
+function next() {
+  if (!ses.done) return;
+  ses.i++;
+  if (ses.i < ses.qs.length) { renderQ(); window.scrollTo({ top: 0 }); }
+  else results();
+}
+
+function results() {
+  const n = ses.qs.length, ok = ses.ok, pct = Math.round(100 * ok / n);
+  S.history.unshift({ d: new Date().toISOString(), m: ses.mode, t: ses.topic || null, ok, n }); S.history = S.history.slice(0, 30); save();
+  const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 40 ? 1 : 0;
+  const msg = pct === 100 ? `Perfeito, ${NAME}! Sabes tudo para o teste! 🏆` : pct >= 80 ? 'Muito bom trabalho! Continua assim! 🌟' : pct >= 60 ? 'Bom trabalho! Mais um bocadinho de treino e fica perfeito. 💪' : 'Estás a aprender! Revê os erros e tenta outra vez. 💡';
+  const by = {}; ses.res.forEach(r => { by[r.topic] = by[r.topic] || { a: 0, c: 0 }; by[r.topic].a++; by[r.topic].c += r.ok ? 1 : 0; });
+  app.innerHTML = `<div class="card res pop">
+    <div class="muted" style="font-weight:800">${MODE_NAME[ses.mode]}${ses.topic ? ' · ' + T[ses.topic].name : ''}</div>
+    <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
+    <div class="big-score">${ok} / ${n}</div>
+    <div style="font-weight:800;font-size:20px">${msg}</div>
+    <div class="muted" style="margin-top:6px">Ganhaste ${ok} estrela${ok === 1 ? '' : 's'} · Total: ⭐ ${S.stars}</div>
+  </div>
+  ${Object.keys(by).length > 1 ? `<h2>Por tema</h2><div class="card"><ul class="list">${Object.keys(by).map(k => `<li><span>${T[k].icon} ${T[k].name}</span><span>${by[k].c}/${by[k].a} ${by[k].c === by[k].a ? '✅' : ''}</span></li>`).join('')}</ul></div>` : ''}
+  <div class="row"><button class="btn ghostbtn" id="home">🏠 Início</button>
+    <button class="btn" id="again">🔁 Outra vez</button>
+    ${S.mistakes.length ? `<button class="btn red" id="rev">🔍 Rever erros (${S.mistakes.length})</button>` : ''}</div>`;
+  if (pct >= 80) confetti();
+  const m = ses.mode, tp = ses.topic;
+  document.getElementById('home').onclick = home;
+  document.getElementById('again').onclick = () => (m === 'review' && !S.mistakes.length) ? home() : start(m, tp);
+  const rv = document.getElementById('rev'); if (rv) rv.onclick = () => start('review');
+  window.scrollTo({ top: 0 });
+}
+
+/* ---------- ecrã inicial ---------- */
+function countdown() {
+  const t = new Date(); t.setHours(0, 0, 0, 0);
+  const d = Math.round((TEST_DATE - t) / 86400000);
+  if (d > 1) return `Teste de Matemática<b>faltam ${d} dias</b>`;
+  if (d === 1) return 'Teste de Matemática<b>é amanhã! 💪</b>';
+  if (d === 0) return 'Teste de Matemática<b>é hoje! Boa sorte! 🍀</b>';
+  return 'Teste de Matemática<b>26 de outubro ✔</b>';
+}
+function lvl(m) {
+  if (m === null) return ['Ainda não treinado', '#cfc6b8', 0];
+  if (m >= 80) return [`Dominado ⭐ ${m}%`, 'var(--ok)', m];
+  if (m >= 50) return [`Quase lá! ${m}%`, 'var(--star)', m];
+  return [`A treinar ${m}%`, 'var(--bad)', Math.max(m, 4)];
+}
+function home() {
+  ses = null;
+  const sug = suggestion(), st = streak(), acc = S.answered ? Math.round(100 * S.correct / S.answered) : 0;
+  const hist = S.history.slice(0, 5).map(h => { const d = new Date(h.d); return `<li><span>${MODE_NAME[h.m]}${h.t ? ' · ' + T[h.t].name : ''} <span class="muted">${d.getDate()}/${d.getMonth() + 1} ${pad2(d.getHours())}:${pad2(d.getMinutes())}</span></span><span>${h.ok}/${h.n}</span></li>`; }).join('');
+  app.innerHTML = `
+  <div class="hero">
+    <div><h1>Olá, ${NAME}! 👋</h1><div class="muted" style="font-weight:700">Vamos treinar Matemática do 3.º ano</div></div>
+    <div class="count-down">${countdown()}</div>
+  </div>
+  <div class="chips"><span class="chip">⭐ ${S.stars} estrelas</span><span class="chip">🔥 ${st} dia${st === 1 ? '' : 's'} seguido${st === 1 ? '' : 's'}</span><span class="chip">✅ ${acc}% certas</span></div>
+  <div class="big">
+    <button class="btn" id="b-test">📝 Teste de treino<small>20 perguntas de todos os temas</small></button>
+    <button class="btn orange" id="b-quick">⚡ Treino rápido<small>10 perguntas misturadas</small></button>
+    <button class="btn red" id="b-rev" ${S.mistakes.length ? '' : 'disabled'}>🔍 Rever erros<small>${S.mistakes.length ? S.mistakes.length + ' pergunta' + (S.mistakes.length > 1 ? 's' : '') + ' para rever' : 'Sem erros para rever 🎉'}</small></button>
+  </div>
+  ${DOMAINS.map(dm => `<h2>${dm.name}</h2><div class="topics">${dm.topics.map(k => { const [l, c, w] = lvl(mastery(k)); return `
+    <button class="topic${k === sug ? ' sug' : ''}" data-t="${k}">${k === sug ? '<span class="badge">Sugestão</span>' : ''}
+      <div class="ic">${T[k].icon}</div><div class="nm">${T[k].name}</div><div class="ds">${T[k].desc}</div>
+      <div class="meter"><i style="width:${w}%;background:${c}"></i></div><div class="lvl" style="color:${c === '#cfc6b8' ? 'var(--muted)' : c}">${l}</div>
+    </button>`; }).join('')}</div>`).join('')}
+  ${hist ? `<h2>Últimos treinos</h2><div class="card"><ul class="list">${hist}</ul></div>` : ''}
+  <div class="settings"><button id="b-sound">${S.sound ? '🔊 Som ligado' : '🔇 Som desligado'}</button><button id="b-reset">🗑️ Apagar progresso</button></div>`;
+  document.getElementById('b-test').onclick = () => start('test');
+  document.getElementById('b-quick').onclick = () => start('quick');
+  document.getElementById('b-rev').onclick = () => S.mistakes.length && start('review');
+  app.querySelectorAll('.topic').forEach(b => b.onclick = () => start('topic', b.dataset.t));
+  document.getElementById('b-sound').onclick = () => { S.sound = !S.sound; save(); home(); };
+  document.getElementById('b-reset').onclick = () => { if (confirm('Apagar todo o progresso da ' + NAME + '? Isto não pode ser desfeito.')) { S = freshState(); save(); home(); } };
+  window.scrollTo({ top: 0 });
+}
+
+document.addEventListener('keydown', e => {
+  if (!ses) return;
+  if (ses.done && e.key === 'Enter') { e.preventDefault(); next(); return; }
+  const q = ses.qs[ses.i];
+  if (!ses.done && q && q.kind === 'mc' && /^[1-4]$/.test(e.key) && Number(e.key) <= q.choices.length) check(Number(e.key) - 1);
+});
+
+load();
+home();
+</script>
+</body>
+</html>
