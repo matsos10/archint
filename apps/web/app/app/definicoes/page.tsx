@@ -6,6 +6,8 @@ import { getDb } from '@/lib/db';
 import { requireAccount } from '@/lib/session';
 import { ProfileForm } from './profile-form';
 import { TwoFactorSettings } from './two-factor';
+import { BrandingForm } from './branding-form';
+import { decryptString } from '@somar/core';
 
 export const metadata: Metadata = { title: 'Definições' };
 
@@ -45,6 +47,21 @@ export default async function SettingsPage() {
       </Card>
       <Card>
         <CardHeader>
+          <CardTitle>Faturação</CardTitle>
+          <CardDescription>A imagem dos teus orçamentos e faturas, e os dados de pagamento.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BrandingForm
+            brandColor={account.brandColor ?? '#3a4fc4'}
+            iban={account.iban ? safeDecrypt(account.iban) : ''}
+            hasLogo={!!account.logoFileId}
+            withholdingExempt={account.withholdingExempt}
+            individual={account.legalForm === 'trabalhador_independente' || account.legalForm === 'eni'}
+          />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
           <CardTitle>Segurança</CardTitle>
           <CardDescription>Protege o acesso aos teus dados financeiros com um segundo fator.</CardDescription>
         </CardHeader>
@@ -54,4 +71,12 @@ export default async function SettingsPage() {
       </Card>
     </div>
   );
+}
+
+function safeDecrypt(v: string) {
+  try {
+    return decryptString(v, undefined, 'iban');
+  } catch {
+    return '';
+  }
 }

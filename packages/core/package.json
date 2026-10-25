@@ -4,12 +4,24 @@
   "private": true,
   "type": "module",
   "description": "Serviços de domínio do servidor (auth, cripto, armazenamento, contas) partilhados pelo web e pelo worker.",
-  "exports": { ".": "./src/index.ts", "./*": "./src/*.ts" },
-  "scripts": { "typecheck": "tsc --noEmit" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "@somar/db": "workspace:*",
     "@somar/tax-engine": "workspace:*",
     "drizzle-orm": "^0.45.4",
+    "nodemailer": "^10.2.1",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4",
     "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^8.0.2",
+    "@types/qrcode": "^1.5.6"
   }
 }

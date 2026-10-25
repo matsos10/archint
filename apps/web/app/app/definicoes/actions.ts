@@ -3,8 +3,8 @@
 import QRCode from 'qrcode';
 import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
-import { accounts, withTenant } from '@somar/db';
-import { beginTotpEnrollment, confirmTotpEnrollment, disableTotp, updateAccountProfile } from '@somar/core';
+import { accounts, files, withTenant } from '@somar/db';
+import { AppError, audit, beginTotpEnrollment, confirmTotpEnrollment, defaultStorage, disableTotp, encryptString, fileChecksum, storageKeyFor, updateAccountProfile } from '@somar/core';
 import { getDb } from '@/lib/db';
 import { requestMeta, requireAccount, requireUser } from '@/lib/session';
 import { toActionError, type ActionState } from '@/lib/action';
@@ -75,4 +75,51 @@ export async function updateProfileAction(_: ActionState, fd: FormData): Promise
   } catch (e) {
     return toActionError(e);
   }
+}
+
+export async function updateBrandingAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const ctx = await requireAccount();
+  if (ctx.role !== 'owner' && ctx.role !== 'admin') return { error: 'Só o titular pode alterar estes dados.' };
+  const color = String(fd.get('brandColor') ?? '');
+  const iban = String(fd.get('iban') ?? '').replace(/\s/g, '').toUpperCase();
+  if (color && !/^#[0-9a-f]{6}$/i.test(color)) return { error: 'Cor inválida.' };
+  if (iban && !isValidIban(iban)) return { error: 'IBAN inválido.' };
+  const logo = fd.get('logo');
+  try {
+    await withTenant(getDb(), ctx.accountId, async (tx) => {
+      let logoFileId: string | undefined;
+      if (logo instanceof File && logo.size > 0) {
+        if (!['image/png', 'image/jpeg'].includes(logo.type)) throw new AppError('invalid_file', 'O logótipo tem de ser PNG ou JPG.');
+        if (logo.size > 1024 * 1024) throw new AppError('file_too_large', 'O logótipo tem de ter menos de 1 MB.');
+        const data = Buffer.from(await logo.arrayBuffer());
+        const key = storageKeyFor(ctx.accountId, 'logo', logo.type === 'image/png' ? 'png' : 'jpg');
+        await defaultStorage().put(key, data);
+        const [f] = await tx.insert(files).values({ accountId: ctx.accountId, kind: 'logo', storageKey: key, originalName: logo.name.slice(0, 300), mimeType: logo.type, sizeBytes: data.length, sha256: fileChecksum(data), uploadedBy: ctx.userId }).returning({ id: files.id });
+        logoFileId = f!.id;
+      }
+      await tx
+        .update(accounts)
+        .set({
+          brandColor: color || null,
+          iban: iban ? encryptString(iban, undefined, 'iban') : null,
+          withholdingExempt: fd.get('withholdingExempt') === 'on',
+          ...(logoFileId ? { logoFileId } : {}),
+        })
+        .where(eq(accounts.id, ctx.accountId));
+      await audit(tx, { accountId: ctx.accountId, actorUserId: ctx.userId, action: 'account.branding_updated' });
+    });
+    revalidatePath('/app/definicoes');
+    return { ok: true, message: 'Personalização guardada.' };
+  } catch (e) {
+    return toActionError(e);
+  }
+}
+
+/** Validação do IBAN (ISO 13616, módulo 97). */
+function isValidIban(iban: string) {
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(iban)) return false;
+  const r = (iban.slice(4) + iban.slice(0, 4)).replace(/[A-Z]/g, (ch) => String(ch.charCodeAt(0) - 55));
+  let mod = 0;
+  for (const d of r) mod = (mod * 10 + Number(d)) % 97;
+  return mod === 1;
 }

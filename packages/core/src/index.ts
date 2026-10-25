@@ -20,3 +20,7 @@ export * from './categorize';
 export * from './receipts';
 export * from './insights';
 export * from './accounting';
+export * from './invoicing/provider';
+export * from './invoicing/pdf';
+export * from './invoicing/mailer';
+export * from './invoicing/service';

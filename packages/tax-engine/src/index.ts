@@ -16,3 +16,4 @@ export * from './irc';
 export * from './regime-simulator';
 export * from './calendar';
 export * from './at-qrcode';
+export * from './invoice';
