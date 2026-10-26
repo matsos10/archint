@@ -20,7 +20,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
   const tab = (await searchParams).tab === 'orcamentos' ? 'orcamentos' : 'faturas';
   const ctx = await requireAccount();
   const today = todayIso();
-  const data = await withTenant(getDb(), ctx.accountId, async (tx) => ({
+  const data = await withTenant(getDb(), ctx, async (tx) => ({
     receivables: await listOpenReceivables(tx, ctx.accountId, today),
     invoices: await tx.select({ i: invoices, clientName: clients.name }).from(invoices).leftJoin(clients, eq(clients.id, invoices.clientId)).where(eq(invoices.accountId, ctx.accountId)).orderBy(desc(invoices.issueDate), desc(invoices.createdAt)).limit(200),
     quotes: await tx.select({ q: quotes, clientName: clients.name }).from(quotes).leftJoin(clients, eq(clients.id, quotes.clientId)).where(eq(quotes.accountId, ctx.accountId)).orderBy(desc(quotes.issueDate), desc(quotes.createdAt)).limit(200),

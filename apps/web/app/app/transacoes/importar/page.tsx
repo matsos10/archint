@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: 'Importar extrato' };
 
 export default async function ImportPage() {
   const ctx = await requireAccount();
-  const banks = await withTenant(getDb(), ctx.accountId, (tx) =>
+  const banks = await withTenant(getDb(), ctx, (tx) =>
     tx.select({ id: bankAccounts.id, name: bankAccounts.name, last4: bankAccounts.ibanLast4 }).from(bankAccounts).where(eq(bankAccounts.accountId, ctx.accountId)),
   );
   return (

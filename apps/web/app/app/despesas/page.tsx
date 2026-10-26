@@ -23,7 +23,7 @@ const STATUS: Record<string, { label: string; variant: 'muted' | 'default' | 'su
 
 export default async function ExpensesPage() {
   const ctx = await requireAccount();
-  const { list, candidates } = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const { list, candidates } = await withTenant(getDb(), ctx, async (tx) => {
     const list = await tx
       .select({ r: receipts, txDesc: transactions.description, txDate: transactions.bookingDate, txAmount: transactions.amountCents })
       .from(receipts)

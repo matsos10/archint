@@ -31,7 +31,7 @@ export default async function DeclarationPage({ params }: { params: Promise<{ id
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
   const ctx = await requireAccount();
-  const [d] = await withTenant(getDb(), ctx.accountId, (tx) => tx.select().from(declarations).where(and(eq(declarations.id, id), eq(declarations.accountId, ctx.accountId))));
+  const [d] = await withTenant(getDb(), ctx, (tx) => tx.select().from(declarations).where(and(eq(declarations.id, id), eq(declarations.accountId, ctx.accountId))));
   if (!d) notFound();
   const data = d.data as unknown as DeclarationData;
   const st = STATUS[d.status]!;

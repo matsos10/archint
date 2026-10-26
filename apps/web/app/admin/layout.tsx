@@ -14,6 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </Link>
         <nav className="flex gap-4 text-sm">
           <Link href="/admin/parametros" className="hover:text-primary">Parâmetros fiscais</Link>
+          <Link href="/admin/contabilistas" className="hover:text-primary">Contabilistas</Link>
         </nav>
       </header>
       <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>

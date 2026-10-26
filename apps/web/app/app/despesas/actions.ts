@@ -7,7 +7,7 @@ import { receipts } from '@somar/db';
 import { globalLlm } from '@/lib/ai';
 import { withTenant } from '@somar/db';
 import { getDb } from '@/lib/db';
-import { requireAccount } from '@/lib/session';
+import { tryAccountFor } from '@/lib/session';
 import { toActionError, type ActionState } from '@/lib/action';
 
 const euroToCents = (v: FormDataEntryValue | null) => {
@@ -18,12 +18,13 @@ const euroToCents = (v: FormDataEntryValue | null) => {
 };
 
 export async function uploadReceiptAction(_: ActionState, fd: FormData): Promise<ActionState> {
-  const ctx = await requireAccount();
+  const ctx = await tryAccountFor('accounting');
+  if ('error' in ctx) return ctx;
   const list = fd.getAll('files').filter((f): f is File => f instanceof File && f.size > 0);
   if (!list.length) return { error: 'Escolhe ou fotografa pelo menos um justificativo.' };
   try {
     const qr = String(fd.get('qr') ?? '').trim() || undefined;
-    await withTenant(getDb(), ctx.accountId, async (tx) => {
+    await withTenant(getDb(), ctx, async (tx) => {
       for (const f of list.slice(0, 20)) {
         const r = await uploadReceipt(tx, defaultStorage(), ctx, { name: f.name, mimeType: f.type || 'application/octet-stream', data: Buffer.from(await f.arrayBuffer()) }, { qrPayload: list.length === 1 ? qr : undefined });
         // Sem QR legível, a leitura é feita pela IA em segundo plano (proposta a confirmar).
@@ -43,9 +44,10 @@ export async function uploadReceiptAction(_: ActionState, fd: FormData): Promise
 }
 
 export async function confirmReceiptAction(receiptId: string, _: ActionState, fd: FormData): Promise<ActionState> {
-  const ctx = await requireAccount();
+  const ctx = await tryAccountFor('accounting');
+  if ('error' in ctx) return ctx;
   try {
-    await withTenant(getDb(), ctx.accountId, async (tx) => {
+    await withTenant(getDb(), ctx, async (tx) => {
       const transactionId = String(fd.get('transactionId') ?? '');
       const [before] = await tx.select().from(receipts).where(and(eq(receipts.id, receiptId), eq(receipts.accountId, ctx.accountId)));
       await confirmReceipt(tx, ctx, receiptId, {

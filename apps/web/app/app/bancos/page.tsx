@@ -27,7 +27,7 @@ export default async function BanksPage({ searchParams }: { searchParams: Promis
   const ctx = await requireAccount();
   const agg = defaultAggregator();
   const institutions = agg ? await agg.listInstitutions('PT').catch(() => []) : [];
-  const { conns, accs } = await withTenant(getDb(), ctx.accountId, async (tx) => ({
+  const { conns, accs } = await withTenant(getDb(), ctx, async (tx) => ({
     conns: await tx.select().from(bankConnections).where(eq(bankConnections.accountId, ctx.accountId)),
     accs: await tx.select().from(bankAccounts).where(eq(bankAccounts.accountId, ctx.accountId)),
   }));

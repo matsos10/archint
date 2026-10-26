@@ -36,6 +36,13 @@
       "when": 1792966622334,
       "tag": "0004_account_ai_toggle",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792972577776,
+      "tag": "0005_accountants_billing",
+      "breakpoints": true
     }
   ]
 }

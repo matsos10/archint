@@ -16,7 +16,7 @@ export async function startBankLink(
   ctx: { accountId: string; userId: string },
   input: { institutionId: string; institutionName?: string; redirectUrl: string },
 ) {
-  return withTenant(db, ctx.accountId, async (tx) => {
+  return withTenant(db, ctx, async (tx) => {
     const [conn] = await tx
       .insert(bankConnections)
       .values({ accountId: ctx.accountId, provider: agg.name, institutionId: input.institutionId, institutionName: input.institutionName, status: 'pending' })
@@ -32,7 +32,7 @@ export async function startBankLink(
 
 /** Regresso do banco: confirma o consentimento, cria as contas bancárias e agenda a sincronização. */
 export async function completeBankLink(db: Db, agg: BankAggregator, ctx: { accountId: string; userId?: string }, connectionId: string) {
-  return withTenant(db, ctx.accountId, async (tx) => {
+  return withTenant(db, ctx, async (tx) => {
     const [conn] = await tx.select().from(bankConnections).where(and(eq(bankConnections.id, connectionId), eq(bankConnections.accountId, ctx.accountId)));
     if (!conn?.externalRefEnc) throw new AppError('not_found', 'Ligação bancária não encontrada.', 404);
     const status = await agg.getLinkStatus(decryptString(conn.externalRefEnc, undefined, aad(conn.id)));

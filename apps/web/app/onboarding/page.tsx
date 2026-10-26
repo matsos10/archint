@@ -18,6 +18,13 @@ export default async function OnboardingPage() {
       </header>
       <main className="mx-auto max-w-3xl px-4 pb-20 sm:px-6">
         <OnboardingWizard firstName={session.user.name.split(' ')[0] ?? ''} />
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          És contabilista certificado e queres acompanhar clientes?{' '}
+          <Link href="/contabilista/perfil" className="font-medium text-primary underline">
+            Cria o teu perfil profissional
+          </Link>
+          .
+        </p>
       </main>
     </div>
   );

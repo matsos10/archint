@@ -9,7 +9,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const { id } = await params;
   const ctx = await requireAccount();
   if (!/^[0-9a-f-]{36}$/.test(id)) return new Response('Não encontrado', { status: 404 });
-  const f = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const f = await withTenant(getDb(), ctx, async (tx) => {
     const [row] = await tx.select().from(files).where(and(eq(files.id, id), eq(files.accountId, ctx.accountId)));
     if (row) await audit(tx, { accountId: ctx.accountId, actorUserId: ctx.userId, action: 'file.downloaded', entityType: 'file', entityId: id });
     return row;

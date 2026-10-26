@@ -18,7 +18,7 @@ export default async function AssistantPage({ searchParams }: { searchParams: Pr
   const { c } = await searchParams;
   const ctx = await requireAccount();
   const me = { accountId: ctx.accountId, userId: ctx.session.user.id };
-  const { threads, current, available } = await withTenant(getDb(), ctx.accountId, async (tx) => ({
+  const { threads, current, available } = await withTenant(getDb(), ctx, async (tx) => ({
     threads: await listAssistantThreads(tx, me),
     current: c ? await getAssistantThread(tx, me, c) : null,
     available: !!(await llmForAccount(tx, ctx.accountId, globalLlm())),

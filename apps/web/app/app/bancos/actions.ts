@@ -1,12 +1,13 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { defaultAggregator, startBankLink } from '@somar/core';
+import { defaultAggregator, hasFeature, startBankLink } from '@somar/core';
 import { getDb } from '@/lib/db';
-import { requireAccount } from '@/lib/session';
+import { requireAccountAdmin } from '@/lib/session';
 
 export async function connectBankAction(fd: FormData) {
-  const ctx = await requireAccount();
+  const ctx = await requireAccountAdmin();
+  if (!(await hasFeature(getDb(), ctx.accountId, 'banco_automatico'))) redirect('/app/plano?funcionalidade=banco_automatico');
   const agg = defaultAggregator();
   if (!agg) redirect('/app/bancos?erro=indisponivel');
   const institutionId = String(fd.get('institutionId') ?? '');

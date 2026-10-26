@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarClock, FileText, Home, Landmark, MessageCircle, Receipt, Settings } from 'lucide-react';
+import { CalendarClock, FileText, Home, Landmark, MessageCircle, Receipt, Settings, UserCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const NAV = [
@@ -12,6 +12,7 @@ export const NAV = [
   { href: '/app/faturas', label: 'Faturação', icon: FileText },
   { href: '/app/impostos', label: 'Impostos', icon: CalendarClock },
   { href: '/app/assistente', label: 'Assistente', icon: MessageCircle },
+  { href: '/app/contabilistas', label: 'Contabilista', icon: UserCheck },
   { href: '/app/definicoes', label: 'Definições', icon: Settings },
 ];
 
@@ -45,7 +46,7 @@ export function BottomNav() {
   const path = usePathname();
   return (
     <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-      {NAV.filter((n) => n.href !== '/app/definicoes' && n.href !== '/app/assistente').map(({ href, label, icon: Icon }) => {
+      {NAV.filter((n) => !['/app/definicoes', '/app/assistente', '/app/contabilistas'].includes(n.href)).map(({ href, label, icon: Icon }) => {
         const active = href === '/app' ? path === '/app' : path.startsWith(href);
         return (
           <Link key={href} href={href} aria-current={active ? 'page' : undefined} className={cn('flex flex-col items-center gap-1 py-2.5 text-[11px]', active ? 'text-primary' : 'text-muted-foreground')}>

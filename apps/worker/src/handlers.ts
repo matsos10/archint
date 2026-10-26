@@ -1,6 +1,6 @@
 import { withTenant, type Db } from '@somar/db';
 import { defaultLlmClient } from '@somar/ai';
-import { aiDetectAnomalies, aiExtractReceipt, aiReminderComposer, llmForAccount, defaultAggregator, defaultMailer, defaultStorage, loadTaxParams, notifyObligations, refreshInsights, sendDueReminders, syncBankConnection, syncObligations, type ClaimedJob } from '@somar/core';
+import { hasFeature, aiDetectAnomalies, aiExtractReceipt, aiReminderComposer, llmForAccount, defaultAggregator, defaultMailer, defaultStorage, loadTaxParams, notifyObligations, refreshInsights, sendDueReminders, syncBankConnection, syncObligations, type ClaimedJob } from '@somar/core';
 
 export type JobHandler = (job: ClaimedJob, deps: { db: Db }) => Promise<void>;
 
@@ -13,12 +13,15 @@ export const handlers: Record<string, JobHandler> = {
     const agg = defaultAggregator();
     if (!agg) throw new Error('Agregador bancário não configurado');
     if (!job.accountId) throw new Error('bank.sync sem conta');
+    // A sincronização automática é uma funcionalidade dos planos pagos (o CSV/OFX fica sempre disponível).
+    if (!(await hasFeature(db, job.accountId, 'banco_automatico'))) return;
     await syncBankConnection(db, agg, job.accountId, String(job.payload.connectionId));
   },
 
   /** Lembretes de cobrança das faturas vencidas (diário). */
   'invoices.reminders': async (job, { db }) => {
     if (!job.accountId) return;
+    if (!(await hasFeature(db, job.accountId, 'lembretes_automaticos'))) return;
     const today = new Date().toISOString().slice(0, 10);
     await withTenant(db, job.accountId, async (tx) => {
       const llm = await llmForAccount(tx, job.accountId!, defaultLlmClient());

@@ -7,9 +7,11 @@ import {
   real,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { accounts, timestamps, users } from './core';
 import { aiDecisionEnum, aiStatusEnum, delegationStatusEnum, subscriptionStatusEnum } from './enums';
 
@@ -44,9 +46,19 @@ export const subscriptions = pgTable('subscriptions', {
   status: subscriptionStatusEnum('status').notNull().default('active'),
   stripeCustomerId: varchar('stripe_customer_id', { length: 100 }),
   stripeSubscriptionId: varchar('stripe_subscription_id', { length: 100 }),
+  /** 'month' | 'year' (subscrições pagas). */
+  billingInterval: varchar('billing_interval', { length: 10 }),
   currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
   cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
   ...timestamps,
+});
+
+/** Eventos de webhook do Stripe já processados (idempotência). Tabela de plataforma, sem acesso de tenant. */
+export const stripeEvents = pgTable('stripe_events', {
+  id: varchar('id', { length: 100 }).primaryKey(),
+  type: varchar('type', { length: 100 }).notNull(),
+  accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+  receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 // ---------------------------------------------------------------------------
@@ -55,7 +67,9 @@ export const subscriptions = pgTable('subscriptions', {
 
 export const accountantPartners = pgTable('accountant_partners', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  userId: uuid('user_id')
+    .unique()
+    .references(() => users.id, { onDelete: 'set null' }),
   name: varchar('name', { length: 200 }).notNull(),
   firmName: varchar('firm_name', { length: 200 }),
   /** Número de inscrição na Ordem dos Contabilistas Certificados. */
@@ -91,11 +105,19 @@ export const delegationRequests = pgTable(
     message: text('message'),
     status: delegationStatusEnum('status').notNull().default('requested'),
     acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
     ...timestamps,
   },
-  (t) => [index('delegations_account_idx').on(t.accountId)],
+  (t) => [
+    index('delegations_account_idx').on(t.accountId),
+    index('delegations_partner_idx').on(t.partnerId),
+    // No máximo um pedido em aberto ou ativo por conta e contabilista.
+    uniqueIndex('delegations_open_unique')
+      .on(t.accountId, t.partnerId)
+      .where(sql`status in ('requested', 'accepted')`),
+  ],
 );
 
 // ---------------------------------------------------------------------------

@@ -24,7 +24,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const year = sp.ano && /^\d{4}$/.test(sp.ano) ? Math.min(Math.max(Number(sp.ano), 2020), currentYear) : currentYear;
   const params = await getParams();
 
-  const data = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const data = await withTenant(getDb(), ctx, async (tx) => {
     const [account] = await tx.select().from(accounts).where(eq(accounts.id, ctx.accountId));
     const [anyTx] = await tx.select({ id: transactions.id }).from(transactions).where(eq(transactions.accountId, ctx.accountId)).limit(1);
     const year_ = await buildYearData(tx, ctx.accountId, year, params);

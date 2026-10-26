@@ -12,7 +12,7 @@ export async function askAssistantAction(input: { threadId?: string; question: s
   const ctx = await requireAccount();
   try {
     const loaded = await loadTaxParams(getDb());
-    const r = await withTenant(getDb(), ctx.accountId, async (tx) =>
+    const r = await withTenant(getDb(), ctx, async (tx) =>
       askAssistant(tx, { llm: await accountLlm(tx, ctx.accountId), loaded }, { accountId: ctx.accountId, userId: ctx.session.user.id }, input),
     );
     revalidatePath('/app/assistente');

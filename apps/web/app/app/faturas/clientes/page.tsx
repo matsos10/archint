@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: 'Clientes' };
 
 export default async function ClientsPage() {
   const ctx = await requireAccount();
-  const list = await withTenant(getDb(), ctx.accountId, (tx) => tx.select().from(clients).where(and(eq(clients.accountId, ctx.accountId), isNull(clients.archivedAt))).orderBy(clients.name));
+  const list = await withTenant(getDb(), ctx, (tx) => tx.select().from(clients).where(and(eq(clients.accountId, ctx.accountId), isNull(clients.archivedAt))).orderBy(clients.name));
   return (
     <div className="grid max-w-3xl gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>

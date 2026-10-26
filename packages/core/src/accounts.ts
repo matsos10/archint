@@ -122,7 +122,7 @@ export async function getAccount(tx: TenantTx, accountId: string) {
 
 export async function updateAccountProfile(db: Db, ctx: { accountId: string; userId: string }, input: AccountProfileInput) {
   const profile = accountProfileSchema.parse(input);
-  return withTenant(db, ctx.accountId, async (tx) => {
+  return withTenant(db, ctx, async (tx) => {
     const [before] = await tx.select().from(accounts).where(eq(accounts.id, ctx.accountId));
     if (!before) throw new AppError('not_found', 'Conta não encontrada.', 404);
     const [after] = await tx.update(accounts).set(profile).where(eq(accounts.id, ctx.accountId)).returning();

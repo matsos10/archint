@@ -7,9 +7,7 @@ import {
   chatThreads,
   files,
   insights,
-  plans,
   receipts,
-  subscriptions,
   transactions,
   type TenantTx,
 } from '@somar/db';
@@ -38,20 +36,22 @@ import { AppError } from './errors';
 import { formatEurPlain } from './format';
 import { autoMatchReceipts } from './receipts';
 import { audit } from './audit';
+import { effectivePlan } from './billing';
 import type { FileStorage } from './storage';
 import type { LoadedParams } from './tax';
 import type { ReminderComposer } from './invoicing/service';
 
-type Ctx = { accountId: string; userId?: string | null };
+type Ctx = { accountId: string; userId?: string | null; readOnly?: boolean };
 
 export const AI_PER_MINUTE_LIMIT = 20;
-const DEFAULT_MONTHLY_QUOTA = 30;
 
 /**
  * Dependências de IA para uma conta: quota mensal do plano + limite por minuto por utilizador,
  * e registo de cada pedido em ai_logs (pedido minimizado, resposta, estado, proposta, latência).
  */
 export function aiDeps(tx: TenantTx, ctx: Ctx, llm: LlmClient | null, entity?: { type: string; id?: string }): AiDeps {
+  // Em modo de consulta (contabilista sem permissão de escrita) a IA não é usada nem registada.
+  if (ctx.readOnly) return { llm: null, allow: async () => false, log: async () => undefined };
   return {
     llm,
     allow: async () => {
@@ -60,12 +60,8 @@ export function aiDeps(tx: TenantTx, ctx: Ctx, llm: LlmClient | null, entity?: {
         .select({ used: sql<number>`count(*)::int` })
         .from(aiLogs)
         .where(and(eq(aiLogs.accountId, ctx.accountId), gte(aiLogs.createdAt, monthStart), notInArray(aiLogs.status, ['disabled', 'rate_limited'])));
-      const [quota] = await tx
-        .select({ q: plans.aiMonthlyQuota })
-        .from(subscriptions)
-        .innerJoin(plans, eq(plans.id, subscriptions.planId))
-        .where(eq(subscriptions.accountId, ctx.accountId));
-      if (used >= (quota?.q ?? DEFAULT_MONTHLY_QUOTA)) return false;
+      const { aiMonthlyQuota } = await effectivePlan(tx, ctx.accountId);
+      if (used >= aiMonthlyQuota) return false;
       if (ctx.userId) {
         const [{ recent } = { recent: 0 }] = await tx
           .select({ recent: sql<number>`count(*)::int` })
@@ -429,15 +425,11 @@ export async function aiUsageThisMonth(tx: TenantTx, accountId: string) {
     .from(aiLogs)
     .where(and(eq(aiLogs.accountId, accountId), gte(aiLogs.createdAt, monthStart)))
     .groupBy(aiLogs.status, aiLogs.decision);
-  const [quota] = await tx
-    .select({ q: plans.aiMonthlyQuota })
-    .from(subscriptions)
-    .innerJoin(plans, eq(plans.id, subscriptions.planId))
-    .where(eq(subscriptions.accountId, accountId));
+  const { aiMonthlyQuota } = await effectivePlan(tx, accountId);
   const counted = rows.filter((r) => r.status !== 'disabled' && r.status !== 'rate_limited');
   return {
     used: counted.reduce((a, r) => a + r.n, 0),
-    quota: quota?.q ?? DEFAULT_MONTHLY_QUOTA,
+    quota: aiMonthlyQuota,
     accepted: rows.filter((r) => r.decision === 'accepted').reduce((a, r) => a + r.n, 0),
     modified: rows.filter((r) => r.decision === 'modified').reduce((a, r) => a + r.n, 0),
     rejected: rows.filter((r) => r.decision === 'rejected').reduce((a, r) => a + r.n, 0),

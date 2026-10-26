@@ -45,7 +45,7 @@ export async function updateProfileAction(_: ActionState, fd: FormData): Promise
   const ctx = await requireAccount();
   if (ctx.role !== 'owner' && ctx.role !== 'admin') return { error: 'Só o titular pode alterar estes dados.' };
   try {
-    const current = await withTenant(getDb(), ctx.accountId, async (tx) => {
+    const current = await withTenant(getDb(), ctx, async (tx) => {
       const [a] = await tx.select().from(accounts).where(eq(accounts.id, ctx.accountId));
       return a!;
     });
@@ -86,7 +86,7 @@ export async function updateBrandingAction(_: ActionState, fd: FormData): Promis
   if (iban && !isValidIban(iban)) return { error: 'IBAN inválido.' };
   const logo = fd.get('logo');
   try {
-    await withTenant(getDb(), ctx.accountId, async (tx) => {
+    await withTenant(getDb(), ctx, async (tx) => {
       let logoFileId: string | undefined;
       if (logo instanceof File && logo.size > 0) {
         if (!['image/png', 'image/jpeg'].includes(logo.type)) throw new AppError('invalid_file', 'O logótipo tem de ser PNG ou JPG.');
@@ -127,7 +127,7 @@ function isValidIban(iban: string) {
 export async function setAiEnabledAction(enabled: boolean): Promise<ActionState> {
   const ctx = await requireAccount();
   try {
-    await withTenant(getDb(), ctx.accountId, (tx) => setAccountAiEnabled(tx, { accountId: ctx.accountId, userId: ctx.session.user.id }, enabled));
+    await withTenant(getDb(), ctx, (tx) => setAccountAiEnabled(tx, { accountId: ctx.accountId, userId: ctx.session.user.id }, enabled));
     revalidatePath('/app', 'layout');
     return { ok: true, message: enabled ? 'Funcionalidades de IA ativadas.' : 'Funcionalidades de IA desativadas.' };
   } catch (e) {

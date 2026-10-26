@@ -6,12 +6,12 @@ import { bankAccounts, transactions, withTenant } from '@somar/db';
 import { aiCategorizePending, audit, confirmAiCategory, correctCategory, importTransactions, parseStatement, refreshInsights } from '@somar/core';
 import { accountLlm } from '@/lib/ai';
 import { getDb } from '@/lib/db';
-import { requireAccount } from '@/lib/session';
+import { requireAccountFor, tryAccountFor } from '@/lib/session';
 import { toActionError, type ActionState } from '@/lib/action';
 
 export async function setCategoryAction(transactionId: string, categoryId: string) {
-  const ctx = await requireAccount();
-  const r = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const ctx = await requireAccountFor('accounting');
+  const r = await withTenant(getDb(), ctx, async (tx) => {
     const [cur] = await tx.select({ source: transactions.categorySource }).from(transactions).where(and(eq(transactions.id, transactionId), eq(transactions.accountId, ctx.accountId)));
     if (cur?.source === 'ai') {
       // Confirmação/correção de uma sugestão da IA: regista a decisão no registo de IA.
@@ -30,8 +30,8 @@ export async function setCategoryAction(transactionId: string, categoryId: strin
 
 /** Resolve um possível duplicado: "ignore" exclui o movimento; "keep" confirma que não é duplicado. */
 export async function resolveDuplicateAction(transactionId: string, decision: 'ignore' | 'keep') {
-  const ctx = await requireAccount();
-  await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const ctx = await requireAccountFor('accounting');
+  await withTenant(getDb(), ctx, async (tx) => {
     const [t] = await tx.select().from(transactions).where(and(eq(transactions.id, transactionId), eq(transactions.accountId, ctx.accountId)));
     if (!t) return;
     if (decision === 'ignore') await tx.update(transactions).set({ status: 'ignored' }).where(eq(transactions.id, t.id));
@@ -48,9 +48,9 @@ export async function resolveDuplicateAction(transactionId: string, decision: 'i
 }
 
 export async function setBusinessPctAction(transactionId: string, pct: number) {
-  const ctx = await requireAccount();
+  const ctx = await requireAccountFor('accounting');
   const value = Math.max(0, Math.min(100, Math.round(pct)));
-  await withTenant(getDb(), ctx.accountId, (tx) =>
+  await withTenant(getDb(), ctx, (tx) =>
     tx.update(transactions).set({ businessPct: value }).where(and(eq(transactions.id, transactionId), eq(transactions.accountId, ctx.accountId))),
   );
   revalidatePath('/app/transacoes');
@@ -61,7 +61,7 @@ export interface ImportState extends ActionState {
 }
 
 export async function importStatementAction(_: ImportState, fd: FormData): Promise<ImportState> {
-  const ctx = await requireAccount();
+  const ctx = await requireAccountFor('accounting');
   const file = fd.get('file');
   if (!(file instanceof File) || file.size === 0) return { error: 'Escolhe o ficheiro do extrato (CSV ou OFX).' };
   if (file.size > 5 * 1024 * 1024) return { error: 'O ficheiro tem mais de 5 MB.' };
@@ -72,7 +72,7 @@ export async function importStatementAction(_: ImportState, fd: FormData): Promi
     if (text.includes('�')) text = buf.toString('latin1');
     const parsed = parseStatement(file.name, text);
     if (parsed.rows.length === 0) return { error: parsed.warnings[0] ?? 'Não foram encontrados movimentos no ficheiro.' };
-    const result = await withTenant(getDb(), ctx.accountId, async (tx) => {
+    const result = await withTenant(getDb(), ctx, async (tx) => {
       let bankId = String(fd.get('bankAccountId') ?? '');
       if (!bankId || bankId === 'new') {
         const name = String(fd.get('bankName') ?? '').trim() || 'Conta bancária';
@@ -89,15 +89,15 @@ export async function importStatementAction(_: ImportState, fd: FormData): Promi
 }
 
 export async function aiSuggestCategoriesAction(): Promise<{ applied: number; status: string }> {
-  const ctx = await requireAccount();
-  const r = await withTenant(getDb(), ctx.accountId, async (tx) => aiCategorizePending(tx, ctx, await accountLlm(tx, ctx.accountId)));
+  const ctx = await requireAccountFor('accounting');
+  const r = await withTenant(getDb(), ctx, async (tx) => aiCategorizePending(tx, ctx, await accountLlm(tx, ctx.accountId)));
   revalidatePath('/app/transacoes');
   return r;
 }
 
 export async function confirmAiAction(transactionId: string) {
-  const ctx = await requireAccount();
-  await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const ctx = await requireAccountFor('accounting');
+  await withTenant(getDb(), ctx, async (tx) => {
     await confirmAiCategory(tx, ctx, transactionId);
     await refreshInsights(tx, ctx.accountId);
   });

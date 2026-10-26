@@ -20,6 +20,9 @@ export interface Seeder {
 export const basePlans: Seeder = {
   name: 'plans',
   run: async (db) => {
+    const env = process.env;
+    // Preços com IVA incluído (ASSUNCOES.md). Os IDs de preço do Stripe vêm do ambiente; sem eles,
+    // os planos pagos aparecem mas o checkout fica indisponível.
     const rows = [
       {
         code: 'gratuito',
@@ -28,14 +31,42 @@ export const basePlans: Seeder = {
         priceYearlyCents: 0,
         sortOrder: 0,
         aiMonthlyQuota: 30,
-        features: ['contabilidade_basica', 'categorizacao', 'despesas', 'faturacao'],
+        features: ['contabilidade', 'faturacao'],
+        stripePriceMonthlyId: null,
+        stripePriceYearlyId: null,
+      },
+      {
+        code: 'plus',
+        name: 'Plus',
+        priceMonthlyCents: 990,
+        priceYearlyCents: 9900,
+        sortOrder: 1,
+        aiMonthlyQuota: 300,
+        features: ['contabilidade', 'faturacao', 'banco_automatico', 'lembretes_automaticos', 'declaracoes'],
+        stripePriceMonthlyId: env.STRIPE_PRICE_PLUS_MONTHLY || null,
+        stripePriceYearlyId: env.STRIPE_PRICE_PLUS_YEARLY || null,
+      },
+      {
+        code: 'pro',
+        name: 'Pro',
+        priceMonthlyCents: 1990,
+        priceYearlyCents: 19900,
+        sortOrder: 2,
+        aiMonthlyQuota: 1000,
+        features: ['contabilidade', 'faturacao', 'banco_automatico', 'lembretes_automaticos', 'declaracoes', 'sociedades', 'suporte_prioritario'],
+        stripePriceMonthlyId: env.STRIPE_PRICE_PRO_MONTHLY || null,
+        stripePriceYearlyId: env.STRIPE_PRICE_PRO_YEARLY || null,
       },
     ];
     for (const r of rows) {
+      const { stripePriceMonthlyId, stripePriceYearlyId, ...base } = r;
       await db
         .insert(plans)
         .values(r)
-        .onConflictDoUpdate({ target: plans.code, set: { name: r.name, features: r.features, sortOrder: r.sortOrder } });
+        .onConflictDoUpdate({
+          target: plans.code,
+          set: { ...base, ...(stripePriceMonthlyId ? { stripePriceMonthlyId } : {}), ...(stripePriceYearlyId ? { stripePriceYearlyId } : {}) },
+        });
     }
   },
 };

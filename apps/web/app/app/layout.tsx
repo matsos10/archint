@@ -13,7 +13,7 @@ import { signOutAction } from '../(auth)/actions';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requireAccount();
-  const { account, unread } = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const { account, unread } = await withTenant(getDb(), ctx, async (tx) => {
     const [a] = await tx.select({ name: accounts.name }).from(accounts).where(eq(accounts.id, ctx.accountId));
     const [n] = await tx.select({ n: count() }).from(notifications).where(and(eq(notifications.accountId, ctx.accountId), isNull(notifications.readAt)));
     return { account: a, unread: n?.n ?? 0 };
@@ -59,6 +59,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </form>
           </div>
         </header>
+        {ctx.role === 'accountant' && (
+          <div role="status" className="flex flex-wrap items-center justify-between gap-2 border-b bg-accent px-4 py-2 text-sm text-accent-foreground sm:px-8">
+            <span>
+              Modo contabilista: estás na conta de <strong>{account?.name}</strong> · permissões:{' '}
+              {(ctx.scopes ?? []).map((sc) => (sc === 'read' ? 'consulta' : sc === 'accounting' ? 'contabilidade' : 'declarações')).join(', ')}
+              . Cada acesso fica registado.
+            </span>
+            <Link href="/contabilista" className="font-medium underline">Voltar ao portal</Link>
+          </div>
+        )}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 pb-28 sm:px-8 lg:pb-12">{children}</main>
       </div>
       <BottomNav />

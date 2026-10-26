@@ -21,6 +21,9 @@ export default function Home() {
         <Logo />
         <nav className="flex items-center gap-2">
           <ThemeToggle />
+          <Button variant="ghost" asChild className="hidden sm:inline-flex">
+            <Link href="/precos">Preços</Link>
+          </Button>
           <Button variant="ghost" asChild>
             <Link href="/entrar">Entrar</Link>
           </Button>
@@ -59,7 +62,9 @@ export default function Home() {
       <footer className="border-t">
         <div className="mx-auto grid max-w-6xl gap-4 px-6 py-10 text-sm text-muted-foreground sm:grid-cols-[1fr_auto]">
           <Disclaimer />
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
+            <Link href="/precos" className="hover:text-foreground">Preços</Link>
+            <Link href="/contabilista/perfil" className="hover:text-foreground">Sou contabilista</Link>
             <Link href="/termos" className="hover:text-foreground">Termos</Link>
             <Link href="/privacidade" className="hover:text-foreground">Privacidade</Link>
           </div>

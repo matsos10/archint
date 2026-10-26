@@ -4,19 +4,20 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { and, eq } from 'drizzle-orm';
 import { declarations, taxObligations, withTenant } from '@somar/db';
-import { audit, computeSavings, confirmDeclaration, explainWithAi, loadTaxParams, markDeclarationSubmitted, prepareDeclaration, type DeclarationData } from '@somar/core';
+import { assertFeature, audit, computeSavings, confirmDeclaration, explainWithAi, loadTaxParams, markDeclarationSubmitted, prepareDeclaration, type DeclarationData } from '@somar/core';
 import { accountLlm } from '@/lib/ai';
 import { toActionError, type ActionState } from '@/lib/action';
 import { getDb } from '@/lib/db';
-import { requireAccount } from '@/lib/session';
+import { requireAccount, tryAccountFor } from '@/lib/session';
 
 const ALLOWED = new Set(['upcoming', 'submitted', 'paid']);
 
 /** O utilizador confirma que cumpriu (ou desfaz) uma obrigação. A app nunca submete nada sozinha. */
 export async function setObligationStatus(id: string, status: string) {
-  const ctx = await requireAccount();
+  const ctx = await tryAccountFor('declarations');
+  if ('error' in ctx) return ctx;
   if (!ALLOWED.has(status)) return { error: 'Estado inválido.' };
-  await withTenant(getDb(), ctx.accountId, async (tx) => {
+  await withTenant(getDb(), ctx, async (tx) => {
     const [row] = await tx
       .update(taxObligations)
       .set({ status: status as 'upcoming', completedAt: status === 'upcoming' ? null : new Date() })
@@ -31,11 +32,17 @@ export async function setObligationStatus(id: string, status: string) {
 }
 
 export async function prepareDeclarationAction(obligationId: string) {
-  const ctx = await requireAccount();
+  const ctx = await tryAccountFor('declarations');
+  if ('error' in ctx) return ctx;
   const loaded = await loadTaxParams(getDb());
   let id: string | null = null;
   try {
-    id = (await withTenant(getDb(), ctx.accountId, (tx) => prepareDeclaration(tx, ctx, obligationId, loaded))).declarationId;
+    id = (
+      await withTenant(getDb(), ctx, async (tx) => {
+        await assertFeature(tx, ctx.accountId, 'declaracoes');
+        return prepareDeclaration(tx, ctx, obligationId, loaded);
+      })
+    ).declarationId;
   } catch (e) {
     return toActionError(e);
   }
@@ -45,9 +52,10 @@ export async function prepareDeclarationAction(obligationId: string) {
 }
 
 export async function confirmDeclarationAction(id: string) {
-  const ctx = await requireAccount();
+  const ctx = await tryAccountFor('declarations');
+  if ('error' in ctx) return ctx;
   try {
-    await withTenant(getDb(), ctx.accountId, (tx) => confirmDeclaration(tx, ctx, id));
+    await withTenant(getDb(), ctx, (tx) => confirmDeclaration(tx, ctx, id));
   } catch (e) {
     return toActionError(e);
   }
@@ -56,9 +64,10 @@ export async function confirmDeclarationAction(id: string) {
 }
 
 export async function submittedDeclarationAction(id: string, _: ActionState, fd: FormData): Promise<ActionState> {
-  const ctx = await requireAccount();
+  const ctx = await tryAccountFor('declarations');
+  if ('error' in ctx) return ctx;
   try {
-    await withTenant(getDb(), ctx.accountId, (tx) => markDeclarationSubmitted(tx, ctx, id, String(fd.get('ref') ?? '')));
+    await withTenant(getDb(), ctx, (tx) => markDeclarationSubmitted(tx, ctx, id, String(fd.get('ref') ?? '')));
   } catch (e) {
     return toActionError(e);
   }
@@ -69,7 +78,7 @@ export async function submittedDeclarationAction(id: string, _: ActionState, fd:
 
 export async function explainDeclarationAction(id: string) {
   const ctx = await requireAccount();
-  return withTenant(getDb(), ctx.accountId, async (tx) => {
+  return withTenant(getDb(), ctx, async (tx) => {
     const [d] = await tx.select().from(declarations).where(and(eq(declarations.id, id), eq(declarations.accountId, ctx.accountId)));
     if (!d) return null;
     const data = d.data as unknown as DeclarationData;
@@ -84,5 +93,5 @@ export async function explainDeclarationAction(id: string) {
 export async function aiSavingsAction() {
   const ctx = await requireAccount();
   const loaded = await loadTaxParams(getDb());
-  return withTenant(getDb(), ctx.accountId, async (tx) => computeSavings(tx, ctx, { llm: await accountLlm(tx, ctx.accountId), loaded }));
+  return withTenant(getDb(), ctx, async (tx) => computeSavings(tx, ctx, { llm: await accountLlm(tx, ctx.accountId), loaded }));
 }

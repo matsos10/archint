@@ -28,7 +28,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const q = sp.q?.trim().slice(0, 100);
   const ctx = await requireAccount();
 
-  const { rows, cats } = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const { rows, cats } = await withTenant(getDb(), ctx, async (tx) => {
     const cats = await tx
       .select({ id: categories.id, name: categories.name, kind: categories.kind, requiresReceipt: categories.requiresReceipt })
       .from(categories)
@@ -54,7 +54,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       .limit(300);
     return { rows, cats };
   });
-  const total = (await withTenant(getDb(), ctx.accountId, (tx) =>
+  const total = (await withTenant(getDb(), ctx, (tx) =>
     tx.select({ total: sql<number>`count(*)::int` }).from(transactions).where(eq(transactions.accountId, ctx.accountId)),
   ))[0]?.total ?? 0;
 

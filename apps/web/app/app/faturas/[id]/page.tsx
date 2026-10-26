@@ -25,7 +25,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
   const ctx = await requireAccount();
   const d = await editorData(ctx.accountId);
-  const data = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const data = await withTenant(getDb(), ctx, async (tx) => {
     const [row] = await tx.select({ i: invoices, client: clients }).from(invoices).leftJoin(clients, eq(clients.id, invoices.clientId)).where(and(eq(invoices.id, id), eq(invoices.accountId, ctx.accountId)));
     if (!row) return null;
     return {

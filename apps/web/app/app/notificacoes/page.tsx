@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'Notificações' };
 
 export default async function NotificationsPage() {
   const ctx = await requireAccount();
-  const list = await withTenant(getDb(), ctx.accountId, (tx) =>
+  const list = await withTenant(getDb(), ctx, (tx) =>
     tx.select().from(notifications).where(eq(notifications.accountId, ctx.accountId)).orderBy(desc(notifications.createdAt)).limit(100),
   );
   const unread = list.filter((n) => !n.readAt).length;

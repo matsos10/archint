@@ -29,7 +29,7 @@ export async function saveInvoiceAction(input: DocumentInput, id?: string): Prom
   const deps = await invoicingDeps();
   let saved: string;
   try {
-    saved = (await withTenant(getDb(), ctx.accountId, (tx) => saveDraftInvoice(tx, ctx, input, deps.params, id))).id;
+    saved = (await withTenant(getDb(), ctx, (tx) => saveDraftInvoice(tx, ctx, input, deps.params, id))).id;
   } catch (e) {
     return toActionError(e);
   }
@@ -41,7 +41,7 @@ export async function issueInvoiceAction(id: string): Promise<ActionState> {
   const ctx = await requireAccount();
   const deps = await invoicingDeps();
   try {
-    const r = await withTenant(getDb(), ctx.accountId, (tx) => issueInvoice(tx, deps, ctx, id));
+    const r = await withTenant(getDb(), ctx, (tx) => issueInvoice(tx, deps, ctx, id));
     revalidatePath('/app/faturas');
     revalidatePath(`/app/faturas/${id}`);
     return { ok: true, message: `Emitida: ${r.number}` };
@@ -54,7 +54,7 @@ export async function sendInvoiceAction(id: string, _: ActionState, fd: FormData
   const ctx = await requireAccount();
   const deps = await invoicingDeps();
   try {
-    await withTenant(getDb(), ctx.accountId, (tx) => sendInvoiceEmail(tx, deps, ctx, id, { to: String(fd.get('to') ?? '') || undefined, message: String(fd.get('message') ?? '') || undefined }));
+    await withTenant(getDb(), ctx, (tx) => sendInvoiceEmail(tx, deps, ctx, id, { to: String(fd.get('to') ?? '') || undefined, message: String(fd.get('message') ?? '') || undefined }));
     revalidatePath(`/app/faturas/${id}`);
     return { ok: true, message: 'Enviada por email.' };
   } catch (e) {
@@ -66,7 +66,7 @@ export async function paymentAction(id: string, _: ActionState, fd: FormData): P
   const ctx = await requireAccount();
   try {
     const amount = Math.round(Number(String(fd.get('amount') ?? '').replace(',', '.')) * 100);
-    await withTenant(getDb(), ctx.accountId, (tx) => recordPayment(tx, ctx, id, { amountCents: amount, paidOn: String(fd.get('paidOn')), method: String(fd.get('method') ?? 'transferencia') }));
+    await withTenant(getDb(), ctx, (tx) => recordPayment(tx, ctx, id, { amountCents: amount, paidOn: String(fd.get('paidOn')), method: String(fd.get('method') ?? 'transferencia') }));
     revalidatePath(`/app/faturas/${id}`);
     revalidatePath('/app/faturas');
     return { ok: true, message: 'Recebimento registado.' };
@@ -82,7 +82,7 @@ export async function creditAction(id: string, _: ActionState, fd: FormData): Pr
   if (reason.length < 3) return { error: 'Indica o motivo da anulação.' };
   let ncId: string;
   try {
-    ncId = (await withTenant(getDb(), ctx.accountId, (tx) => creditInvoice(tx, deps, ctx, id, reason))).creditNoteId;
+    ncId = (await withTenant(getDb(), ctx, (tx) => creditInvoice(tx, deps, ctx, id, reason))).creditNoteId;
   } catch (e) {
     return toActionError(e);
   }
@@ -92,7 +92,7 @@ export async function creditAction(id: string, _: ActionState, fd: FormData): Pr
 
 export async function toggleRemindersAction(id: string, enabled: boolean) {
   const ctx = await requireAccount();
-  await withTenant(getDb(), ctx.accountId, (tx) => tx.update(invoices).set({ remindersEnabled: enabled }).where(and(eq(invoices.id, id), eq(invoices.accountId, ctx.accountId))));
+  await withTenant(getDb(), ctx, (tx) => tx.update(invoices).set({ remindersEnabled: enabled }).where(and(eq(invoices.id, id), eq(invoices.accountId, ctx.accountId))));
   revalidatePath(`/app/faturas/${id}`);
 }
 
@@ -101,7 +101,7 @@ export async function saveQuoteAction(input: DocumentInput, id?: string): Promis
   const deps = await invoicingDeps();
   let saved: string;
   try {
-    saved = (await withTenant(getDb(), ctx.accountId, (tx) => saveQuote(tx, ctx, input, deps.params, id))).id;
+    saved = (await withTenant(getDb(), ctx, (tx) => saveQuote(tx, ctx, input, deps.params, id))).id;
   } catch (e) {
     return toActionError(e);
   }
@@ -114,7 +114,7 @@ export async function quoteAction(id: string, action: 'accept' | 'reject' | 'pdf
   const deps = await invoicingDeps();
   let target: string | undefined;
   try {
-    await withTenant(getDb(), ctx.accountId, async (tx) => {
+    await withTenant(getDb(), ctx, async (tx) => {
       if (action === 'accept' || action === 'reject') await setQuoteStatus(tx, ctx, id, action === 'accept' ? 'accepted' : 'rejected');
       if (action === 'pdf') await renderQuotePdf(tx, deps.storage, ctx, id, deps.params);
       if (action === 'convert') target = await convertQuoteToInvoice(tx, ctx, id, deps.params, deps.today);
@@ -130,7 +130,7 @@ export async function sendQuoteAction(id: string, _: ActionState, fd: FormData):
   const ctx = await requireAccount();
   const deps = await invoicingDeps();
   try {
-    await withTenant(getDb(), ctx.accountId, (tx) => sendQuoteEmail(tx, deps, ctx, id, { to: String(fd.get('to') ?? '') || undefined, message: String(fd.get('message') ?? '') || undefined }));
+    await withTenant(getDb(), ctx, (tx) => sendQuoteEmail(tx, deps, ctx, id, { to: String(fd.get('to') ?? '') || undefined, message: String(fd.get('message') ?? '') || undefined }));
     revalidatePath(`/app/faturas/orcamentos/${id}`);
     return { ok: true, message: 'Orçamento enviado.' };
   } catch (e) {
@@ -153,7 +153,7 @@ export async function saveClientAction(id: string | undefined, _: ActionState, f
     paymentTermsDays: Number(fd.get('paymentTermsDays') ?? 30) || 0,
   };
   try {
-    await withTenant(getDb(), ctx.accountId, (tx) => saveClient(tx, ctx, input, id));
+    await withTenant(getDb(), ctx, (tx) => saveClient(tx, ctx, input, id));
     revalidatePath('/app/faturas/clientes');
     return { ok: true, message: 'Cliente guardado.' };
   } catch (e) {

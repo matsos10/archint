@@ -103,6 +103,31 @@ proxy_read_timeout 120s;
 
 Confirma em `https://app.teudominio.pt/api/health`.
 
+## 5.1 Stripe (planos pagos)
+
+1. No Stripe (modo *live*), cria os produtos **Plus** e **Pro**, cada um com um preço mensal e um anual
+   (com IVA incluído, ver `ASSUNCOES.md`). Copia os IDs `price_…` para `STRIPE_PRICE_PLUS_MONTHLY`,
+   `STRIPE_PRICE_PLUS_YEARLY`, `STRIPE_PRICE_PRO_MONTHLY` e `STRIPE_PRICE_PRO_YEARLY` no `.env`.
+2. *Developers → API keys*: chave secreta restrita em `STRIPE_SECRET_KEY`.
+3. *Developers → Webhooks → Add endpoint*: `https://app.teudominio.pt/api/stripe/webhook`, com os eventos
+   `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`,
+   `customer.subscription.deleted` e `invoice.payment_failed`. Copia o *signing secret* para
+   `STRIPE_WEBHOOK_SECRET`.
+4. *Settings → Billing → Customer portal*: ativa mudança de plano (Plus ↔ Pro, mensal ↔ anual),
+   atualização do cartão, faturas e cancelamento no fim do período.
+5. Reinicia (`docker compose up -d`): o serviço `migrate` volta a correr os seeds e grava os IDs de
+   preço nos planos. Sem estas variáveis, os planos pagos aparecem mas o checkout fica indisponível.
+6. **Antes de cobrar**: os recibos do Stripe não são faturas certificadas pela AT; ver `ASSUNCOES.md`
+   (emissão da fatura de cada pagamento num software certificado).
+
+Teste local dos webhooks: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
+
+## 5.2 Contabilistas parceiros
+
+Os contabilistas criam o perfil em `/contabilista/perfil`. Um administrador da plataforma
+(`users.is_platform_admin`) confirma a inscrição na lista pública da Ordem dos Contabilistas
+Certificados e verifica-o em `/admin/contabilistas`; só depois aparece no diretório.
+
 ## 6. Atualizações e rollback
 
 ```bash
@@ -150,3 +175,5 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 - [ ] Firewall do VPS: só 22, 80 e 443 abertos (a porta 3000 nunca é publicada).
 - [ ] Force SSL + HSTS no NPM.
 - [ ] Backups do volume `files` testados (restauro).
+- [ ] `STRIPE_WEBHOOK_SECRET` configurado (sem ele o webhook responde 503 e nenhum plano é ativado).
+- [ ] Papel `somar_readonly` criado pela migration 0005 (acesso de consulta dos contabilistas).

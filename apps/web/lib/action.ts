@@ -19,6 +19,9 @@ export function toActionError(e: unknown): ActionState {
     }
     return { error: 'Revê os campos assinalados.', fieldErrors };
   }
+  // Escrita recusada pelo Postgres (ex.: contabilista em modo de consulta).
+  const cause = (e as { cause?: { code?: string } } | null)?.cause;
+  if (cause?.code === '42501') return { error: 'Não tens permissão para esta operação (acesso só de consulta).' };
   // Os redirects do Next.js são exceções que têm de continuar a propagar.
   if (e && typeof e === 'object' && 'digest' in e && String((e as { digest: unknown }).digest).startsWith('NEXT_')) throw e;
   console.error(e);

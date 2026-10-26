@@ -20,7 +20,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
   const ctx = await requireAccount();
   const d = await editorData(ctx.accountId);
-  const data = await withTenant(getDb(), ctx.accountId, async (tx) => {
+  const data = await withTenant(getDb(), ctx, async (tx) => {
     const [row] = await tx.select({ q: quotes, client: clients }).from(quotes).leftJoin(clients, eq(clients.id, quotes.clientId)).where(and(eq(quotes.id, id), eq(quotes.accountId, ctx.accountId)));
     if (!row) return null;
     return { ...row, lines: await tx.select().from(documentLines).where(eq(documentLines.quoteId, id)).orderBy(documentLines.position) };
