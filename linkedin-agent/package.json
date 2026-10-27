@@ -1,0 +1,12 @@
+{
+  "name": "linkedin-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "post": "node agent.mjs",
+    "dry-run": "DRY_RUN=1 node agent.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  }
+}
